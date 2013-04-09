@@ -1,0 +1,5 @@
+# CIFIXI
+CoffeeScript-based, AMD-organized, minimal subset of PIXI.js.
+
+Adapted by Louis Acresti
+MIT Licensed (see `LICENSE`)
