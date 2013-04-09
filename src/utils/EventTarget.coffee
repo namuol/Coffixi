@@ -3,8 +3,7 @@ https://github.com/mrdoob/eventtarget.js/
 THankS mr DOob!
 ###
 
-define ->
-  
+define ->  
   class EventTarget
     constructor: ->
       listeners = {}
@@ -19,3 +18,5 @@ define ->
       @removeEventListener = @off = (type, listener) ->
         index = listeners[type].indexOf(listener)
         listeners[type].splice index, 1  if index isnt -1
+
+  return EventTarget

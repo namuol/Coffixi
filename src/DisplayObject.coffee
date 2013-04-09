@@ -3,7 +3,7 @@
 ###
 
 define [
-  'Matrix'
+  'utils/Matrix'
 ], (Matrix)->
 
   ###

@@ -3,8 +3,8 @@
 ###
 
 define [
-  'Utils'
-  'Matrix'
+  'utils/Utils'
+  'utils/Matrix'
   'InteractionManager'
   'DisplayObjectContainer'
 ], (Utils, Matrix, InteractionManager, DisplayObjectContainer) ->

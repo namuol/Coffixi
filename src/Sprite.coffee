@@ -3,14 +3,9 @@
 ###
 
 define [
-  'RenderCore/Point'
-  'RenderCore/DisplayObjectContainer'
+  'Point'
+  'DisplayObjectContainer'
 ], (Point, DisplayObjectContainer) ->
-
-  Sprite.blendModes = {}
-  Sprite.blendModes.NORMAL = 0
-  Sprite.blendModes.SCREEN = 1
-
   ###
   @class Sprite
   @extends DisplayObjectContainer
@@ -41,11 +36,11 @@ define [
       
       ###
       The blend mode of sprite.
-      currently supports RenderCore.blendModes.NORMAL and RenderCore.blendModes.SCREEN
+      currently supports Sprite.blendModes.NORMAL and Sprite.blendModes.SCREEN
       @property blendMode
       @type uint
       ###
-      @blendMode = RenderCore.blendModes.NORMAL
+      @blendMode = Sprite.blendModes.NORMAL
       
       ###
       The width of the sprite (this is initially set by the texture)
@@ -168,10 +163,14 @@ define [
       @height = @texture.frame.height
       @updateFrame = true
 
+    @blendModes:
+      NORMAL: 0
+      SCREEN: 1
+
     # some helper functions..
 
     ###
-    Helper function that creates a sprite that will contain a texture from the TextureCache based on the frameId
+    Helper function that creates a sprite that will contain a texture from the Texture.cache based on the frameId
     The frame ids are created when a Texture packer file has been loaded
     @method fromFrame
     @static
@@ -179,10 +178,9 @@ define [
     @return {Sprite} A new Sprite using a texture from the texture cache matching the frameId
     ###
     @fromFrame: (frameId) ->
-      texture = RenderCore.TextureCache[frameId]
+      texture = Texture.cache[frameId]
       throw new Error("The frameId '" + frameId + "' does not exist in the texture cache" + this)  unless texture
-      new RenderCore.Sprite(texture)
-
+      new Sprite(texture)
 
     ###
     Helper function that creates a sprite that will contain a texture based on an image url
@@ -193,5 +191,5 @@ define [
     @return {Sprite} A new Sprite using a texture from the texture cache matching the image id
     ###
     @fromImage: (imageId) ->
-      texture = RenderCore.Texture.fromImage(imageId)
-      new RenderCore.Sprite(texture)
+      texture = Texture.fromImage(imageId)
+      new Sprite(texture)

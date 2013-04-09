@@ -2,7 +2,8 @@
 	"folders":
 	[
 		{
-			"path": "/home/louman/dev/coffixi"
+			"path": "/home/louman/dev/coffixi",
+      "file_exclude_patterns": ["*.js"]
 		}
 	]
 }

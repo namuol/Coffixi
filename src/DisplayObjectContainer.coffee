@@ -3,7 +3,7 @@
 ###
 
 define [
-  'RenderCore/DisplayObject'
+  'DisplayObject'
 ], (DisplayObject) ->
   
   ###
