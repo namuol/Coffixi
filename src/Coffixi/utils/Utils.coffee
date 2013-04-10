@@ -1,4 +1,4 @@
-define ->
+define 'Coffixi/utils/Utils', ->
   Utils = {}
   
   Utils.HEXtoRGB = (hex) ->

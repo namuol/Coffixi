@@ -1,9 +1,9 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define [
-  'Sprite'
-  'renderers/WebGLShaders'
+define 'Coffixi/renderers/WebGLBatch', [
+  '../Sprite'
+  './WebGLShaders'
 ], (Sprite, WebGLShaders) ->
   ###
   A WebGLBatch Enables a group of sprites to be drawn using the same settings.

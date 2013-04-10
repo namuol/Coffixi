@@ -2,9 +2,9 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'Point'
-  'Sprite'
+define 'Coffixi/InteractionManager', [
+  './Point'
+  './Sprite'
 ], (Point, Sprite) ->
   ###
   The interaction manager deals with mouse and touch events. At this moment only Sprite's can be interactive.

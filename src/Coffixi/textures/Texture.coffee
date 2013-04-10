@@ -2,11 +2,11 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'utils/EventTarget'
-  'textures/BaseTexture'
-  'Rectangle'
-  'Point'
+define 'Coffixi/textures/Texture', [
+  '../utils/EventTarget'
+  './BaseTexture'
+  '../Rectangle'
+  '../Point'
 ], (EventTarget, BaseTexture, Rectangle, Point) ->
   ###
   A texture stores the information that represents an image or part of an image. It cannot be added to the display list directly. To do this use Sprite. If no frame is provided then the whole image is used

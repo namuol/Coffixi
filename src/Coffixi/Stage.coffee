@@ -2,11 +2,11 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'utils/Utils'
-  'utils/Matrix'
-  'InteractionManager'
-  'DisplayObjectContainer'
+define 'Coffixi/Stage', [
+  './utils/Utils'
+  './utils/Matrix'
+  './InteractionManager'
+  './DisplayObjectContainer'
 ], (Utils, Matrix, InteractionManager, DisplayObjectContainer) ->
 
   ###

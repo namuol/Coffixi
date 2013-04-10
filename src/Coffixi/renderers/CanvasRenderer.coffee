@@ -2,9 +2,9 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'Sprite'
-  'textures/BaseTexture'
+define 'Coffixi/renderers/CanvasRenderer', [
+  '../Sprite'
+  '../textures/BaseTexture'
 ], (Sprite, BaseTexture) ->
 
   ###

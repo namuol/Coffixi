@@ -2,8 +2,8 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'utils/Matrix'
+define 'Coffixi/DisplayObject', [
+  './utils/Matrix'
 ], (Matrix)->
 
   ###

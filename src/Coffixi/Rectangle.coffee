@@ -2,7 +2,7 @@
 @author Mat Groves http://matgroves.com/
 ###
 
-define ->
+define 'Coffixi/Rectangle', ->
   ###
   the Rectangle object is an area defined by its position, as indicated by its top-left corner point (x, y) and by its width and its height.
   @class Rectangle

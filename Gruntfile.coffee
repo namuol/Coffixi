@@ -15,8 +15,8 @@ module.exports = (grunt) ->
           optimize: 'none'
           baseUrl: '<%= build_dir %>'
           name: '../support/almond'
-          include: 'Pixi'
-          insertRequire: ['Pixi']
+          include: 'Coffixi/Pixi'
+          insertRequire: ['Coffixi/Pixi']
           out: '<%= build_dir %>/pixi.js'
     watch:
       coffee:

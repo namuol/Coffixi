@@ -2,8 +2,8 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'Sprite'
+define 'Coffixi/MovieClip', [
+  './Sprite'
 ], (Sprite) ->
   ###
   A MovieClip is a simple way to display an animation depicted by a list of textures.

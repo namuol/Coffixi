@@ -2,8 +2,8 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'DisplayObject'
+define 'Coffixi/DisplayObjectContainer', [
+  './DisplayObject'
 ], (DisplayObject) ->
   
   ###

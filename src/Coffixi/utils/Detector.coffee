@@ -2,9 +2,9 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'renderers/WebGLRenderer'
-  'renderers/CanvasRenderer'
+define 'Coffixi/utils/Detector', [
+  '../renderers/WebGLRenderer'
+  '../renderers/CanvasRenderer'
 ], (WebGLRenderer, CanvasRenderer) ->
   Detector = {}
   

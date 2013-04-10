@@ -3,7 +3,7 @@
 ###
 
 # A lighter version of the rad gl-matrix created by Brandon Jones, Colin MacKenzie IV you both rock!
-define ->
+define 'Coffixi/utils/Matrix', ->
   Matrix = {}
 
   if Float32Array?

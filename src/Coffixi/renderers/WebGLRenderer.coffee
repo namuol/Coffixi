@@ -1,13 +1,13 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define [
-  'renderers/WebGLBatch'
-  'renderers/WebGLShaders'
-  'utils/Matrix'
-  'Sprite'
-  'textures/BaseTexture'
-  'textures/Texture'
+define 'Coffixi/renderers/WebGLRenderer', [
+  './WebGLBatch'
+  './WebGLShaders'
+  '../utils/Matrix'
+  '../Sprite'
+  '../textures/BaseTexture'
+  '../textures/Texture'
 ], (WebGLBatch, WebGLShaders, Matrix, Sprite, BaseTexture, Texture) ->
   ###
   the WebGLRenderer is draws the stage and all its content onto a webGL enabled canvas. This renderer should be used for browsers support webGL. This Render works by automatically managing webGLBatchs. So no need for Sprite Batch's or Sprite Cloud's

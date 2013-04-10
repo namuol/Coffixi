@@ -3,7 +3,7 @@ https://github.com/mrdoob/eventtarget.js/
 THankS mr DOob!
 ###
 
-define ->  
+define 'Coffixi/utils/EventTarget', ->  
   class EventTarget
     constructor: ->
       listeners = {}

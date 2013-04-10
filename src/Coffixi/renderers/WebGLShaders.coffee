@@ -2,7 +2,7 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define ->
+define 'Coffixi/renderers/WebGLShaders', ->
   WebGLShaders = {}
 
   WebGLShaders.shaderFragmentSrc = [

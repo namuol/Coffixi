@@ -1,10 +1,10 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define [
-  'utils/Utils'
-  'utils/EventTarget'
-  'textures/Texture'
+define 'Coffixi/SpriteSheetLoader', [
+  './utils/Utils'
+  './utils/EventTarget'
+  './textures/Texture'
 ], (Utils, EventTarget, Texture) ->
 
   ###

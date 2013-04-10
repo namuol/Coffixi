@@ -2,10 +2,10 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define [
-  'utils/EventTarget'
-  'textures/Texture'
-  'loaders/SpriteSheetLoader'
+define 'Coffixi/loaders/AssetLoader', [
+  '../utils/EventTarget'
+  '../textures/Texture'
+  './SpriteSheetLoader'
 ], (EventTarget, Texture, SpriteSheetLoader) ->
   ###
   A Class that loads a bunch of images / sprite sheet files. Once the assets have been loaded they are added to the Texture cache and can be accessed easily through Texture.fromFrame(), Texture.fromImage() and Sprite.fromImage(), Sprite.fromFromeId()
