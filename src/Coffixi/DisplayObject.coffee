@@ -5,7 +5,7 @@
 define 'Coffixi/DisplayObject', [
   './Point'
   './utils/Matrix'
-], (Matrix)->
+], (Point, Matrix)->
 
   ###
   this is the base class for all objects that are rendered on the screen.
