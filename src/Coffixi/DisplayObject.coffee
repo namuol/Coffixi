@@ -3,6 +3,7 @@
 ###
 
 define 'Coffixi/DisplayObject', [
+  './Point'
   './utils/Matrix'
 ], (Matrix)->
 
@@ -18,14 +19,14 @@ define 'Coffixi/DisplayObject', [
       @property position
       @type Point
       ###
-      @position = new PIXI.Point()
+      @position = new Point()
       
       ###
       The scale factor of the object.
       @property scale
       @type Point
       ###
-      @scale = new PIXI.Point(1, 1) #{x:1, y:1};
+      @scale = new Point(1, 1) #{x:1, y:1};
       
       ###
       The rotation of the object in radians.
