@@ -17,8 +17,14 @@
 
 	$(window).resize(resize)
 	window.onorientationchange = resize;
-
-	document.addEventListener('DOMContentLoaded', start, false);
+ 
+  function begin() {
+    setTimeout(function() {
+      start();
+    }, 1000);
+  }
+ 
+	document.addEventListener('DOMContentLoaded', begin, false);
 
 	var w = 1024;
 	var h = 768;

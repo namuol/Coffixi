@@ -20,7 +20,13 @@
 	$(window).resize(resize)
 	window.onorientationchange = resize;
 
-	document.addEventListener('DOMContentLoaded', start, false);
+  function begin() {
+    setTimeout(function() {
+      start();
+    }, 1000);
+  }
+
+	document.addEventListener('DOMContentLoaded', begin, false);
 
 	//	Globals, globals everywhere and not a drop to drink
 	var w = 1024;
@@ -33,7 +39,6 @@
 	var stars = [];
 
 	function start() {
-
 		var ballTexture = new PIXI.Texture.fromImage("assets/bubble_32x32.png");
 
 		renderer = PIXI.autoDetectRenderer(w, h);

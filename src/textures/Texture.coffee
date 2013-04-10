@@ -23,7 +23,7 @@ define [
 
       if not frame
         @noFrame = true
-        new Rectangle(0, 0, 1, 1)
+        frame = new Rectangle(0, 0, 1, 1)
 
       # LOU TODO: What is this? Is it used? Should I remove it?
       @trim = new Point()

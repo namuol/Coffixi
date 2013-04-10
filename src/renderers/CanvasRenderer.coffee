@@ -66,7 +66,7 @@ define [
     @param stage {Stage} the Stage element to be rendered
     ###
     render: (stage) ->
-      
+      return
       # update children if need be
       stage.__childrenAdded = []
       stage.__childrenRemoved = []

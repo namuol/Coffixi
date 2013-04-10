@@ -3,9 +3,9 @@
 ###
 
 define [
-  #'renderers/WebGLRenderer'
+  'renderers/WebGLRenderer'
   'renderers/CanvasRenderer'
-], (CanvasRenderer) ->
+], (WebGLRenderer, CanvasRenderer) ->
   Detector = {}
   
   ###
@@ -32,7 +32,7 @@ define [
     )()
     
     # TODO SUPPORT WEBGL
-    if false and webgl
+    if webgl
       return new WebGLRenderer(width, height, view, transparent)
     return new CanvasRenderer(width, height, view, transparent)
 

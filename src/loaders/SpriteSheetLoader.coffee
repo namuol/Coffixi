@@ -2,9 +2,10 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 define [
+  'utils/Utils'
   'utils/EventTarget'
   'textures/Texture'
-], (EventTarget, Texture) ->
+], (Utils, EventTarget, Texture) ->
 
   ###
   The sprite sheet loader is used to load in JSON sprite sheet data
@@ -35,7 +36,7 @@ define [
     This will begin loading the JSON file
     ###
     load: ->
-      @ajaxRequest = new AjaxRequest()
+      @ajaxRequest = new Utils.AjaxRequest()
       scope = this
       @ajaxRequest.onreadystatechange = ->
         scope.onLoaded()

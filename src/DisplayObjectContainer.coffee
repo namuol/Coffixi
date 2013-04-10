@@ -29,7 +29,7 @@ define [
     @param  DisplayObject {DisplayObject}
     ###
     addChild: (child) ->
-      child.parent.removeChild child  unless child.parent is `undefined`
+      child.parent.removeChild(child) if child.parent?
       child.parent = this
       child.childIndex = @children.length
       @children.push child
@@ -44,7 +44,7 @@ define [
     ###
     addChildAt: (child, index) ->
       if index >= 0 and index <= @children.length
-        child.parent.removeChild child  unless child.parent is `undefined`
+        child.parent.removeChild(child) if child.parent?
         if index is @children.length
           @children.push child
         else

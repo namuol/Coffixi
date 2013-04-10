@@ -3,9 +3,10 @@
 ###
 
 define [
+  'textures/Texture'
   'Point'
   'DisplayObjectContainer'
-], (Point, DisplayObjectContainer) ->
+], (Texture, Point, DisplayObjectContainer) ->
   ###
   @class Sprite
   @extends DisplayObjectContainer

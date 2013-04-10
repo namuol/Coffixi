@@ -51,6 +51,7 @@ define [
   PIXI.BaseTexture = BaseTexture
   PIXI.Texture = Texture
   PIXI.Detector = Detector
+  PIXI.autoDetectRenderer = Detector.autoDetectRenderer
   PIXI.EventTarget = EventTarget
   PIXI.Matrix = Matrix
   PIXI.Utils = Utils
