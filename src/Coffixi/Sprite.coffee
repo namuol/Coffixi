@@ -26,14 +26,14 @@ define 'Coffixi/Sprite', [
       @property anchor
       @type Point
       ###
-      @anchor = new Point()
+      @anchor ?= new Point()
       
       ###
       The texture that the sprite is using
       @property texture
       @type Texture
       ###
-      @texture = texture
+      @texture ?= texture
       
       ###
       The blend mode of sprite.
@@ -41,28 +41,30 @@ define 'Coffixi/Sprite', [
       @property blendMode
       @type uint
       ###
-      @blendMode = Sprite.blendModes.NORMAL
+      @blendMode ?= Sprite.blendModes.NORMAL
       
       ###
       The width of the sprite (this is initially set by the texture)
       @property width
       @type #Number
       ###
-      @width = 1
+      @width ?= 1
       
       ###
       The height of the sprite (this is initially set by the texture)
       @property height
       @type #Number
       ###
-      @height = 1
-      if texture.baseTexture.hasLoaded
-        @width = @texture.frame.width
-        @height = @texture.frame.height
-        @updateFrame = true
-      else
-        @onTextureUpdateBind = @onTextureUpdate.bind(this)
-        @texture.addEventListener "update", @onTextureUpdateBind
+      @height ?= 1
+      # LOU TODO HACK:
+      if texture?.baseTexture?
+        if texture.baseTexture.hasLoaded
+          @width = @texture.frame.width
+          @height = @texture.frame.height
+          @updateFrame = true
+        else
+          @onTextureUpdateBind = @onTextureUpdate.bind(this)
+          @texture.addEventListener "update", @onTextureUpdateBind
       @renderable = true
       
       # [readonly] best not to toggle directly! use setInteractive()
