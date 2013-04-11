@@ -37,9 +37,8 @@ define 'Coffixi/SpriteSheetLoader', [
     ###
     load: ->
       @ajaxRequest = new Utils.AjaxRequest()
-      scope = this
-      @ajaxRequest.onreadystatechange = ->
-        scope.onLoaded()
+      @ajaxRequest.onreadystatechange = =>
+        @onLoaded()
 
       @ajaxRequest.open "GET", @url, true
       @ajaxRequest.overrideMimeType "application/json"  if @ajaxRequest.overrideMimeType
@@ -47,7 +46,11 @@ define 'Coffixi/SpriteSheetLoader', [
 
     onLoaded: ->
       if @ajaxRequest.readyState is 4
-        if @ajaxRequest.status is 200 or window.location.href.indexOf("http") is -1
+        if not (@ajaxRequest.status is 200 or window.location.href.indexOf("http") is -1)
+          @emit
+            type: 'error'
+            content: @
+        else
           jsondata = eval("(" + @ajaxRequest.responseText + ")")
           textureUrl = @baseUrl + jsondata.meta.image
           @texture = Texture.fromImage(textureUrl, @crossorigin).baseTexture
@@ -64,7 +67,6 @@ define 'Coffixi/SpriteSheetLoader', [
                 height: rect.h
               )
               if frameData[i].trimmed
-                
                 #var realSize = frameData[i].spriteSourceSize;
                 Texture.cache[i].realSize = frameData[i].spriteSourceSize
                 Texture.cache[i].trim.x = 0 # (realSize.x / rect.w)

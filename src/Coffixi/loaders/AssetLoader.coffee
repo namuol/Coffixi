@@ -106,12 +106,12 @@ define 'Coffixi/loaders/AssetLoader', [
         type: "onProgress"
         content: this
 
-      @onProgress()  if @onProgress
+      @onProgress() if @onProgress
       if @loadCount is 0
         @dispatchEvent
           type: "onComplete"
           content: this
 
-        @onComplete()  if @onComplete
+        @onComplete() if @onComplete
 
   return AssetLoader
