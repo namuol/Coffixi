@@ -42,17 +42,21 @@ define 'Coffixi/textures/BaseTexture', [
           @height = @source.height
           BaseTexture.texturesToUpdate.push this
         else
-          scope = this
-          @source.onload = ->
-            scope.hasLoaded = true
-            scope.width = scope.source.width
-            scope.height = scope.source.height
+          @source.onerror = =>
+            @emit
+              type: 'error'
+              content: @
+              
+          @source.onload = =>
+            @hasLoaded = true
+            @width = @source.width
+            @height = @source.height
             
             # add it to somewhere...
-            BaseTexture.texturesToUpdate.push scope
-            scope.dispatchEvent
+            BaseTexture.texturesToUpdate.push @
+            @emit
               type: "loaded"
-              content: scope
+              content: @
 
       else
         @hasLoaded = true
