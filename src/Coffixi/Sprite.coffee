@@ -33,7 +33,8 @@ define 'Coffixi/Sprite', [
       @property texture
       @type Texture
       ###
-      @texture ?= texture
+      if texture?
+        @texture = texture
       
       ###
       The blend mode of sprite.
@@ -41,7 +42,7 @@ define 'Coffixi/Sprite', [
       @property blendMode
       @type uint
       ###
-      @blendMode ?= Sprite.blendModes.NORMAL
+      @blendMode = Sprite.blendModes.NORMAL
       
       ###
       The width of the sprite (this is initially set by the texture)
@@ -56,8 +57,8 @@ define 'Coffixi/Sprite', [
       @type #Number
       ###
       @height ?= 1
-      # LOU TODO HACK:
-      if texture?.baseTexture?
+      
+      if @texture?    
         if texture.baseTexture.hasLoaded
           @width = @texture.frame.width
           @height = @texture.frame.height
@@ -133,17 +134,17 @@ define 'Coffixi/Sprite', [
 
     ###
     @method setTexture
-    @param texture {Texture} The RenderCore texture that is displayed by the sprite
+    @param texture {Texture} The texture that is displayed by the sprite
     ###
     setTexture: (texture) ->
       
       # stop current texture;
-      @textureChange = true  unless @texture.baseTexture is texture.baseTexture
+      if @texture? and @texture.baseTexture is not texture.baseTexture
+        @textureChange = true
       @texture = texture
       @width = texture.frame.width
       @height = texture.frame.height
       @updateFrame = true
-
 
     ###
     Indicates if the sprite will have touch and mouse interactivity. It is false by default

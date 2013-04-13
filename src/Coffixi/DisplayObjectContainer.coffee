@@ -72,7 +72,7 @@ define 'Coffixi/DisplayObjectContainer', [
       index = @children.indexOf(child)
       if index != -1
         @stage.__removeChild child  if @stage
-        child.parent = `undefined`
+        child.parent = undefined
         
         #child.childIndex = 0
         @children.splice index, 1
@@ -86,6 +86,17 @@ define 'Coffixi/DisplayObjectContainer', [
           i++
       else
         throw new Error(child + " The supplied DisplayObject must be a child of the caller " + this)
+    
+    ###
+    Removes all children from the container.
+    @method clearChildren
+    ###
+    clearChildren: ->
+      if @stage
+        for child in @children
+          @stage.__removeChild child
+          child.parent = undefined
+      @children = []
 
     ###
     @private
