@@ -33,7 +33,7 @@ define 'Coffixi/utils/Detector', [
     )()
     
     # TODO SUPPORT WEBGL
-    if false#webgl
+    if webgl
       return new WebGLRenderer(width, height, view, transparent, filterMode)
     return new CanvasRenderer(width, height, view, transparent, filterMode)
 
