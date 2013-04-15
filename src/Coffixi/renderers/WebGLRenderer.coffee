@@ -20,10 +20,11 @@ define 'Coffixi/renderers/WebGLRenderer', [
   @default 0
   @param view {Canvas} the canvas to use as a view, optional
   @param transparent {Boolean} the transparency of the render view, default false
+  @param filterMode {uint} BaseTexture.
   @default false
   ###
   class WebGLRenderer
-    constructor: (width, height, view, transparent) ->
+    constructor: (width, height, view, transparent, @filterMode=BaseTexture.filterModes.LINEAR) ->
       @transparent = !!transparent
       @width = width or 800
       @height = height or 600
@@ -187,8 +188,16 @@ define 'Coffixi/renderers/WebGLRenderer', [
         gl.bindTexture gl.TEXTURE_2D, texture._glTexture
         gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true
         gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.source
-        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
-        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR
+        switch @filterMode
+          when BaseTexture.filterModes.NEAREST
+            glFilterMode = gl.NEAREST
+          when BaseTexture.filterModes.LINEAR
+            glFilterMode = gl.LINEAR
+          else
+            console.warn 'Unexpected value for filterMode: ' + (texture.filterMode or @filterMode) + '. Defaulting to LINEAR'
+            glFilterMode = gl.LINEAR
+        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode
+        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
         

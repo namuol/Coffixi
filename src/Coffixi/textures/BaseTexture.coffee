@@ -68,5 +68,8 @@ define 'Coffixi/textures/BaseTexture', [
     fromImage: (imageUrl) ->
     @texturesToUpdate: []
     @cache: {}
+    @filterModes:
+      LINEAR: 1
+      NEAREST: 2
 
   return BaseTexture

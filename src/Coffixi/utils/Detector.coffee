@@ -5,7 +5,8 @@
 define 'Coffixi/utils/Detector', [
   '../renderers/WebGLRenderer'
   '../renderers/CanvasRenderer'
-], (WebGLRenderer, CanvasRenderer) ->
+  '../textures/BaseTexture'
+], (WebGLRenderer, CanvasRenderer, BaseTexture) ->
   Detector = {}
   
   ###
@@ -19,7 +20,7 @@ define 'Coffixi/utils/Detector', [
   @param transparent {Boolean} the transparency of the render view, default false
   @default false
   ###
-  Detector.autoDetectRenderer = (width, height, view, transparent) ->
+  Detector.autoDetectRenderer = (width, height, view, transparent, filterMode=BaseTexture.filterModes.LINEAR) ->
     width = 800  unless width
     height = 600  unless height
     
@@ -32,8 +33,8 @@ define 'Coffixi/utils/Detector', [
     )()
     
     # TODO SUPPORT WEBGL
-    if webgl
-      return new WebGLRenderer(width, height, view, transparent)
-    return new CanvasRenderer(width, height, view, transparent)
+    if false#webgl
+      return new WebGLRenderer(width, height, view, transparent, filterMode)
+    return new CanvasRenderer(width, height, view, transparent, filterMode)
 
   return Detector

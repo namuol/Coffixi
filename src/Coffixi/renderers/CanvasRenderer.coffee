@@ -21,7 +21,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
   @default false
   ###
   class CanvasRenderer
-    constructor: (width, height, view, transparent) ->
+    constructor: (width, height, view, transparent, @filterMode=BaseTexture.filterModes.LINEAR) ->
       @transparent = transparent 
       ###
       The width of the canvas view
@@ -75,7 +75,12 @@ define 'Coffixi/renderers/CanvasRenderer', [
       @context.setTransform 1, 0, 0, 1, 0, 0
       stage.updateTransform()
       @context.setTransform 1, 0, 0, 1, 0, 0
-      
+      imgSmoothingEnabled = @filterMode is BaseTexture.filterModes.NEAREST
+      @context.imageSmoothingEnabled = imgSmoothingEnabled
+      @context.webkitImageSmoothingEnabled = imgSmoothingEnabled
+      @context.mozImageSmoothingEnabled = imgSmoothingEnabled
+      @context.oImageSmoothingEnabled = imgSmoothingEnabled
+
       if @view.style.backgroundColor isnt stage.backgroundColorString and not @transparent
         # update the background color
         @view.style.backgroundColor = stage.backgroundColorString
