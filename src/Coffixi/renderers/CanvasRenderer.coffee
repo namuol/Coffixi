@@ -75,7 +75,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
       @context.setTransform 1, 0, 0, 1, 0, 0
       stage.updateTransform()
       @context.setTransform 1, 0, 0, 1, 0, 0
-      imgSmoothingEnabled = @filterMode is BaseTexture.filterModes.NEAREST
+      imgSmoothingEnabled = @filterMode is not BaseTexture.filterModes.NEAREST
       @context.imageSmoothingEnabled = imgSmoothingEnabled
       @context.webkitImageSmoothingEnabled = imgSmoothingEnabled
       @context.mozImageSmoothingEnabled = imgSmoothingEnabled
