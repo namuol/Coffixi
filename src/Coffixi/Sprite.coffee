@@ -3,10 +3,9 @@
 ###
 
 define 'Coffixi/Sprite', [
-  './textures/Texture'
   './Point'
   './DisplayObjectContainer'
-], (Texture, Point, DisplayObjectContainer) ->
+], (Point, DisplayObjectContainer) ->
   ###
   @class Sprite
   @extends DisplayObjectContainer
@@ -170,30 +169,3 @@ define 'Coffixi/Sprite', [
     @blendModes:
       NORMAL: 0
       SCREEN: 1
-
-    # some helper functions..
-
-    ###
-    Helper function that creates a sprite that will contain a texture from the Texture.cache based on the frameId
-    The frame ids are created when a Texture packer file has been loaded
-    @method fromFrame
-    @static
-    @param frameId {String} The frame Id of the texture in the cache
-    @return {Sprite} A new Sprite using a texture from the texture cache matching the frameId
-    ###
-    @fromFrame: (frameId) ->
-      texture = Texture.cache[frameId]
-      throw new Error("The frameId '" + frameId + "' does not exist in the texture cache" + this)  unless texture
-      new Sprite(texture)
-
-    ###
-    Helper function that creates a sprite that will contain a texture based on an image url
-    If the image is not in the texture cache it will be loaded
-    @method fromImage
-    @static
-    @param The image url of the texture
-    @return {Sprite} A new Sprite using a texture from the texture cache matching the image id
-    ###
-    @fromImage: (imageId) ->
-      texture = Texture.fromImage(imageId)
-      new Sprite(texture)
