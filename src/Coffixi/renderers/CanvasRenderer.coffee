@@ -86,16 +86,6 @@ define 'Coffixi/renderers/CanvasRenderer', [
         @view.style.backgroundColor = stage.backgroundColorString
       @context.clearRect 0, 0, @width, @height
       @renderDisplayObject stage
-      
-      #as
-      
-      # run interaction!
-      if stage.interactive
-        
-        #need to add some events!
-        unless stage._interactiveEventsAdded
-          stage._interactiveEventsAdded = true
-          stage.interactionManager.setTarget this
 
     ###
     resizes the canvas view to the specified width and height

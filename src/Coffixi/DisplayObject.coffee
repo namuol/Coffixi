@@ -73,9 +73,6 @@ define 'Coffixi/DisplayObject', [
       @_sr = 0
       @_cr = 1
       @renderable = false
-      
-      # NOT YET :/ This only applies to children within the container..
-      @interactive = true
 
     ###
     @private

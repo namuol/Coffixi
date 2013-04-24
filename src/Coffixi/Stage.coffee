@@ -5,9 +5,8 @@
 define 'Coffixi/Stage', [
   './utils/Utils'
   './utils/Matrix'
-  './InteractionManager'
   './DisplayObjectContainer'
-], (Utils, Matrix, InteractionManager, DisplayObjectContainer) ->
+], (Utils, Matrix, DisplayObjectContainer) ->
 
   ###
   A Stage represents the root of the display tree. Everything connected to the stage is rendered
@@ -15,10 +14,9 @@ define 'Coffixi/Stage', [
   @extends DisplayObjectContainer
   @constructor
   @param backgroundColor {Number} the background color of the stage
-  @param interactive {Boolean} enable / disable interaction (default is false)
   ###
   class Stage extends DisplayObjectContainer
-    constructor: (backgroundColor, interactive) ->
+    constructor: (backgroundColor) ->
       super
 
       @worldTransform = Matrix.mat3.create() #.//identity();
@@ -27,9 +25,6 @@ define 'Coffixi/Stage', [
       @childIndex = 0
       @stage = this
       
-      # interaction!
-      @interactive = !!interactive
-      @interactionManager = new InteractionManager(this)
       @setBackgroundColor backgroundColor
 
     ###
@@ -44,11 +39,9 @@ define 'Coffixi/Stage', [
       while i < j
         @children[i].updateTransform()
         i++
+
       if @dirty
         @dirty = false
-        
-        # update interactive!
-        @interactionManager.dirty = true
 
     ###
     @method setBackgroundColor
@@ -61,7 +54,6 @@ define 'Coffixi/Stage', [
 
     # LOU TODO: Remove this along with Interactive stuff. It looks like this is only used there.
     __addChild: (child) ->
-      @dirty = true  if child.interactive
       child.stage = this
       if child.children
         i = 0
@@ -71,7 +63,6 @@ define 'Coffixi/Stage', [
           i++
 
     __removeChild: (child) ->
-      @dirty = true  if child.interactive
       @__childrenRemoved.push child
       child.stage = `undefined`
       if child.children

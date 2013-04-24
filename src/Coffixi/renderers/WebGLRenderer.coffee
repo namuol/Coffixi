@@ -167,14 +167,6 @@ define 'Coffixi/renderers/WebGLRenderer', [
           @batchs[i].render()
         ++i
       
-      # LOU TODO -- gut/modularize interactive portion
-      # interaction
-      # run interaction!
-      if stage.interactive        
-        #need to add some events!
-        unless stage._interactiveEventsAdded
-          stage._interactiveEventsAdded = true
-          stage.interactionManager.setTarget this
     ###
     @private
     ###

@@ -66,70 +66,6 @@ define 'Coffixi/Sprite', [
           @onTextureUpdateBind = @onTextureUpdate.bind(this)
           @texture.addEventListener "update", @onTextureUpdateBind
       @renderable = true
-      
-      # [readonly] best not to toggle directly! use setInteractive()
-      @interactive = false
-
-    # thi next bit is here for the docs...
-
-    #
-    #  * MOUSE Callbacks
-    #  
-
-    ###
-    A callback that is used when the users clicks on the sprite with thier mouse
-    @method click
-    @param interactionData {InteractionData}
-    ###
-
-    ###
-    A callback that is used when the user clicks the mouse down over the sprite
-    @method mousedown
-    @param interactionData {InteractionData}
-    ###
-
-    ###
-    A callback that is used when the user releases the mouse that was over the sprite
-    for this callback to be fired the mouse must have been pressed down over the sprite
-    @method mouseup
-    @param interactionData {InteractionData}
-    ###
-
-    ###
-    A callback that is used when the users mouse rolls over the sprite
-    @method mouseover
-    @param interactionData {InteractionData}
-    ###
-
-    ###
-    A callback that is used when the users mouse leaves the sprite
-    @method mouseout
-    @param interactionData {InteractionData}
-    ###
-
-    #
-    #  * TOUCH Callbacks
-    #  
-
-    ###
-    A callback that is used when the users taps on the sprite with thier finger
-    basically a touch version of click
-    @method tap
-    @param interactionData {InteractionData}
-    ###
-
-    ###
-    A callback that is used when the user touch's over the sprite
-    @method touchstart
-    @param interactionData {InteractionData}
-    ###
-
-    ###
-    A callback that is used when the user releases the touch that was over the sprite
-    for this callback to be fired. The touch must have started over the sprite
-    @method touchend
-    @param interactionData {InteractionData}
-    ###
 
     ###
     @method setTexture
@@ -144,19 +80,6 @@ define 'Coffixi/Sprite', [
       @width = texture.frame.width
       @height = texture.frame.height
       @updateFrame = true
-
-    ###
-    Indicates if the sprite will have touch and mouse interactivity. It is false by default
-    @method setInteractive
-    @param interactive {Boolean}
-    ###
-    setInteractive: (interactive) ->
-      @interactive = interactive
-      
-      # TODO more to be done here..
-      # need to sort out a re-crawl!
-      @stage.dirty = true  if @stage
-
 
     ###
     @private
