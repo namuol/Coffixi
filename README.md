@@ -1,5 +1,5 @@
 # Coffixi.js
-## a CoffeeScript-based, AMD-compatible, minimal subset of pixi.js
+a CoffeeScript-based, AMD-compatible, minimal subset of pixi.js
 
 ### What?
 Coffixi is a **subset** of pixi.js translated to CoffeeScript.
