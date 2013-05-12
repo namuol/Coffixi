@@ -24,7 +24,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
   @default false
   ###
   class WebGLRenderer
-    constructor: (width, height, view, transparent, @filterMode=BaseTexture.filterModes.LINEAR) ->
+    constructor: (width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = !!transparent
       @width = width or 800
       @height = height or 600
@@ -50,6 +50,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
       catch e
         throw new Error(" This browser does not support webGL. Try using the canvas renderer" + this)
       @initShaders()
+      @initFB()
       gl = @gl
       @batch = new WebGLBatch(gl)
       gl.disable gl.DEPTH_TEST
@@ -62,10 +63,24 @@ define 'Coffixi/renderers/WebGLRenderer', [
     ###
     @private
     ###
+    getGLFilterMode: (filterMode) ->
+      switch filterMode
+        when BaseTexture.filterModes.NEAREST
+          glFilterMode = @gl.NEAREST
+        when BaseTexture.filterModes.LINEAR
+          glFilterMode = @gl.LINEAR
+        else
+          console.warn 'Unexpected value for filterMode: ' + (texture.filterMode or @textureFilter) + '. Defaulting to LINEAR'
+          glFilterMode = @gl.LINEAR
+      return glFilterMode
+
+    ###
+    @private
+    ###
     initShaders: ->
       gl = @gl
-      fragmentShader = WebGLShaders.CompileFragmentShader(gl, WebGLShaders.shaderFragmentSrc)
-      vertexShader = WebGLShaders.CompileVertexShader(gl, WebGLShaders.shaderVertexSrc)
+      fragmentShader = WebGLShaders.CompileShader(gl, WebGLShaders.shaderFragmentSrc, gl.FRAGMENT_SHADER)
+      vertexShader = WebGLShaders.CompileShader(gl, WebGLShaders.shaderVertexSrc, gl.VERTEX_SHADER)
       @shaderProgram = gl.createProgram()
       shaderProgram = @shaderProgram
       gl.attachShader shaderProgram, vertexShader
@@ -86,6 +101,54 @@ define 'Coffixi/renderers/WebGLRenderer', [
 
       # LOU TODO -- pass shader program to WebGLBatch properly (that's the only thing that uses this)
       WebGLShaders.shaderProgram = @shaderProgram
+
+      screenFragmentShader = WebGLShaders.CompileShader(gl, WebGLShaders.screenShaderFragmentSrc, gl.FRAGMENT_SHADER)
+      screenVertexShader = WebGLShaders.CompileShader(gl, WebGLShaders.screenShaderVertexSrc, gl.VERTEX_SHADER)
+      @screenProgram = gl.createProgram()
+      screenProgram = @screenProgram
+      gl.attachShader screenProgram, screenVertexShader
+      gl.attachShader screenProgram, screenFragmentShader
+      gl.linkProgram screenProgram
+      if not gl.getProgramParameter(screenProgram, gl.LINK_STATUS)
+        # LOU TODO -- a more elegant failure.
+        alert "Could not initialise shaders"
+      gl.useProgram screenProgram
+      screenProgram.vertexPositionAttribute = gl.getAttribLocation(screenProgram, "aVertexPosition")
+      gl.enableVertexAttribArray screenProgram.vertexPositionAttribute
+      screenProgram.textureCoordAttribute = gl.getAttribLocation(screenProgram, "aTextureCoord")
+      gl.enableVertexAttribArray screenProgram.textureCoordAttribute
+      screenProgram.samplerUniform = gl.getUniformLocation(screenProgram, "uSampler")
+
+    ###
+    @private
+    ###
+    initFB: ->
+      gl = @gl
+      @rttFramebuffer = gl.createFramebuffer()
+      gl.bindFramebuffer gl.FRAMEBUFFER, @rttFramebuffer
+      @rttFramebuffer.width = 2048 # Minimum largest texture supported by WebGL *sadface*
+      @rttFramebuffer.height = 2048
+      @rttTexture = gl.createTexture()
+      gl.bindTexture gl.TEXTURE_2D, @rttTexture
+      glFilterMode = @getGLFilterMode @resizeFilter
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
+      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, @rttFramebuffer.width, @rttFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null
+      @renderbuffer = gl.createRenderbuffer()
+
+      # TODO: Do we need depth stuff? Probably not.
+      gl.bindRenderbuffer gl.RENDERBUFFER, @renderbuffer
+      gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, @rttFramebuffer.width, @rttFramebuffer.height
+
+      gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, @rttTexture, 0
+      gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, @renderbuffer
+      gl.bindTexture gl.TEXTURE_2D, null
+      gl.bindRenderbuffer gl.RENDERBUFFER, null
+      gl.bindFramebuffer gl.FRAMEBUFFER, null
+
+      @screenCoordBufferHandle = gl.createBuffer()
 
     ###
     @private
@@ -123,7 +186,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
     @method render
     @param stage {Stage} the Stage element to be rendered
     ###
-    render: (stage) ->
+    __render: (stage) ->
       return  if @contextLost
       
       # update children if need be
@@ -150,6 +213,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
       # update the scene graph	
       stage.updateTransform()
       gl = @gl
+      gl.useProgram @shaderProgram
+
       gl.clear gl.COLOR_BUFFER_BIT
       gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], 0
       
@@ -166,7 +231,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
         if renderable instanceof WebGLBatch
           @batchs[i].render()
         ++i
-      
+
     ###
     @private
     ###
@@ -180,14 +245,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
         gl.bindTexture gl.TEXTURE_2D, texture._glTexture
         gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true
         gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.source
-        switch @filterMode
-          when BaseTexture.filterModes.NEAREST
-            glFilterMode = gl.NEAREST
-          when BaseTexture.filterModes.LINEAR
-            glFilterMode = gl.LINEAR
-          else
-            console.warn 'Unexpected value for filterMode: ' + (texture.filterMode or @filterMode) + '. Defaulting to LINEAR'
-            glFilterMode = gl.LINEAR
+        glFilterMode = @getGLFilterMode @textureFilter
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
@@ -196,7 +254,6 @@ define 'Coffixi/renderers/WebGLRenderer', [
         #	gl.generateMipmap(gl.TEXTURE_2D);
         gl.bindTexture gl.TEXTURE_2D, null
       @refreshBatchs = true
-
 
     ###
     @private
@@ -387,18 +444,65 @@ define 'Coffixi/renderers/WebGLRenderer', [
     @method resize
     @param width {Number} the new width of the webGL view
     @param height {Number} the new height of the webGL view
+    @param scale {Number} the size of one game-pixel in device-pixels
     ###
-    resize: (width, height) ->
-      @width = width
-      @height = height
-      @view.width = width
-      @view.height = height
-      @gl.viewport 0, 0, @width, @height
+    resize: (width, height, scale) ->
+      @width = Math.round width
+      @height = Math.round height
+      @view.width = Math.round width * scale
+      @view.height = Math.round height * scale
+      gl = @gl
+      gl.viewport 0, 0, @view.width, @view.height
       projectionMatrix = @projectionMatrix
       projectionMatrix[0] = 2 / @width
       projectionMatrix[5] = -2 / @height
       projectionMatrix[12] = -1
       projectionMatrix[13] = 1
+
+      widthCoord = @width / @rttFramebuffer.width
+      heightCoord = @height / @rttFramebuffer.height
+      @screenCoordBuffer = new Float32Array [
+        -1,-1,          0, 0,
+         1,-1, widthCoord, 0,
+        -1, 1,          0, heightCoord,
+        -1, 1,          0, heightCoord,
+         1,-1, widthCoord, 0,
+         1, 1, widthCoord, heightCoord
+      ]
+
+      if (@resizeFilter != BaseTexture.filterModes.NEAREST) or scale == 1
+        @render = @__render
+      else
+        screenProgram = @screenProgram
+        gl.useProgram screenProgram
+        
+        gl.bindBuffer gl.ARRAY_BUFFER, @screenCoordBufferHandle
+        gl.bufferData gl.ARRAY_BUFFER, @screenCoordBuffer, gl.STATIC_DRAW
+
+        @render = (stage) =>
+          return  if @contextLost
+
+          gl.bindFramebuffer gl.FRAMEBUFFER, @rttFramebuffer
+          gl.viewport 0,0, @width, @height
+
+          @__render(stage)
+          gl.useProgram screenProgram
+
+          gl.bindFramebuffer gl.FRAMEBUFFER, null
+          gl.viewport 0, 0, @view.width, @view.height
+
+          gl.activeTexture gl.TEXTURE0
+          gl.bindTexture gl.TEXTURE_2D, @rttTexture
+
+          gl.bindBuffer gl.ARRAY_BUFFER, @screenCoordBufferHandle
+          gl.enableVertexAttribArray screenProgram.vertexPositionAttribute
+          gl.vertexAttribPointer screenProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 16, 0
+
+          gl.enableVertexAttribArray screenProgram.textureCoordAttribute
+          gl.vertexAttribPointer screenProgram.textureCoordAttribute, 2, gl.FLOAT, false, 16, 8
+          gl.drawArrays gl.TRIANGLES, 0, @screenCoordBuffer.length / 4
+    
+    getView: -> @view
 
     ###
     @private
@@ -415,6 +519,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
         alpha: true
       )
       @initShaders()
+      @initFB()
 
       i = 0
       while i < Texture.cache.length

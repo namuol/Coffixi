@@ -20,7 +20,7 @@ define 'Coffixi/utils/Detector', [
   @param transparent {Boolean} the transparency of the render view, default false
   @default false
   ###
-  Detector.autoDetectRenderer = (width, height, view, transparent, filterMode=BaseTexture.filterModes.LINEAR) ->
+  Detector.autoDetectRenderer = (width, height, view, transparent, textureFilter=BaseTexture.filterModes.LINEAR, resizeFilter=BaseTexture.filterModes.LINEAR) ->
     width = 800  unless width
     height = 600  unless height
     
@@ -32,9 +32,8 @@ define 'Coffixi/utils/Detector', [
         return false
     )()
     
-    # TODO SUPPORT WEBGL
     if webgl
-      return new WebGLRenderer(width, height, view, transparent, filterMode)
-    return new CanvasRenderer(width, height, view, transparent, filterMode)
+      return new WebGLRenderer(width, height, view, transparent, textureFilter, resizeFilter)
+    return new CanvasRenderer(width, height, view, transparent, textureFilter, resizeFilter)
 
   return Detector

@@ -21,7 +21,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
   @default false
   ###
   class CanvasRenderer
-    constructor: (width, height, view, transparent, @filterMode=BaseTexture.filterModes.LINEAR) ->
+    constructor: (width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = transparent 
       ###
       The width of the canvas view
@@ -65,7 +65,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
     @method render
     @param stage {Stage} the Stage element to be rendered
     ###
-    render: (stage) ->
+    __render: (stage) ->
       # update children if need be
       stage.__childrenAdded = []
       stage.__childrenRemoved = []
@@ -75,7 +75,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
       @context.setTransform 1, 0, 0, 1, 0, 0
       stage.updateTransform()
       @context.setTransform 1, 0, 0, 1, 0, 0
-      imgSmoothingEnabled = @filterMode is not BaseTexture.filterModes.NEAREST
+      imgSmoothingEnabled = @textureFilter is not BaseTexture.filterModes.NEAREST
       @context.imageSmoothingEnabled = imgSmoothingEnabled
       @context.webkitImageSmoothingEnabled = imgSmoothingEnabled
       @context.mozImageSmoothingEnabled = imgSmoothingEnabled
@@ -89,14 +89,52 @@ define 'Coffixi/renderers/CanvasRenderer', [
 
     ###
     resizes the canvas view to the specified width and height
-    @param the new width of the canvas view
-    @param the new height of the canvas view
+    @param width {Number} the new width of the canvas view
+    @param height {Number] the new height of the canvas view
+    @param scale {Number} the size of one game-pixel in device-pixels
     ###
-    resize: (width, height) ->
+    resize: (width, height, scale) ->
+      width = Math.round width
+      height = Math.round height
       @width = width
       @height = height
       @view.width = width
       @view.height = height
+
+      imageSmoothingEnabled = (@resizeFilter != BaseTexture.filterModes.NEAREST)
+
+      if imageSmoothingEnabled or scale == 1
+        @_view = @view
+        if imageSmoothingEnabled
+          @_view.style.width = '100%'
+        @render = @__render
+      else
+        if !@_view? or (@_view is @view)
+          @_view = document.createElement 'canvas'
+        @_view.width = Math.round @width * scale
+        @_view.height = Math.round @height * scale
+        _context = @_view.getContext '2d'
+        _context.imageSmoothingEnabled = imageSmoothingEnabled
+        _context.webkitImageSmoothingEnabled = imageSmoothingEnabled
+        _context.mozImageSmoothingEnabled = imageSmoothingEnabled
+        _context.oImageSmoothingEnabled = imageSmoothingEnabled
+        w = @width
+        h = @height
+        s = scale
+        ws = Math.round w*s
+        hs = Math.round h*s
+        @render = (stage) =>
+          @__render(stage)
+          if @_view.style.backgroundColor isnt stage.backgroundColorString and not @transparent
+            @_view.style.backgroundColor = stage.backgroundColorString
+          _context.clearRect 0,0, ws, hs
+          _context.drawImage @view,
+            0,0,
+            w, h,
+            0,0,
+            ws, hs
+    
+    getView: -> @_view
 
     ###
     @private

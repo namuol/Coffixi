@@ -5,17 +5,6 @@
 define 'Coffixi/renderers/WebGLShaders', ->
   WebGLShaders = {}
 
-  WebGLShaders.shaderFragmentSrc = [
-    "precision mediump float;"
-    "varying vec2 vTextureCoord;"
-    "varying float vColor;"
-    "uniform sampler2D uSampler;"
-    "void main(void) {"
-      "gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.x, vTextureCoord.y));"
-      "gl_FragColor = gl_FragColor * vColor;"
-    "}"
-  ]
-
   WebGLShaders.shaderVertexSrc = [
     "attribute vec2 aVertexPosition;"
     "attribute vec2 aTextureCoord;"
@@ -30,7 +19,38 @@ define 'Coffixi/renderers/WebGLShaders', ->
     "}"
   ]
 
-  WebGLShaders.CompileVertexShader = (gl, shaderSrc) ->
+  WebGLShaders.shaderFragmentSrc = [
+    "precision mediump float;"
+    "varying vec2 vTextureCoord;"
+    "varying float vColor;"
+    "uniform sampler2D uSampler;"
+    "void main(void) {"
+      "gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.x, vTextureCoord.y));"
+      "gl_FragColor = gl_FragColor * vColor;"
+    "}"
+  ]
+
+  # SCREEN SHADER (for upscaling a fixed-size screen)
+  WebGLShaders.screenShaderVertexSrc = [
+    "attribute vec2 aVertexPosition;"
+    "attribute vec2 aTextureCoord;"
+    "varying vec2 vTextureCoord;"
+    "void main(void) {"
+      "gl_Position = vec4(aVertexPosition, 0.0, 1.0);"
+      "vTextureCoord = aTextureCoord;"
+    "}"
+  ]
+
+  WebGLShaders.screenShaderFragmentSrc = [
+    "precision mediump float;"
+    "varying vec2 vTextureCoord;"
+    "uniform sampler2D uSampler;"
+    "void main(void) {"
+      "gl_FragColor = texture2D(uSampler, vTextureCoord);"
+    "}"
+  ]
+
+  WebGLShaders.CompileShader = (gl, shaderSrc, shaderType) ->
     src = ""
 
     i = 0
@@ -38,23 +58,7 @@ define 'Coffixi/renderers/WebGLShaders', ->
       src += shaderSrc[i]
       i++
     shader = undefined
-    shader = gl.createShader(gl.VERTEX_SHADER)
-    gl.shaderSource shader, src
-    gl.compileShader shader
-    unless gl.getShaderParameter(shader, gl.COMPILE_STATUS)
-      alert gl.getShaderInfoLog(shader)
-      return null
-    shader
-
-  WebGLShaders.CompileFragmentShader = (gl, shaderSrc) ->
-    src = ""
-
-    i = 0
-    while i < shaderSrc.length
-      src += shaderSrc[i]
-      i++
-    shader = undefined
-    shader = gl.createShader(gl.FRAGMENT_SHADER)
+    shader = gl.createShader(shaderType)
     gl.shaderSource shader, src
     gl.compileShader shader
     unless gl.getShaderParameter(shader, gl.COMPILE_STATUS)
