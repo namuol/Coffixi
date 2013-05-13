@@ -57,7 +57,6 @@ define 'Coffixi/renderers/WebGLRenderer', [
       gl.enable gl.BLEND
       gl.colorMask true, true, true, @transparent
       @projectionMatrix = Matrix.mat4.create()
-      @resize @width, @height
       @contextLost = false
 
     ###
@@ -136,14 +135,14 @@ define 'Coffixi/renderers/WebGLRenderer', [
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
       gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, @rttFramebuffer.width, @rttFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null
-      @renderbuffer = gl.createRenderbuffer()
+      renderbuffer = gl.createRenderbuffer()
 
       # TODO: Do we need depth stuff? Probably not.
-      gl.bindRenderbuffer gl.RENDERBUFFER, @renderbuffer
+      gl.bindRenderbuffer gl.RENDERBUFFER, renderbuffer
       gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, @rttFramebuffer.width, @rttFramebuffer.height
 
       gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, @rttTexture, 0
-      gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, @renderbuffer
+      gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer
       gl.bindTexture gl.TEXTURE_2D, null
       gl.bindRenderbuffer gl.RENDERBUFFER, null
       gl.bindFramebuffer gl.FRAMEBUFFER, null
@@ -219,7 +218,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
       gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], 0
       
       # set the correct blend mode!
-      gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+      gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
       gl.uniformMatrix4fv @shaderProgram.mvMatrixUniform, false, @projectionMatrix
       
       # render all the batchs!	
@@ -459,20 +458,19 @@ define 'Coffixi/renderers/WebGLRenderer', [
       projectionMatrix[12] = -1
       projectionMatrix[13] = 1
 
-      widthCoord = @width / @rttFramebuffer.width
-      heightCoord = @height / @rttFramebuffer.height
-      @screenCoordBuffer = new Float32Array [
-        -1,-1,          0, 0,
-         1,-1, widthCoord, 0,
-        -1, 1,          0, heightCoord,
-        -1, 1,          0, heightCoord,
-         1,-1, widthCoord, 0,
-         1, 1, widthCoord, heightCoord
-      ]
-
       if (@resizeFilter != BaseTexture.filterModes.NEAREST) or scale == 1
         @render = @__render
       else
+        widthCoord = @width / @rttFramebuffer.width
+        heightCoord = @height / @rttFramebuffer.height
+        @screenCoordBuffer = new Float32Array [
+          -1,-1,          0, 0,
+           1,-1, widthCoord, 0,
+          -1, 1,          0, heightCoord,
+          -1, 1,          0, heightCoord,
+           1,-1, widthCoord, 0,
+           1, 1, widthCoord, heightCoord
+        ]
         screenProgram = @screenProgram
         gl.useProgram screenProgram
         
