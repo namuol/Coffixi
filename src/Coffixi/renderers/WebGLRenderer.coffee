@@ -24,22 +24,14 @@ define 'Coffixi/renderers/WebGLRenderer', [
   @default false
   ###
   class WebGLRenderer
-    constructor: (width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
+    constructor: (width, height, scale, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = !!transparent
       @width = width or 800
       @height = height or 600
+      @scale = scale or 1
+
       @view = view or document.createElement("canvas")
-      @view.width = @width
-      @view.height = @height
-      
-      # deal with losing context..	
-      scope = this
-      @view.addEventListener "webglcontextlost", ((event) ->
-        scope.handleContextLost event
-      ), false
-      @view.addEventListener "webglcontextrestored", ((event) ->
-        scope.handleContextRestored event
-      ), false
+
       @batchs = []
       try
         @gl = @view.getContext("experimental-webgl",
@@ -49,14 +41,27 @@ define 'Coffixi/renderers/WebGLRenderer', [
         )
       catch e
         throw new Error(" This browser does not support webGL. Try using the canvas renderer" + this)
+
       @initShaders()
-      @initFB()
+      if (@resizeFilter == BaseTexture.filterModes.NEAREST) or scale != 1
+        @initFB()
+        
+      @projectionMatrix = Matrix.mat4.create()
+      
+      # deal with losing context..  
+      scope = this
+      @view.addEventListener "webglcontextlost", ((event) ->
+        scope.handleContextLost event
+      ), false
+      @view.addEventListener "webglcontextrestored", ((event) ->
+        scope.handleContextRestored event
+      ), false
       gl = @gl
       @batch = new WebGLBatch(gl)
       gl.disable gl.DEPTH_TEST
       gl.enable gl.BLEND
       gl.colorMask true, true, true, @transparent
-      @projectionMatrix = Matrix.mat4.create()
+
       @contextLost = false
 
     ###
@@ -125,8 +130,14 @@ define 'Coffixi/renderers/WebGLRenderer', [
       gl = @gl
       @rttFramebuffer = gl.createFramebuffer()
       gl.bindFramebuffer gl.FRAMEBUFFER, @rttFramebuffer
-      @rttFramebuffer.width = 2048 # Minimum largest texture supported by WebGL *sadface*
-      @rttFramebuffer.height = 2048
+      fbWidth = 1
+      fbHeight = 1
+      while (fbWidth < 2048) and (fbWidth < @width)
+        fbWidth *= 2
+      while (fbHeight < 2048) and (fbHeight < @height)
+        fbHeight *= 2
+      @rttFramebuffer.width = fbWidth
+      @rttFramebuffer.height = fbHeight
       @rttTexture = gl.createTexture()
       gl.bindTexture gl.TEXTURE_2D, @rttTexture
       glFilterMode = @getGLFilterMode @resizeFilter
@@ -461,6 +472,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
       if (@resizeFilter != BaseTexture.filterModes.NEAREST) or scale == 1
         @render = @__render
       else
+        @initFB()
+
         widthCoord = @width / @rttFramebuffer.width
         heightCoord = @height / @rttFramebuffer.height
         @screenCoordBuffer = new Float32Array [
@@ -471,6 +484,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
            1,-1, widthCoord, 0,
            1, 1, widthCoord, heightCoord
         ]
+
         screenProgram = @screenProgram
         gl.useProgram screenProgram
         
@@ -517,7 +531,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
         alpha: true
       )
       @initShaders()
-      @initFB()
+      @resize @width, @height, @scale
 
       i = 0
       while i < Texture.cache.length

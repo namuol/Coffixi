@@ -21,7 +21,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
   @default false
   ###
   class CanvasRenderer
-    constructor: (width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
+    constructor: (width, height, scale, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = transparent 
       ###
       The width of the canvas view
@@ -39,6 +39,8 @@ define 'Coffixi/renderers/CanvasRenderer', [
       ###
       @height = height or 600
       @refresh = true
+      
+      @scale = scale or 1
       
       ###
       The canvas element that the everything is drawn to

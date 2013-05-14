@@ -407,7 +407,7 @@ define 'Coffixi/renderers/WebGLBatch', [
       if @blendMode is Sprite.blendModes.NORMAL
         gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
       else
-        gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_COLOR
+        gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_COLOR
       shaderProgram = WebGLShaders.shaderProgram
       
       # update the verts..
