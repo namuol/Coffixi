@@ -43,6 +43,15 @@ define 'Coffixi/Sprite', [
       ###
       @blendMode = Sprite.blendModes.NORMAL
       
+      if @texture?    
+        if texture.baseTexture.hasLoaded
+          @width ?= @texture.frame.width
+          @height ?= @texture.frame.height
+          @updateFrame = true
+        else
+          @onTextureUpdateBind = @onTextureUpdate.bind(this)
+          @texture.addEventListener "update", @onTextureUpdateBind
+      
       ###
       The width of the sprite (this is initially set by the texture)
       @property width
@@ -56,15 +65,7 @@ define 'Coffixi/Sprite', [
       @type #Number
       ###
       @height ?= 1
-      
-      if @texture?    
-        if texture.baseTexture.hasLoaded
-          @width = @texture.frame.width
-          @height = @texture.frame.height
-          @updateFrame = true
-        else
-          @onTextureUpdateBind = @onTextureUpdate.bind(this)
-          @texture.addEventListener "update", @onTextureUpdateBind
+
       @renderable = true
 
     ###

@@ -303,7 +303,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
         break  if previousSprite is displayObject.stage
         break unless not previousSprite.renderable or not previousSprite.__inWebGL
       
-      #while(!(previousSprite instanceof Sprite))
+      #while(!(previousSprite.texture?))
       
       #
       #	 *  LOOK FOR THE NEXT SPRITE
@@ -336,10 +336,10 @@ define 'Coffixi/renderers/WebGLRenderer', [
       #	 * so now we have the next renderable and the previous renderable
       #	 * 
       #	 
-      if displayObject instanceof Sprite
+      if displayObject.texture?
         previousBatch = undefined
         nextBatch = undefined
-        if previousSprite instanceof Sprite
+        if previousSprite.texture?
           previousBatch = previousSprite.batch
           if previousBatch
             if previousBatch.texture is displayObject.texture.baseTexture and previousBatch.blendMode is displayObject.blendMode
@@ -350,7 +350,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
           # TODO reword!
           previousBatch = previousSprite
         if nextSprite
-          if nextSprite instanceof Sprite
+          if nextSprite.texture?
             nextBatch = nextSprite.batch
             
             #batch may not exist if item was added to the display list but not to the webGL
@@ -412,7 +412,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
       #	 * 
       #	 
       batchToRemove = undefined
-      if displayObject instanceof Sprite
+      if displayObject.texture?
         
         # should always have a batch!
         batch = displayObject.batch

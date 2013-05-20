@@ -46,7 +46,7 @@ define 'Coffixi/Rectangle', ->
     @method clone
     @return a copy of the rectangle
     ###
-    @clone: ->
+    clone: ->
       new Rectangle(@x, @y, @width, @height)
 
   return Rectangle

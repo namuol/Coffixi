@@ -142,12 +142,13 @@ define 'Coffixi/renderers/CanvasRenderer', [
     @private
     ###
     renderDisplayObject: (displayObject) ->
+      return  if not displayObject.visible
+
       transform = displayObject.worldTransform
       context = @context
       context.globalCompositeOperation = "source-over"
-      return if not displayObject.visible
 
-      if displayObject instanceof Sprite
+      if displayObject.texture?
         frame = displayObject.texture.frame
         if frame
           context.globalAlpha = displayObject.worldAlpha
