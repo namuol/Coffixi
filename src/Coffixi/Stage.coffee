@@ -52,7 +52,6 @@ define 'Coffixi/Stage', [
       @backgroundColorSplit = Utils.HEXtoRGB(@backgroundColor)
       @backgroundColorString = "#" + @backgroundColor.toString(16)
 
-    # LOU TODO: Remove this along with Interactive stuff. It looks like this is only used there.
     __addChild: (child) ->
       child.stage = this
       if child.children

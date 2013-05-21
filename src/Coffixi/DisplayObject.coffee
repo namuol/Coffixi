@@ -5,14 +5,19 @@
 define 'Coffixi/DisplayObject', [
   './Point'
   './utils/Matrix'
-], (Point, Matrix)->
+  './utils/Module'
+], (
+  Point
+  Matrix
+  Module  
+)->
 
   ###
   this is the base class for all objects that are rendered on the screen.
   @class DisplayObject
   @constructor
   ###
-  class DisplayObject
+  class DisplayObject extends Module
     constructor: ->
       ###
       The coordinate of the object relative to the local coordinates of the parent.
