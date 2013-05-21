@@ -3,8 +3,12 @@ https://github.com/mrdoob/eventtarget.js/
 THankS mr DOob!
 ###
 
-define 'Coffixi/utils/EventTarget', ->  
-  class EventTarget
+define 'Coffixi/utils/EventTarget', [
+  'Coffixi/utils/Module'
+], (
+  Module
+) ->
+  class EventTarget extends Module
     constructor: ->
       listeners = {}
       @addEventListener = @on = (type, listener) ->

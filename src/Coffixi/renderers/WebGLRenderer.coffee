@@ -8,7 +8,16 @@ define 'Coffixi/renderers/WebGLRenderer', [
   '../Sprite'
   '../textures/BaseTexture'
   '../textures/Texture'
-], (WebGLBatch, WebGLShaders, Matrix, Sprite, BaseTexture, Texture) ->
+  '../utils/Module'
+], (
+  WebGLBatch
+  WebGLShaders
+  Matrix
+  Sprite
+  BaseTexture
+  Texture
+  Module
+) ->
   ###
   the WebGLRenderer is draws the stage and all its content onto a webGL enabled canvas. This renderer should be used for browsers support webGL. This Render works by automatically managing webGLBatchs. So no need for Sprite Batch's or Sprite Cloud's
   Dont forget to add the view to your DOM or you will not see anything :)
@@ -23,7 +32,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
   @param filterMode {uint} BaseTexture.
   @default false
   ###
-  class WebGLRenderer
+  class WebGLRenderer extends Module
     constructor: (width, height, scale, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = !!transparent
       @width = width or 800

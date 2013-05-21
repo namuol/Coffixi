@@ -6,7 +6,11 @@ define 'Coffixi/utils/Detector', [
   '../renderers/WebGLRenderer'
   '../renderers/CanvasRenderer'
   '../textures/BaseTexture'
-], (WebGLRenderer, CanvasRenderer, BaseTexture) ->
+], (
+  WebGLRenderer
+  CanvasRenderer
+  BaseTexture
+) ->
   Detector = {}
   
   ###

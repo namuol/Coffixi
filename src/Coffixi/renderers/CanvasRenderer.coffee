@@ -5,7 +5,12 @@
 define 'Coffixi/renderers/CanvasRenderer', [
   '../Sprite'
   '../textures/BaseTexture'
-], (Sprite, BaseTexture) ->
+  '../utils/Module'
+], (
+  Sprite
+  BaseTexture
+  Module
+) ->
 
   ###
   the CanvasRenderer draws the stage and all its content onto a 2d canvas. This renderer should be used for browsers that do not support webGL.
@@ -20,7 +25,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
   @param transparent {Boolean} the transparency of the render view, default false
   @default false
   ###
-  class CanvasRenderer
+  class CanvasRenderer extends Module
     constructor: (width, height, scale, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = transparent 
       ###

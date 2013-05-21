@@ -4,7 +4,12 @@
 define 'Coffixi/renderers/WebGLBatch', [
   '../Sprite'
   './WebGLShaders'
-], (Sprite, WebGLShaders) ->
+  '../utils/Module'
+], (
+  Sprite
+  WebGLShaders
+  Module
+) ->
   ###
   A WebGLBatch Enables a group of sprites to be drawn using the same settings.
   if a group of sprites all have the same baseTexture and blendMode then they can be grouped into a batch. All the sprites in a batch can then be drawn in one go by the GPU which is hugely efficient. ALL sprites in the webGL renderer are added to a batch even if the batch only contains one sprite. Batching is handled automatically by the webGL renderer. A good tip is: the smaller the number of batchs there are, the faster the webGL renderer will run.
@@ -12,7 +17,7 @@ define 'Coffixi/renderers/WebGLBatch', [
   @param an instance of the webGL context
   @return {WebGLBatch} WebGLBatch {@link WebGLBatch}
   ###
-  class WebGLBatch
+  class WebGLBatch extends Module
     @_batchs: []
 
     ###
