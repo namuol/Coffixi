@@ -42,6 +42,7 @@ define 'Coffixi/Stage', [
 
       if @dirty
         @dirty = false
+      return
 
     ###
     @method setBackgroundColor
@@ -60,6 +61,7 @@ define 'Coffixi/Stage', [
         while i < child.children.length
           @__addChild child.children[i]
           i++
+      return
 
     __removeChild: (child) ->
       @__childrenRemoved.push child
@@ -71,5 +73,6 @@ define 'Coffixi/Stage', [
         while i < j
           @__removeChild child.children[i]
           i++
+      return
 
   return Stage

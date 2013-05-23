@@ -34,15 +34,15 @@ define 'Coffixi/renderers/WebGLBatch', [
     ###
     @_returnBatch: (batch) ->
       batch.clean()
-      WebGLBatch._batchs.push batch
+      @_batchs.push batch
 
     ###
     @private
     ###
     @_restoreBatchs: (gl) ->
       i = 0
-      while i < WebGLBatch._batchs.length
-        WebGLBatch._batchs[i].restoreLostContext gl
+      while i < @_batchs.length
+        @_batchs[i].restoreLostContext gl
         i++
 
     constructor: (gl) ->
@@ -229,6 +229,7 @@ define 'Coffixi/renderers/WebGLBatch', [
         sprite.batch = this
         sprite = sprite.__next
 
+      return
 
     ###
     Grows the size of the batch. As the elements in the batch cannot have a dynamic size this function is used to increase the size of the batch. It also creates a little extra room so that the batch does not need to be resized every time a sprite is added
@@ -394,7 +395,8 @@ define 'Coffixi/renderers/WebGLBatch', [
           @dirtyColors = true
         indexRun++
         displayObject = displayObject.__next
-
+      
+      return
 
     ###
     Draws the batch to the frame buffer

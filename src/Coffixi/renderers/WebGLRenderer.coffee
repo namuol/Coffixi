@@ -199,6 +199,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
         @checkVisibility child, actualVisibility  if child.children.length > 0
         i++
 
+      return
+
 
     ###
     Renders the stage to its webGL view
@@ -257,6 +259,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
         if renderable instanceof WebGLBatch
           @batchs[i].render()
         ++i
+      
+      return
 
     ###
     @private
