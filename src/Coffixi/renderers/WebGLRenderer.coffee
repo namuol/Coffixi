@@ -207,7 +207,14 @@ define 'Coffixi/renderers/WebGLRenderer', [
     ###
     __render: (stage) ->
       return  if @contextLost
-      
+
+      # clear objects left behind by the previous stage
+      if not @__stage?
+        @__stage = stage
+      else if @__stage isnt stage
+        @checkVisibility @__stage, false
+        @__stage = stage
+
       # update children if need be
       # best to remove first!
       i = 0
@@ -397,8 +404,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
         #		 
         batch = WebGLBatch._getBatch(@gl)
         batch.init displayObject
-        if previousBatch # if this is invalid it means
-          index = @batchs.indexOf(previousBatch)
+        if previousBatch and ((index = @batchs.indexOf(previousBatch)) >= 0)
           @batchs.splice index + 1, 0, batch
         else
           @batchs.push batch
