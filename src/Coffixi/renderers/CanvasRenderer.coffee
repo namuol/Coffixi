@@ -153,7 +153,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
       context = @context
       context.globalCompositeOperation = "source-over"
 
-      if displayObject.texture?
+      if displayObject instanceof Sprite
         frame = displayObject.texture.frame
         if frame
           context.globalAlpha = displayObject.worldAlpha

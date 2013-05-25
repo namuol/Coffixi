@@ -319,11 +319,12 @@ define 'Coffixi/renderers/WebGLRenderer', [
           # what if the bloop has children???
           
           # keep diggin till we get to the last child
-          previousSprite = previousSprite.children[previousSprite.children.length - 1]  until previousSprite.children.length is 0
+          until previousSprite.children.length is 0
+            previousSprite = previousSprite.children[previousSprite.children.length - 1]
         break  if previousSprite is displayObject.stage
         break unless not previousSprite.renderable or not previousSprite.__inWebGL
       
-      #while(!(previousSprite.texture?))
+      #while(!(previousSprite instanceof Sprite))
       
       #
       #	 *  LOOK FOR THE NEXT SPRITE
@@ -356,21 +357,25 @@ define 'Coffixi/renderers/WebGLRenderer', [
       #	 * so now we have the next renderable and the previous renderable
       #	 * 
       #	 
-      if displayObject.texture?
+      if displayObject instanceof Sprite
         previousBatch = undefined
         nextBatch = undefined
-        if previousSprite.texture?
+        
+        if previousSprite instanceof Sprite
           previousBatch = previousSprite.batch
           if previousBatch
             if previousBatch.texture is displayObject.texture.baseTexture and previousBatch.blendMode is displayObject.blendMode
               previousBatch.insertAfter displayObject, previousSprite
               return
         else
-          
           # TODO reword!
           previousBatch = previousSprite
+
         if nextSprite
-          if nextSprite.texture?
+          if not (nextSprite instanceof Sprite)
+            # TODO re-word!
+            nextBatch = nextSprite
+          else
             nextBatch = nextSprite.batch
             
             #batch may not exist if item was added to the display list but not to the webGL
@@ -385,22 +390,17 @@ define 'Coffixi/renderers/WebGLRenderer', [
                   splitBatch = previousBatch.split(nextSprite)
                   
                   # COOL!
-                  # add it back into the array	
+                  # add it back into the array  
                   #
-                  #							 * OOPS!
-                  #							 * seems the new sprite is in the middle of a batch
-                  #							 * lets split it.. 
-                  #							 
+                  #              * OOPS!
+                  #              * seems the new sprite is in the middle of a batch
+                  #              * lets split it.. 
+                  #              
                   batch = WebGLBatch._getBatch(@gl)
                   index = @batchs.indexOf(previousBatch)
                   batch.init displayObject
                   @batchs.splice index + 1, 0, batch, splitBatch
                   return
-          else
-            
-            # TODO re-word!
-            nextBatch = nextSprite
-        
         #
         #		 * looks like it does not belong to any batch!
         #		 * but is also not intersecting one..
@@ -408,7 +408,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
         #		 
         batch = WebGLBatch._getBatch(@gl)
         batch.init displayObject
-        if previousBatch and ((index = @batchs.indexOf(previousBatch)) >= 0)
+        if previousBatch
+          index = @batchs.indexOf(previousBatch)
           @batchs.splice index + 1, 0, batch
         else
           @batchs.push batch
@@ -431,7 +432,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
       #	 * 
       #	 
       batchToRemove = undefined
-      if displayObject.texture?
+      if displayObject instanceof Sprite
         
         # should always have a batch!
         batch = displayObject.batch
