@@ -28,7 +28,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
   @default false
   ###
   class WebGLRenderer extends GLESRenderer
-    constructor: (width, height, scale, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
+    constructor: (width, height, scale, view, transparent, textureFilter=BaseTexture.filterModes.LINEAR, resizeFilter=BaseTexture.filterModes.LINEAR) ->
 
       @view = view or document.createElement("canvas")
 
@@ -51,7 +51,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
 
       GLESRenderer.setBatchClass WebGLBatch
 
-      super webGL, width, height, scale, transparent, @textureFilter, @resizeFilter
+      super webGL, width, height, scale, transparent, textureFilter, resizeFilter
 
     ###
     @private
