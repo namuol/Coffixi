@@ -516,7 +516,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
 
           gl.bindFramebuffer gl.FRAMEBUFFER, @rttFramebuffer
           gl.viewport 0,0, @width, @height
-
+          
+          gl.enable gl.BLEND
           @__render(stage)
           gl.useProgram screenProgram
 
@@ -532,6 +533,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
 
           gl.enableVertexAttribArray screenProgram.textureCoordAttribute
           gl.vertexAttribPointer screenProgram.textureCoordAttribute, 2, gl.FLOAT, false, 16, 8
+
+          gl.disable gl.BLEND
           gl.drawArrays gl.TRIANGLES, 0, @screenCoordBuffer.length / 4
     
     getView: -> @view
