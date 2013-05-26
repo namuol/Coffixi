@@ -55,6 +55,20 @@ define 'Coffixi/renderers/GLESRenderer', [
     ###
     @private
     ###
+    getGLFilterMode: (filterMode) ->
+      switch filterMode
+        when BaseTexture.filterModes.NEAREST
+          glFilterMode = @gl.NEAREST
+        when BaseTexture.filterModes.LINEAR
+          glFilterMode = @gl.LINEAR
+        else
+          console.warn 'Unexpected value for filterMode: ' + filterMode + '. Defaulting to LINEAR'
+          glFilterMode = @gl.LINEAR
+      return glFilterMode
+
+    ###
+    @private
+    ###
     initShaders: ->
       gl = @gl
       fragmentShader = GLESShaders.CompileShader(gl, GLESShaders.shaderFragmentSrc, gl.FRAGMENT_SHADER)
@@ -97,20 +111,6 @@ define 'Coffixi/renderers/GLESRenderer', [
       screenProgram.textureCoordAttribute = gl.getAttribLocation(screenProgram.handle, "aTextureCoord")
       gl.enableVertexAttribArray screenProgram.textureCoordAttribute
       screenProgram.samplerUniform = gl.getUniformLocation(screenProgram.handle, "uSampler")
-
-    ###
-    @private
-    ###
-    getGLFilterMode: (filterMode) ->
-      switch filterMode
-        when BaseTexture.filterModes.NEAREST
-          glFilterMode = @gl.NEAREST
-        when BaseTexture.filterModes.LINEAR
-          glFilterMode = @gl.LINEAR
-        else
-          console.warn 'Unexpected value for filterMode: ' + filterMode + '. Defaulting to LINEAR'
-          glFilterMode = @gl.LINEAR
-      return glFilterMode
 
     ###
     @private
@@ -225,11 +225,11 @@ define 'Coffixi/renderers/GLESRenderer', [
       gl = @gl
       gl.useProgram @shaderProgram.handle
 
-      gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], 0
       gl.clear gl.COLOR_BUFFER_BIT
+      gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], 0
 
       # set the correct blend mode!
-      #gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+      gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
       gl.uniformMatrix4fv @mvMatrixUniform, false, @projectionMatrix
       
       # render all the batchs!
@@ -278,10 +278,10 @@ define 'Coffixi/renderers/GLESRenderer', [
           # what if the bloop has children???
           
           # keep diggin till we get to the last child
-        until previousSprite.children.length is 0
-          previousSprite = previousSprite.children[previousSprite.children.length - 1]
+          until previousSprite.children.length is 0
+            previousSprite = previousSprite.children[previousSprite.children.length - 1]
         break  if previousSprite is displayObject.stage
-        break unless not previousSprite.renderable or not previousSprite.__inGLES
+        break  unless not previousSprite.renderable or not previousSprite.__inGLES
       
       #while(!(previousSprite instanceof Sprite))
       
@@ -310,7 +310,7 @@ define 'Coffixi/renderers/GLESRenderer', [
         else
           nextSprite = nextSprite.children[0]
         break  unless nextSprite
-        break unless not nextSprite.renderable or not nextSprite.__inGLES
+        break  unless not nextSprite.renderable or not nextSprite.__inGLES
       
       #
       #	 * so now we have the next renderable and the previous renderable
@@ -331,10 +331,10 @@ define 'Coffixi/renderers/GLESRenderer', [
           previousBatch = previousSprite
 
         if nextSprite
-          if not nextSprite instanceof Sprite
+          if not (nextSprite instanceof Sprite)
             # TODO re-word!
             nextBatch = nextSprite
-          else            
+          else
             nextBatch = nextSprite.batch
             
             #batch may not exist if item was added to the display list but not to the GLES
