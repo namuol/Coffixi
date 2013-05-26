@@ -3,11 +3,11 @@
 ###
 define 'Coffixi/renderers/WebGLBatch', [
   '../Sprite'
-  './WebGLShaders'
+  './GLESShaders'
   '../utils/Module'
 ], (
   Sprite
-  WebGLShaders
+  GLESShaders
   Module
 ) ->
   ###
@@ -415,7 +415,7 @@ define 'Coffixi/renderers/WebGLBatch', [
         gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
       else
         gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_COLOR
-      shaderProgram = WebGLShaders.shaderProgram
+      shaderProgram = GLESShaders.shaderProgram
       
       # update the verts..
       gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
