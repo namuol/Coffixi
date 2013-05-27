@@ -47,17 +47,17 @@ define 'Coffixi/textures/Texture', [
         @setFrame frame
       else
         scope = this
-        baseTexture.addEventListener "loaded", ->
+        baseTexture.on "loaded", ->
           scope.onBaseTextureLoaded()
 
     onBaseTextureLoaded: (event) ->
       baseTexture = @baseTexture
-      baseTexture.removeEventListener "loaded", @onLoaded
+      baseTexture.off "loaded", @onLoaded
       @frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
       @noFrame = false
       @width = @frame.width
       @height = @frame.height
-      @scope.dispatchEvent
+      @scope.emit
         type: "update"
         content: this
 

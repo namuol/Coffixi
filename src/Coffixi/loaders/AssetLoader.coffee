@@ -69,7 +69,7 @@ define 'Coffixi/loaders/AssetLoader', [
           texture = Texture.fromImage(filename, @crossorigin)
           unless texture.baseTexture.hasLoaded
             scope = this
-            texture.baseTexture.addEventListener "loaded", (event) ->
+            texture.baseTexture.on "loaded", (event) ->
               scope.onAssetLoaded()
 
             @assets.push texture
@@ -79,7 +79,7 @@ define 'Coffixi/loaders/AssetLoader', [
             
             # if this hits zero here.. then everything was cached!
             if @loadCount is 0
-              @dispatchEvent
+              @emit
                 type: "onComplete"
                 content: this
 
@@ -89,7 +89,7 @@ define 'Coffixi/loaders/AssetLoader', [
           spriteSheetLoader.crossorigin = @crossorigin
           @assets.push spriteSheetLoader
           scope = this
-          spriteSheetLoader.addEventListener "loaded", (event) ->
+          spriteSheetLoader.on "loaded", (event) ->
             scope.onAssetLoaded()
 
           spriteSheetLoader.load()
@@ -102,13 +102,13 @@ define 'Coffixi/loaders/AssetLoader', [
 
     onAssetLoaded: ->
       @loadCount--
-      @dispatchEvent
+      @emit
         type: "onProgress"
         content: this
 
       @onProgress() if @onProgress
       if @loadCount is 0
-        @dispatchEvent
+        @emit
           type: "onComplete"
           content: this
 

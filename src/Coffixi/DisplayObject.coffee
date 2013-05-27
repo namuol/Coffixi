@@ -24,6 +24,7 @@ define 'Coffixi/DisplayObject', [
       @property position
       @type Point
       ###
+      # LOU TODO: Have simple @x and @y properties.
       @position = new Point()
       
       ###
@@ -31,6 +32,7 @@ define 'Coffixi/DisplayObject', [
       @property scale
       @type Point
       ###
+      # LOU TODO: Have simple @scaleX and @scaleY properties.
       @scale = new Point(1, 1) #{x:1, y:1};
       
       ###

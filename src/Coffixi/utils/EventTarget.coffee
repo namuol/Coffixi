@@ -11,15 +11,15 @@ define 'Coffixi/utils/EventTarget', [
   class EventTarget extends Module
     constructor: ->
       listeners = {}
-      @addEventListener = @on = (type, listener) ->
+      @on = (type, listener) ->
         listeners[type] = []  if listeners[type] is `undefined`
         listeners[type].push listener  if listeners[type].indexOf(listener) is -1
 
-      @dispatchEvent = @emit = (event) ->
+      @emit = (event) ->
         for listener of listeners[event.type]
           listeners[event.type][listener] event
 
-      @removeEventListener = @off = (type, listener) ->
+      @off = (type, listener) ->
         index = listeners[type].indexOf(listener)
         listeners[type].splice index, 1  if index isnt -1
 

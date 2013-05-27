@@ -50,7 +50,7 @@ define 'Coffixi/Sprite', [
           @updateFrame = true
         else
           @onTextureUpdateBind = @onTextureUpdate.bind(this)
-          @texture.addEventListener "update", @onTextureUpdateBind
+          @texture.on "update", @onTextureUpdateBind
       
       ###
       The width of the sprite (this is initially set by the texture)
