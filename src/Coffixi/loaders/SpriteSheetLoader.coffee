@@ -73,15 +73,15 @@ define 'Coffixi/SpriteSheetLoader', [
           # calculate the offset!
           
           if @texture.hasLoaded
-            @dispatchEvent
+            @emit
               type: "loaded"
               content: this
           else
             scope = this
             
             # wait for the texture to load..
-            @texture.addEventListener "loaded", ->
-              scope.dispatchEvent
+            @texture.on "loaded", ->
+              scope.emit
                 type: "loaded"
                 content: scope
 

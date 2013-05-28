@@ -2,10 +2,10 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/renderers/WebGLShaders', ->
-  WebGLShaders = {}
+define 'Coffixi/renderers/GLESShaders', ->
+  GLESShaders = {}
 
-  WebGLShaders.shaderVertexSrc = [
+  GLESShaders.shaderVertexSrc = [
     "attribute vec2 aVertexPosition;"
     "attribute vec2 aTextureCoord;"
     "attribute float aColor;"
@@ -19,8 +19,10 @@ define 'Coffixi/renderers/WebGLShaders', ->
     "}"
   ]
 
-  WebGLShaders.shaderFragmentSrc = [
+  GLESShaders.shaderFragmentSrc = [
+    "#ifdef GL_ES"
     "precision mediump float;"
+    "#endif"
     "varying vec2 vTextureCoord;"
     "varying float vColor;"
     "uniform sampler2D uSampler;"
@@ -31,7 +33,7 @@ define 'Coffixi/renderers/WebGLShaders', ->
   ]
 
   # SCREEN SHADER (for upscaling a fixed-size screen)
-  WebGLShaders.screenShaderVertexSrc = [
+  GLESShaders.screenShaderVertexSrc = [
     "attribute vec2 aVertexPosition;"
     "attribute vec2 aTextureCoord;"
     "varying vec2 vTextureCoord;"
@@ -41,8 +43,10 @@ define 'Coffixi/renderers/WebGLShaders', ->
     "}"
   ]
 
-  WebGLShaders.screenShaderFragmentSrc = [
+  GLESShaders.screenShaderFragmentSrc = [
+    "#ifdef GL_ES"
     "precision mediump float;"
+    "#endif"
     "varying vec2 vTextureCoord;"
     "uniform sampler2D uSampler;"
     "void main(void) {"
@@ -50,12 +54,12 @@ define 'Coffixi/renderers/WebGLShaders', ->
     "}"
   ]
 
-  WebGLShaders.CompileShader = (gl, shaderSrc, shaderType) ->
+  GLESShaders.CompileShader = (gl, shaderSrc, shaderType) ->
     src = ""
 
     i = 0
     while i < shaderSrc.length
-      src += shaderSrc[i]
+      src += shaderSrc[i] + '\n'
       i++
     shader = undefined
     shader = gl.createShader(shaderType)
@@ -66,4 +70,4 @@ define 'Coffixi/renderers/WebGLShaders', ->
       return null
     shader
 
-  return WebGLShaders
+  return GLESShaders
