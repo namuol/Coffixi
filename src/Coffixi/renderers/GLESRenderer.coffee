@@ -450,6 +450,7 @@ define 'Coffixi/renderers/GLESRenderer', [
       projectionMatrix[13] = 1
 
       if (@resizeFilter != BaseTexture.filterModes.NEAREST) or scale == 1
+        gl.enable gl.BLEND
         @render = @__render
       else
         @initFB()

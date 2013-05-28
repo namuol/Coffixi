@@ -35,7 +35,6 @@ define 'Coffixi/DisplayObjectContainer', [
       @children.push child
       @stage.__addChild child  if @stage
 
-
     ###
     Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
     @method addChildAt
@@ -61,7 +60,6 @@ define 'Coffixi/DisplayObjectContainer', [
       else
         # error!
         throw new Error(child + " The index " + index + " supplied is out of bounds " + @children.length)
-
 
     ###
     Removes a child from the container.
