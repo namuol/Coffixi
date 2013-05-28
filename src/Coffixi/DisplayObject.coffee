@@ -20,20 +20,28 @@ define 'Coffixi/DisplayObject', [
   class DisplayObject extends Module
     constructor: ->
       ###
-      The coordinate of the object relative to the local coordinates of the parent.
-      @property position
-      @type Point
+      The x coordinate of the object relative to the local coordinates of the parent.
+      @property x
       ###
-      # LOU TODO: Have simple @x and @y properties.
-      @position = new Point()
+      @x = 0
+
+      ###
+      The y coordinate of the object relative to the local coordinates of the parent.
+      @property y
+      ###
+      @y = 0
       
       ###
-      The scale factor of the object.
-      @property scale
-      @type Point
+      The X scale factor of the object.
+      @property scaleX
       ###
-      # LOU TODO: Have simple @scaleX and @scaleY properties.
-      @scale = new Point(1, 1) #{x:1, y:1};
+      @scaleX = 1
+
+      ###
+      The Y scale factor of the object.
+      @property scaleY
+      ###
+      @scaleY = 1
       
       ###
       The rotation of the object in radians.
@@ -95,14 +103,14 @@ define 'Coffixi/DisplayObject', [
       worldTransform = @worldTransform
       
       #console.log(localTransform)
-      localTransform[0] = @_cr * @scale.x
-      localTransform[1] = -@_sr * @scale.y
-      localTransform[3] = @_sr * @scale.x
-      localTransform[4] = @_cr * @scale.y
+      localTransform[0] = @_cr * @scaleX
+      localTransform[1] = -@_sr * @scaleY
+      localTransform[3] = @_sr * @scaleX
+      localTransform[4] = @_cr * @scaleY
       
       #/AAARR GETTER SETTTER!
-      localTransform[2] = @position.x
-      localTransform[5] = @position.y
+      localTransform[2] = @x
+      localTransform[5] = @y
       
       # Cache the matrix values (makes for huge speed increases!)
       a00 = localTransform[0]
