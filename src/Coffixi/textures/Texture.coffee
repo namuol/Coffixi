@@ -84,14 +84,7 @@ define 'Coffixi/textures/Texture', [
     @fromImage: (imageUrl, crossorigin) ->
       texture = Texture.cache[imageUrl]
       unless texture
-        baseTexture = BaseTexture.cache[imageUrl]
-        unless baseTexture
-          image = new Image
-          image.crossOrigin = ""  if crossorigin
-          image.src = imageUrl
-          baseTexture = new BaseTexture(image)
-          BaseTexture.cache[imageUrl] = baseTexture
-        texture = new Texture(baseTexture)
+        texture = new Texture(BaseTexture.fromImage(imageUrl, crossorigin))
         Texture.cache[imageUrl] = texture
       texture
 

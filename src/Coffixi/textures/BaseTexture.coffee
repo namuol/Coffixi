@@ -41,6 +41,9 @@ define 'Coffixi/textures/BaseTexture', [
           @width = @source.width
           @height = @source.height
           BaseTexture.texturesToUpdate.push this
+          @emit
+            type: "loaded"
+            content: @
         else
           @source.onerror = =>
             @emit
@@ -65,7 +68,16 @@ define 'Coffixi/textures/BaseTexture', [
         
         BaseTexture.texturesToUpdate.push this
 
-    fromImage: (imageUrl) ->
+    @fromImage: (imageUrl, crossorigin) ->
+      baseTexture = BaseTexture.cache[imageUrl]
+      unless baseTexture
+        image = new Image()
+        image.crossOrigin = ""  if crossorigin
+        image.src = imageUrl
+        baseTexture = new BaseTexture(image)
+        BaseTexture.cache[imageUrl] = baseTexture
+      baseTexture
+
     @texturesToUpdate: []
     @cache: {}
     @filterModes:
