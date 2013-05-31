@@ -2,17 +2,29 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 define 'Coffixi/renderers/GLESRenderer', [
+  'fragl'
   './GLESShaders'
   '../utils/Matrix'
   '../Sprite'
   '../textures/BaseTexture'
 ], (
+  fr
   GLESShaders
   Matrix
   Sprite
   BaseTexture
 ) ->
 
+  if Float32Array?
+    __Float32Array = Float32Array
+  else
+    __Float32Array = Array
+
+  if Uint16Array?
+    __Uint16Array = Uint16Array
+  else
+    __Uint16Array = Array
+  
   Batch = undefined
 
   ###
@@ -28,6 +40,9 @@ define 'Coffixi/renderers/GLESRenderer', [
   @default false
   ###
   class GLESRenderer
+    @Float32Array: __Float32Array
+    @Uint16Array: __Uint16Array
+    
     @setBatchClass: (BatchClass) ->
       Batch = BatchClass
     constructor: (@gl, width, height, scale, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
@@ -51,6 +66,8 @@ define 'Coffixi/renderers/GLESRenderer', [
       @projectionMatrix = Matrix.mat4.create()
 
       @contextLost = false
+
+      @resize @width, @height, @scale
 
     ###
     @private
@@ -457,15 +474,35 @@ define 'Coffixi/renderers/GLESRenderer', [
 
         widthCoord = @width / @rttFramebuffer.width
         heightCoord = @height / @rttFramebuffer.height
-        @screenCoordBuffer = new Float32Array [
-          -1,-1,          0, 0,
-           1,-1, widthCoord, 0,
-          -1, 1,          0, heightCoord,
-          -1, 1,          0, heightCoord,
-           1,-1, widthCoord, 0,
-           1, 1, widthCoord, heightCoord
-        ]
 
+        buf = new GLESRenderer.Float32Array 24
+        buf[ 0] = -1
+        buf[ 1] = -1
+        buf[ 2] = 0
+        buf[ 3] = 0
+        buf[ 4] = 1
+        buf[ 5] = -1
+        buf[ 6] = widthCoord
+        buf[ 7] = 0
+        buf[ 8] = -1
+        buf[ 9] = 1
+        buf[10] = 0
+        buf[11] = heightCoord
+        buf[12] = -1
+        buf[13] = 1
+        buf[14] = 0
+        buf[15] = heightCoord
+        buf[16] = 1
+        buf[17] = -1
+        buf[18] = widthCoord
+        buf[19] = 0
+        buf[20] = 1
+        buf[21] = 1
+        buf[22] = widthCoord
+        buf[23] = heightCoord
+        @screenCoordBuffer = buf
+
+        fr.log 'LEENNNNGTH: ' + @screenCoordBuffer.length
         screenProgram = @screenProgram
         gl.useProgram screenProgram.handle
         

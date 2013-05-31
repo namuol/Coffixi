@@ -2,14 +2,19 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 define 'Coffixi/renderers/WebGLBatch', [
-  '../Sprite'
-  './GLESShaders'
   '../utils/Module'
+  '../Sprite'
+  './GLESRenderer'
+  './GLESShaders'
 ], (
-  Sprite
-  GLESShaders
   Module
+  Sprite
+  GLESRenderer
+  GLESShaders
 ) ->
+  __Float32Array = GLESRenderer.Float32Array
+  __Uint16Array = GLESRenderer.Uint16Array
+  
   ###
   A WebGLBatch Enables a group of sprites to be drawn using the same settings.
   if a group of sprites all have the same baseTexture and blendMode then they can be grouped into a batch. All the sprites in a batch can then be drawn in one go by the GPU which is hugely efficient. ALL sprites in the webGL renderer are added to a batch even if the batch only contains one sprite. Batching is handled automatically by the webGL renderer. A good tip is: the smaller the number of batchs there are, the faster the webGL renderer will run.
@@ -243,18 +248,18 @@ define 'Coffixi/renderers/WebGLBatch', [
         @dynamicSize = @size * 1.5
       
       # grow verts
-      @verticies = new Float32Array(@dynamicSize * 8)
+      @verticies = new __Float32Array(@dynamicSize * 8)
       gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
       gl.bufferData gl.ARRAY_BUFFER, @verticies, gl.DYNAMIC_DRAW
-      @uvs = new Float32Array(@dynamicSize * 8)
+      @uvs = new __Float32Array(@dynamicSize * 8)
       gl.bindBuffer gl.ARRAY_BUFFER, @uvBuffer
       gl.bufferData gl.ARRAY_BUFFER, @uvs, gl.DYNAMIC_DRAW
       @dirtyUVS = true
-      @colors = new Float32Array(@dynamicSize * 4)
+      @colors = new __Float32Array(@dynamicSize * 4)
       gl.bindBuffer gl.ARRAY_BUFFER, @colorBuffer
       gl.bufferData gl.ARRAY_BUFFER, @colors, gl.DYNAMIC_DRAW
       @dirtyColors = true
-      @indices = new Uint16Array(@dynamicSize * 6)
+      @indices = new __Uint16Array(@dynamicSize * 6)
       length = @indices.length / 6
       i = 0
 
