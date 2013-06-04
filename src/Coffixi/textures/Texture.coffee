@@ -73,6 +73,13 @@ define 'Coffixi/textures/Texture', [
       if frame.x + frame.width > @baseTexture.width or frame.y + frame.height > @baseTexture.height
         throw new Error("Texture Error: frame does not fit inside the base Texture dimensions " + this)
 
+    getPixel: (x,y) -> @baseTexture.getPixel x, y
+    beginEdit: -> @baseTexture.beginEdit()
+    endEdit: -> @baseTexture.endEdit()
+    setPixel: (x,y, r,g,b,a) ->
+      x += @frame.x
+      y += @frame.y
+      @baseTexture.setPixel x,y, r,g,b,a
     ###
     Helper function that returns a texture based on an image url
     If the image is not in the texture cache it will be  created and loaded

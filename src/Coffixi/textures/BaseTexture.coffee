@@ -34,13 +34,20 @@ define 'Coffixi/textures/BaseTexture', [
       @property source
       @type Image
       ###
-      @source = source #new Image();
-      if @source instanceof Image
+      @source = source
+
+      if not (@source instanceof Image)
+        @hasLoaded = true
+        @width = @source.width
+        @height = @source.height
+        
+        @createCanvas @source
+      else
         if @source.complete
           @hasLoaded = true
           @width = @source.width
           @height = @source.height
-          BaseTexture.texturesToUpdate.push this
+          @createCanvas @source
           @emit
             type: "loaded"
             content: @
@@ -56,17 +63,48 @@ define 'Coffixi/textures/BaseTexture', [
             @height = @source.height
             
             # add it to somewhere...
-            BaseTexture.texturesToUpdate.push @
+            @createCanvas @source
             @emit
               type: "loaded"
               content: @
 
-      else
-        @hasLoaded = true
-        @width = @source.width
-        @height = @source.height
-        
-        BaseTexture.texturesToUpdate.push this
+    getPixel: (x, y) ->
+      idx = (x + y * @_imageData.width) * 4
+
+      return {
+        r: @_imageData.data[idx + 0]
+        g: @_imageData.data[idx + 1]
+        b: @_imageData.data[idx + 2]
+        a: @_imageData.data[idx + 3]
+      }
+
+    beginEdit: ->
+      @_imageData = @_ctx.getImageData(0,0, @_ctx.canvas.width,@_ctx.canvas.height)
+
+    endEdit: ->
+      @_ctx.putImageData @_imageData, 0,0
+      BaseTexture.texturesToUpdate.push @
+
+    setPixel: (x, y, r,g,b,a) ->
+      idx = (x + y * @_imageData.width) * 4
+
+      @_imageData.data[idx + 0] = r
+      @_imageData.data[idx + 1] = g
+      @_imageData.data[idx + 2] = b
+      @_imageData.data[idx + 3] = a
+      return
+
+    # Converts a loaded image to a canvas element and 
+    #  sets it as our source for easy pixel access.
+    createCanvas: (loadedImage) ->
+      @source = document.createElement 'canvas'
+      @source.width = loadedImage.width
+      @source.height = loadedImage.height
+      @_ctx = @source.getContext '2d'
+      @_ctx.drawImage loadedImage, 0,0
+
+      @beginEdit()
+      @endEdit()
 
     @fromImage: (imageUrl, crossorigin) ->
       baseTexture = BaseTexture.cache[imageUrl]
