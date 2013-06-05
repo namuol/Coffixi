@@ -68,6 +68,9 @@ define 'Coffixi/textures/BaseTexture', [
               type: "loaded"
               content: @
 
+    beginRead: ->
+      @_imageData ?= @_ctx.getImageData(0,0, @_ctx.canvas.width,@_ctx.canvas.height)
+
     getPixel: (x, y) ->
       idx = (x + y * @_imageData.width) * 4
 
@@ -77,22 +80,11 @@ define 'Coffixi/textures/BaseTexture', [
         b: @_imageData.data[idx + 2]
         a: @_imageData.data[idx + 3]
       }
-
-    beginEdit: ->
-      @_imageData = @_ctx.getImageData(0,0, @_ctx.canvas.width,@_ctx.canvas.height)
-
-    endEdit: ->
-      @_ctx.putImageData @_imageData, 0,0
-      BaseTexture.texturesToUpdate.push @
-
-    setPixel: (x, y, r,g,b,a) ->
-      idx = (x + y * @_imageData.width) * 4
-
-      @_imageData.data[idx + 0] = r
-      @_imageData.data[idx + 1] = g
-      @_imageData.data[idx + 2] = b
-      @_imageData.data[idx + 3] = a
-      return
+    
+    endRead: ->
+      # IF we change this back to EDIT, we'd need to update the texture like so:
+      # @_ctx.putImageData @_imageData, 0,0
+      # BaseTexture.texturesToUpdate.push @
 
     # Converts a loaded image to a canvas element and 
     #  sets it as our source for easy pixel access.
@@ -103,8 +95,8 @@ define 'Coffixi/textures/BaseTexture', [
       @_ctx = @source.getContext '2d'
       @_ctx.drawImage loadedImage, 0,0
 
-      @beginEdit()
-      @endEdit()
+      @beginRead()
+      @endRead()
 
     @fromImage: (imageUrl, crossorigin) ->
       baseTexture = BaseTexture.cache[imageUrl]
