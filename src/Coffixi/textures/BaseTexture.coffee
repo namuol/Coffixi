@@ -84,7 +84,7 @@ define 'Coffixi/textures/BaseTexture', [
     endRead: ->
       # IF we change this back to EDIT, we'd need to update the texture like so:
       # @_ctx.putImageData @_imageData, 0,0
-      # BaseTexture.texturesToUpdate.push @
+      BaseTexture.texturesToUpdate.push @
 
     # Converts a loaded image to a canvas element and 
     #  sets it as our source for easy pixel access.
