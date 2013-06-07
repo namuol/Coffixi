@@ -53,4 +53,16 @@ define 'Coffixi/utils/Utils', ->
     else
       false
 
+
+  if Float32Array?
+    Utils.Float32Array = Float32Array
+  else
+    Utils.Float32Array = Array
+
+  if Uint16Array?
+    Utils.Uint16Array = Uint16Array
+  else
+    Utils.Uint16Array = Array
+  
+
   return Utils

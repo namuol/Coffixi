@@ -3,14 +3,12 @@
 ###
 
 define 'Coffixi/DisplayObject', [
-  './Point'
   './utils/Matrix'
   './utils/Module'
 ], (
-  Point
   Matrix
   Module  
-)->
+) ->
 
   ###
   this is the base class for all objects that are rendered on the screen.
@@ -44,6 +42,18 @@ define 'Coffixi/DisplayObject', [
       @scaleY = 1
       
       ###
+      The x coordinate of the pivot point that this displayObject rotates around
+      @property pivotX
+      ###
+      @pivotX = 0
+
+      ###
+      The x coordinate of the pivot point that this displayObject rotates around
+      @property pivotX
+      ###
+      @pivotY = 0
+
+      ###
       The rotation of the object in radians.
       @property rotation
       @type Number
@@ -63,7 +73,7 @@ define 'Coffixi/DisplayObject', [
       @type Boolean
       ###
       @visible = true
-      @cacheVisible = false
+      @worldVisible = false
       
       ###
       [read-only] The display object container that contains this display object.
@@ -78,21 +88,42 @@ define 'Coffixi/DisplayObject', [
       @type Stage
       ###
       @stage = null
+      
+      ###
+      This is the defined area that will pick up mouse / touch events. It is null by default.
+      Setting it is a neat way of optimising the hitTest function that the interactionManager will use (as it will not need to hit test all the children)
+      @property hitArea
+      @type Rectangle
+      ###
+      @hitArea = null
       @worldAlpha = 1
       @color = []
-      @worldTransform = Matrix.mat3.create()
-      @localTransform = Matrix.mat3.create()
+      @worldTransform = Matrix.mat3.create() #mat3.identity();
+      @localTransform = Matrix.mat3.create() #mat3.identity();
       @dynamic = true
       
       # chach that puppy!
       @_sr = 0
       @_cr = 1
+      @childIndex = 0
       @renderable = false
+
+    #TODO make visible a getter setter
+    #
+    #Object.defineProperty(PIXI.DisplayObject.prototype, 'visible', {
+    #    get: function() {
+    #        return this._visible;
+    #    },
+    #    set: function(value) {
+    #        this._visible = value;
+    #    }
+    #});
 
     ###
     @private
     ###
     updateTransform: ->
+      
       # TODO OPTIMIZE THIS!! with dirty
       unless @rotation is @rotationCache
         @rotationCache = @rotation
@@ -109,8 +140,14 @@ define 'Coffixi/DisplayObject', [
       localTransform[4] = @_cr * @scaleY
       
       #/AAARR GETTER SETTTER!
-      localTransform[2] = @x
-      localTransform[5] = @y
+      #localTransform[2] = this.x;
+      #localTransform[5] = this.y;
+      px = @pivotX
+      py = @pivotY
+      
+      #/AAARR GETTER SETTTER!
+      localTransform[2] = @x - localTransform[0] * px - py * localTransform[1]
+      localTransform[5] = @y - localTransform[4] * py - px * localTransform[3]
       
       # Cache the matrix values (makes for huge speed increases!)
       a00 = localTransform[0]
@@ -135,5 +172,3 @@ define 'Coffixi/DisplayObject', [
       # because we are using affine transformation, we can optimise the matrix concatenation process.. wooo!
       # mat3.multiply(this.localTransform, this.parent.worldTransform, this.worldTransform);
       @worldAlpha = @alpha * @parent.worldAlpha
-
-  return DisplayObject

@@ -7,7 +7,13 @@ define 'Coffixi/textures/Texture', [
   './BaseTexture'
   '../Rectangle'
   '../Point'
-], (EventTarget, BaseTexture, Rectangle, Point) ->
+], (
+  EventTarget
+  BaseTexture
+  Rectangle
+  Point
+) ->
+
   ###
   A texture stores the information that represents an image or part of an image. It cannot be added to the display list directly. To do this use Sprite. If no frame is provided then the whole image is used
   @class Texture
@@ -18,6 +24,7 @@ define 'Coffixi/textures/Texture', [
   ###
   class Texture extends EventTarget
     @cache: {}
+    @frameCache: {}
     constructor: (baseTexture, frame) ->
       super
 
@@ -25,9 +32,11 @@ define 'Coffixi/textures/Texture', [
         @noFrame = true
         frame = new Rectangle(0, 0, 1, 1)
 
-      # LOU TODO: What is this? Is it used? Should I remove it?
       @trim = new Point()
-      
+
+      if baseTexture instanceof Texture
+        baseTexture = baseTexture.baseTexture
+    
       ###
       The base texture of this texture
       @property baseTexture
@@ -52,7 +61,7 @@ define 'Coffixi/textures/Texture', [
 
     onBaseTextureLoaded: (event) ->
       baseTexture = @baseTexture
-      baseTexture.off "loaded", @onLoaded
+      baseTexture.off 'loaded', @onLoaded
       @frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
       @noFrame = false
       @width = @frame.width
@@ -60,6 +69,9 @@ define 'Coffixi/textures/Texture', [
       @scope.emit
         type: "update"
         content: this
+
+    destroy: (destroyBase) ->
+      @baseTexture.destroy()  if destroyBase
 
     ###
     Specifies the rectangle region of the baseTexture
@@ -70,10 +82,11 @@ define 'Coffixi/textures/Texture', [
       @frame = frame
       @width = frame.width
       @height = frame.height
-      if frame.x + frame.width > @baseTexture.width or frame.y + frame.height > @baseTexture.height
-        throw new Error("Texture Error: frame does not fit inside the base Texture dimensions " + this)
+      throw new Error("Texture Error: frame does not fit inside the base Texture dimensions " + this)  if frame.x + frame.width > @baseTexture.width or frame.y + frame.height > @baseTexture.height
+      @updateFrame = true
+      Texture.frameUpdates.push this
 
-    getPixel: (x,y) -> @baseTexture.getPixel x, y
+    getPixel: (x,y) -> @baseTexture.getPixel @frame.x + x, @frame.y + y
     beginRead: -> @baseTexture.beginRead()
     endRead: -> @baseTexture.endRead()
     ###
@@ -100,7 +113,8 @@ define 'Coffixi/textures/Texture', [
     ###
     @fromFrame: (frameId) ->
       texture = Texture.cache[frameId]
-      throw new Error("The frameId '" + frameId + "' does not exist in the texture cache " + this)  unless texture
+      unless texture
+        throw new Error("The frameId '" + frameId + "' does not exist in the texture cache " + this)
       texture
 
     ###
@@ -112,20 +126,12 @@ define 'Coffixi/textures/Texture', [
     @return Texture
     ###
     @fromCanvas: (canvas) ->
-      
-      # create a canvas id??
-      texture = Texture.cache[canvas]
-      unless texture
-        baseTexture = BaseTexture.cache[canvas]
-        unless baseTexture
-          baseTexture = new BaseTexture(canvas)
-          BaseTexture.cache[canvas] = baseTexture
-        texture = new Texture(baseTexture)
-        Texture.cache[canvas] = texture
-      texture
+      baseTexture = new BaseTexture(canvas)
+      new Texture(baseTexture)
 
     ###
     Adds a texture to the textureCache.
+    @static
     @method addTextureToCache
     @param texture {Texture}
     @param id {String} the id that the texture will be stored against.
@@ -135,6 +141,7 @@ define 'Coffixi/textures/Texture', [
 
     ###
     Remove a texture from the textureCache.
+    @static
     @method removeTextureFromCache
     @param id {String} the id of the texture to be removed
     @return {Texture} the texture that was removed
@@ -144,4 +151,5 @@ define 'Coffixi/textures/Texture', [
       Texture.cache[id] = null
       texture
 
-  return Texture
+    # this is more for webGL.. it contains updated frames..
+    @frameUpdates = []

@@ -5,7 +5,13 @@
 define 'Coffixi/Sprite', [
   './Point'
   './DisplayObjectContainer'
-], (Point, DisplayObjectContainer) ->
+  './textures/Texture'
+], (
+  Point
+  DisplayObjectContainer
+  Texture
+) ->
+
   ###
   @class Sprite
   @extends DisplayObjectContainer
@@ -65,8 +71,32 @@ define 'Coffixi/Sprite', [
       @type #Number
       ###
       @height ?= 1
-
+      if @texture?
+        if texture.baseTexture.hasLoaded
+          @updateFrame = true
+        else
+          @onTextureUpdateBind = @onTextureUpdate.bind(this)
+          @texture.on "update", @onTextureUpdateBind
       @renderable = true
+
+    # LOU TODO: Decide if we really want these.
+    # OOH! shiney new getters and setters for width and height
+    # The width and height now modify the scale (this is what flash does, nice and tidy!)
+    # Object.defineProperty Sprite::, "width",
+    #   get: ->
+    #     @scaleX * @texture.frame.width
+
+    #   set: (value) ->
+    #     @scaleX = value / @texture.frame.width
+    #     @_width = value
+
+    # Object.defineProperty Sprite::, "height",
+    #   get: ->
+    #     @scaleY * @texture.frame.height
+
+    #   set: (value) ->
+    #     @scaleY = value / @texture.frame.height
+    #     @_height = value
 
     ###
     @method setTexture
@@ -89,6 +119,33 @@ define 'Coffixi/Sprite', [
       @width = @texture.frame.width
       @height = @texture.frame.height
       @updateFrame = true
+
+    # some helper functions..
+
+    ###
+    Helper function that creates a sprite that will contain a texture from the Texture.cache based on the frameId
+    The frame ids are created when a Texture packer file has been loaded
+    @method fromFrame
+    @static
+    @param frameId {String} The frame Id of the texture in the cache
+    @return {Sprite} A new Sprite using a texture from the texture cache matching the frameId
+    ###
+    @fromFrame: (frameId) ->
+      texture = Texture.cache[frameId]
+      if not texture
+        throw new Error("The frameId '" + frameId + "' does not exist in the texture cache" + this)
+      new Sprite(texture)
+
+    ###
+    Helper function that creates a sprite that will contain a texture based on an image url
+    If the image is not in the texture cache it will be loaded
+    @method fromImage
+    @static
+    @param The image url of the texture
+    @return {Sprite} A new Sprite using a texture from the texture cache matching the image id
+    ###
+    @fromImage: (imageId) ->
+      new Sprite Texture.fromImage(imageId)
 
     @blendModes:
       NORMAL: 0

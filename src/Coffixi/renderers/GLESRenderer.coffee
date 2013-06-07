@@ -2,13 +2,11 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 define 'Coffixi/renderers/GLESRenderer', [
-  'fragl'
   './GLESShaders'
   '../utils/Matrix'
   '../Sprite'
   '../textures/BaseTexture'
 ], (
-  fr
   GLESShaders
   Matrix
   Sprite
@@ -502,7 +500,6 @@ define 'Coffixi/renderers/GLESRenderer', [
         buf[23] = heightCoord
         @screenCoordBuffer = buf
 
-        fr.log 'LEENNNNGTH: ' + @screenCoordBuffer.length
         screenProgram = @screenProgram
         gl.useProgram screenProgram.handle
         

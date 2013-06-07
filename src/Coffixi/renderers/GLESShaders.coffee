@@ -54,6 +54,9 @@ define 'Coffixi/renderers/GLESShaders', ->
     "}"
   ]
 
+  GLESShaders.CompileVertexShader = (gl, shaderSrc) -> GLESShaders.CompileShader gl, shaderSrc, gl.VERTEX_SHADER
+  GLESShaders.CompileFragmentShader = (gl, shaderSrc) -> GLESShaders.CompileShader gl, shaderSrc, gl.FRAGMENT_SHADER
+
   GLESShaders.CompileShader = (gl, shaderSrc, shaderType) ->
     src = ""
 

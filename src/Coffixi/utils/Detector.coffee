@@ -24,7 +24,7 @@ define 'Coffixi/utils/Detector', [
   @param transparent {Boolean} the transparency of the render view, default false
   @default false
   ###
-  Detector.autoDetectRenderer = (width, height, scale, view, transparent, textureFilter=BaseTexture.filterModes.LINEAR, resizeFilter=BaseTexture.filterModes.LINEAR) ->
+  Detector.autoDetectRenderer = (width, height, view, transparent, textureFilter=BaseTexture.filterModes.LINEAR, resizeFilter=BaseTexture.filterModes.LINEAR) ->
     # BORROWED from Mr Doob (mrdoob.com)
     webgl = (->
       try
@@ -34,7 +34,7 @@ define 'Coffixi/utils/Detector', [
     )()
     
     if webgl
-      return new WebGLRenderer(width, height, scale, view, transparent, textureFilter, resizeFilter)
-    return new CanvasRenderer(width, height, scale, view, transparent, textureFilter, resizeFilter)
+      return new WebGLRenderer(width, height, view, transparent, textureFilter, resizeFilter)
+    return new CanvasRenderer(width, height, view, transparent, textureFilter, resizeFilter)
 
   return Detector

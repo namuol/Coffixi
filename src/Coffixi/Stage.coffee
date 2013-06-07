@@ -6,7 +6,11 @@ define 'Coffixi/Stage', [
   './utils/Utils'
   './utils/Matrix'
   './DisplayObjectContainer'
-], (Utils, Matrix, DisplayObjectContainer) ->
+], (
+  Utils
+  Matrix
+  DisplayObjectContainer
+) ->
 
   ###
   A Stage represents the root of the display tree. Everything connected to the stage is rendered
@@ -19,13 +23,14 @@ define 'Coffixi/Stage', [
     constructor: (backgroundColor) ->
       super
 
-      @worldTransform = Matrix.mat3.create() #.//identity();
+      @worldTransform = Matrix.mat3.create()
       @__childrenAdded = []
       @__childrenRemoved = []
       @childIndex = 0
       @stage = this
       
       @setBackgroundColor backgroundColor
+      @worldVisible = true
 
     ###
     @method updateTransform
@@ -42,7 +47,6 @@ define 'Coffixi/Stage', [
 
       if @dirty
         @dirty = false
-      return
 
     ###
     @method setBackgroundColor
@@ -64,7 +68,6 @@ define 'Coffixi/Stage', [
       return
 
     __removeChild: (child) ->
-      @__childrenRemoved.push child
       child.stage = `undefined`
       if child.children
         i = 0
@@ -74,5 +77,3 @@ define 'Coffixi/Stage', [
           @__removeChild child.children[i]
           i++
       return
-
-  return Stage

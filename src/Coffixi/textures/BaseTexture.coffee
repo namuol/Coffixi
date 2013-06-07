@@ -4,7 +4,10 @@
 
 define 'Coffixi/textures/BaseTexture', [
   '../utils/EventTarget'
-], (EventTarget) ->
+], (
+  EventTarget
+) ->
+
   ###
   A texture stores the information that represents an image. All textures have a base texture
   @class BaseTexture
@@ -14,7 +17,7 @@ define 'Coffixi/textures/BaseTexture', [
   ###
   class BaseTexture extends EventTarget
     constructor: (source) ->
-      super      
+      super
       ###
       [read only] The width of the base texture set when the image has loaded
       @property width
@@ -34,7 +37,9 @@ define 'Coffixi/textures/BaseTexture', [
       @property source
       @type Image
       ###
-      @source = source
+      @source = source #new Image();
+
+      return  unless source
 
       if not (@source instanceof Image)
         @hasLoaded = true
@@ -67,6 +72,14 @@ define 'Coffixi/textures/BaseTexture', [
             @emit
               type: "loaded"
               content: @
+      
+      @filterMode = undefined # Use renderer's default filter mode.
+
+      @_powerOf2 = false
+
+    setFilterMode: (mode) ->
+      @filterMode = mode
+      BaseTexture.texturesToUpdate.push @
 
     beginRead: ->
       @_imageData ?= @_ctx.getImageData(0,0, @_ctx.canvas.width,@_ctx.canvas.height)
@@ -98,6 +111,19 @@ define 'Coffixi/textures/BaseTexture', [
       @beginRead()
       @endRead()
 
+    destroy: ->
+      @source.src = null  if @source instanceof Image
+      @source = null
+      BaseTexture.texturesToDestroy.push this
+
+    ###
+    Helper function that returns a base texture based on an image url
+    If the image is not in the base texture cache it will be  created and loaded
+    @static
+    @method fromImage
+    @param imageUrl {String} The image url of the texture
+    @return BaseTexture
+    ###
     @fromImage: (imageUrl, crossorigin) ->
       baseTexture = BaseTexture.cache[imageUrl]
       unless baseTexture
@@ -109,9 +135,8 @@ define 'Coffixi/textures/BaseTexture', [
       baseTexture
 
     @texturesToUpdate: []
+    @texturesToDestroy: []
     @cache: {}
     @filterModes:
       LINEAR: 1
       NEAREST: 2
-
-  return BaseTexture

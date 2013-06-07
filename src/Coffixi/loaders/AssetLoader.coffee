@@ -5,16 +5,23 @@
 define 'Coffixi/loaders/AssetLoader', [
   '../utils/EventTarget'
   '../textures/Texture'
+  './ImageLoader'
   './SpriteSheetLoader'
-], (EventTarget, Texture, SpriteSheetLoader) ->
+], (
+  EventTarget
+  Texture
+  ImageLoader
+  SpriteSheetLoader
+) ->
+
   ###
-  A Class that loads a bunch of images / sprite sheet files. Once the assets have been loaded they are added to the Texture cache and can be accessed easily through Texture.fromFrame(), Texture.fromImage() and Sprite.fromImage(), Sprite.fromFromeId()
-  When all items have been loaded this class will dispatch a 'loaded' event
-  As each individual item is loaded this class will dispatch a 'progress' event
+  A Class that loads a bunch of images / sprite sheet / bitmap font files. Once the assets have been loaded they are added to the PIXI Texture cache and can be accessed easily through PIXI.Texture.fromImage() and PIXI.Sprite.fromImage()
+  When all items have been loaded this class will dispatch a "onLoaded" event
+  As each individual item is loaded this class will dispatch a "onProgress" event
   @class AssetLoader
   @constructor
   @extends EventTarget
-  @param assetURLs {Array} an array of image/sprite sheet urls that you would like loaded supported. Supported image formats include "jpeg", "jpg", "png", "gif". Supported sprite sheet data formats only include "JSON" at this time
+  @param {Array} assetURLs an array of image/sprite sheet urls that you would like loaded supported. Supported image formats include "jpeg", "jpg", "png", "gif". Supported sprite sheet data formats only include "JSON" at this time. Supported bitmap font data formats include "xml" and "fnt".
   ###
   class AssetLoader extends EventTarget
     constructor: (assetURLs) ->
@@ -26,8 +33,13 @@ define 'Coffixi/loaders/AssetLoader', [
       @type Array
       ###
       @assetURLs = assetURLs
-      @assets = []
       @crossorigin = false
+      @loadersByType =
+        jpg: ImageLoader
+        jpeg: ImageLoader
+        png: ImageLoader
+        gif: ImageLoader
+        json: SpriteSheetLoader
 
     ###
     Fired when an item has loaded
@@ -39,79 +51,40 @@ define 'Coffixi/loaders/AssetLoader', [
     @event onComplete
     ###
 
+    ###
+    This will begin loading the assets sequentially
+    ###
     load: ->
+      scope = this
       @loadCount = @assetURLs.length
-      imageTypes = ["jpeg", "jpg", "png", "gif"]
-      spriteSheetTypes = ["json"]
       i = 0
+
       while i < @assetURLs.length
-        filename = @assetURLs[i]
-        fileType = filename.split(".").pop().toLowerCase()
-        
-        # what are we loading?
-        type = null
-        j = 0
+        fileName = @assetURLs[i]
+        fileType = fileName.split(".").pop().toLowerCase()
+        loaderClass = @loadersByType[fileType]
+        throw new Error(fileType + " is an unsupported file type")  unless loaderClass
+        loader = new loaderClass(fileName, @crossorigin)
+        loader.addEventListener "loaded", ->
+          scope.onAssetLoaded()
 
-        while j < imageTypes.length
-          if fileType is imageTypes[j]
-            type = "img"
-            break
-          j++
-        unless type is "img"
-          j = 0
-
-          while j < spriteSheetTypes.length
-            if fileType is spriteSheetTypes[j]
-              type = "atlas"
-              break
-            j++
-        if type is "img"
-          texture = Texture.fromImage(filename, @crossorigin)
-          unless texture.baseTexture.hasLoaded
-            scope = this
-            texture.baseTexture.on "loaded", (event) ->
-              scope.onAssetLoaded()
-
-            @assets.push texture
-          else
-            # already loaded!
-            @loadCount--
-            
-            # if this hits zero here.. then everything was cached!
-            if @loadCount is 0
-              @emit
-                type: "onComplete"
-                content: this
-
-              @onComplete()  if @onComplete
-        else if type is "atlas"
-          spriteSheetLoader = new SpriteSheetLoader(filename)
-          spriteSheetLoader.crossorigin = @crossorigin
-          @assets.push spriteSheetLoader
-          scope = this
-          spriteSheetLoader.on "loaded", (event) ->
-            scope.onAssetLoaded()
-
-          spriteSheetLoader.load()
-        else
-          
-          # dont know what the file is! :/
-          #this.loadCount--;
-          throw new Error(filename + " is an unsupported file type " + this)
+        loader.load()
         i++
 
+    ###
+    Invoked after each file is loaded
+    @private
+    ###
     onAssetLoaded: ->
       @loadCount--
       @emit
         type: "onProgress"
         content: this
 
-      @onProgress() if @onProgress
+      @onProgress()  if @onProgress
       if @loadCount is 0
         @emit
           type: "onComplete"
           content: this
 
-        @onComplete() if @onComplete
-
-  return AssetLoader
+        @onComplete()  if @onComplete
