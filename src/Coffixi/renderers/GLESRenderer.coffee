@@ -2,252 +2,68 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 define 'Coffixi/renderers/GLESRenderer', [
-  './GLESShaders'
+  '../utils/Utils'
+  '../utils/Module'
   '../utils/Matrix'
   '../Sprite'
   '../textures/BaseTexture'
+  '../textures/Texture'
+  '../Rectangle'
+  './GLESShaders'
 ], (
-  GLESShaders
+  Utils
+  Module
   Matrix
   Sprite
   BaseTexture
+  Texture
+  Rectangle
+  GLESShaders
 ) ->
-
-  if Float32Array?
-    __Float32Array = Float32Array
-  else
-    __Float32Array = Array
-
-  if Uint16Array?
-    __Uint16Array = Uint16Array
-  else
-    __Uint16Array = Array
   
-  Batch = undefined
-
   ###
-  @class GLESRenderer
-  the GLESRenderer is draws the stage and all its content onto a GLES enabled canvas. This renderer should be used for browsers support GLES. This Render works by automatically managing GLESBatchs.
-  @constructor
-  @param width {Number} the width of the app's view
-  @default 0
-  @param height {Number} the height of the app's view
-  @default 0
-  @param transparent {Boolean} the transparency of the render view, default false
-  @param filterMode {uint} BaseTexture.
-  @default false
+  A Batch Enables a group of sprites to be drawn using the same settings.
+  if a group of sprites all have the same baseTexture and blendMode then they can be grouped into a batch. All the sprites in a batch can then be drawn in one go by the GPU which is hugely efficient. ALL sprites in the webGL renderer are added to a batch even if the batch only contains one sprite. Batching is handled automatically by the webGL renderer. A good tip is: the smaller the number of batchs there are, the faster the webGL renderer will run.
+  @class Batch
+  @param an instance of the webGL context
+  @return {Batch} Batch {@link Batch}
   ###
-  class GLESRenderer
-    @Float32Array: __Float32Array
-    @Uint16Array: __Uint16Array
-    
-    @setBatchClass: (BatchClass) ->
-      Batch = BatchClass
-    constructor: (@gl, width, height, scale, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
-      @transparent = !!transparent
-      @width = width or 800
-      @height = height or 600
-      @scale = scale or 1
-
+  class GLESRenderGroup extends Module
+    constructor: (gl, @textureFilter=BaseTexture.filterModes.LINEAR) ->
+      @gl = gl
+      @root
+      @backgroundColor
       @batchs = []
+      @toRemove = []
 
-      @initShaders()
-      if (@resizeFilter == BaseTexture.filterModes.NEAREST) or scale != 1
-        @initFB()
+    setRenderable: (displayObject) ->
+      
+      # has this changed??
+      @removeDisplayObjectAndChildren @root  if @root
+      displayObject.worldVisible = displayObject.visible
+      
+      # soooooo //
+      # to check if any batchs exist already??
+      
+      # TODO what if its already has an object? should remove it
+      @root = displayObject
+      
+      #displayObject.__renderGroup = this;
+      @addDisplayObjectAndChildren displayObject
 
+
+    #displayObject
+    render: (projectionMatrix) ->
+      GLESRenderer.updateTextures @textureFilter
       gl = @gl
-      @batch = new Batch(gl)
-      gl.disable gl.DEPTH_TEST
-      gl.enable gl.BLEND
-      gl.colorMask true, true, true, @transparent
-
-      @projectionMatrix = Matrix.mat4.create()
-
-      @contextLost = false
-
-      @resize @width, @height, @scale
-
-    ###
-    @private
-    ###
-    getGLFilterMode: (filterMode) ->
-      switch filterMode
-        when BaseTexture.filterModes.NEAREST
-          glFilterMode = @gl.NEAREST
-        when BaseTexture.filterModes.LINEAR
-          glFilterMode = @gl.LINEAR
-        else
-          console.warn 'Unexpected value for filterMode: ' + filterMode + '. Defaulting to LINEAR'
-          glFilterMode = @gl.LINEAR
-      return glFilterMode
-
-    ###
-    @private
-    ###
-    initShaders: ->
-      gl = @gl
-      fragmentShader = GLESShaders.CompileShader(gl, GLESShaders.shaderFragmentSrc, gl.FRAGMENT_SHADER)
-      vertexShader = GLESShaders.CompileShader(gl, GLESShaders.shaderVertexSrc, gl.VERTEX_SHADER)
-      shaderProgram = @shaderProgram = {}
-      shaderProgram.handle = gl.createProgram()
-      gl.attachShader shaderProgram.handle, vertexShader
-      gl.attachShader shaderProgram.handle, fragmentShader
-      gl.linkProgram shaderProgram.handle
-      if not gl.getProgramParameter(shaderProgram.handle, gl.LINK_STATUS)
-        # LOU TODO -- a more elegant failure.
-        alert "Could not initialise shaders"
-      gl.useProgram shaderProgram.handle
-      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram.handle, "aVertexPosition")
-      gl.enableVertexAttribArray shaderProgram.vertexPositionAttribute
-      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram.handle, "aTextureCoord")
-      gl.enableVertexAttribArray shaderProgram.textureCoordAttribute
-      shaderProgram.colorAttribute = gl.getAttribLocation(shaderProgram.handle, "aColor")
-      gl.enableVertexAttribArray shaderProgram.colorAttribute
-      @mvMatrixUniform = gl.getUniformLocation(shaderProgram.handle, "uMVMatrix")
-      @samplerUniform = gl.getUniformLocation(shaderProgram.handle, "uSampler")
-
-      # LOU TODO -- pass shader program to Batch properly (that's the only thing that uses this)
-      GLESShaders.shaderProgram = shaderProgram
-
-      screenFragmentShader = GLESShaders.CompileShader(gl, GLESShaders.screenShaderFragmentSrc, gl.FRAGMENT_SHADER)
-      screenVertexShader = GLESShaders.CompileShader(gl, GLESShaders.screenShaderVertexSrc, gl.VERTEX_SHADER)
-      @screenProgram = {}
-      screenProgram = @screenProgram
-      screenProgram.handle = gl.createProgram()
-      gl.attachShader screenProgram.handle, screenVertexShader
-      gl.attachShader screenProgram.handle, screenFragmentShader
-      gl.linkProgram screenProgram.handle
-      if not gl.getProgramParameter(screenProgram.handle, gl.LINK_STATUS)
-        # LOU TODO -- a more elegant failure.
-        alert "Could not initialise shaders"
-      gl.useProgram screenProgram.handle
-      screenProgram.vertexPositionAttribute = gl.getAttribLocation(screenProgram.handle, "aVertexPosition")
-      gl.enableVertexAttribArray screenProgram.vertexPositionAttribute
-      screenProgram.textureCoordAttribute = gl.getAttribLocation(screenProgram.handle, "aTextureCoord")
-      gl.enableVertexAttribArray screenProgram.textureCoordAttribute
-      screenProgram.samplerUniform = gl.getUniformLocation(screenProgram.handle, "uSampler")
-
-    ###
-    @private
-    ###
-    initFB: ->
-      gl = @gl
-      @rttFramebuffer = {}
-      @rttFramebuffer.handle = gl.createFramebuffer()
-      gl.bindFramebuffer gl.FRAMEBUFFER, @rttFramebuffer.handle
-      fbWidth = 1
-      fbHeight = 1
-      while (fbWidth < 2048) and (fbWidth < @width)
-        fbWidth *= 2
-      while (fbHeight < 2048) and (fbHeight < @height)
-        fbHeight *= 2
-      @rttFramebuffer.width = fbWidth
-      @rttFramebuffer.height = fbHeight
-      @rttTexture = gl.createTexture()
-      gl.bindTexture gl.TEXTURE_2D, @rttTexture
-      glFilterMode = @getGLFilterMode @resizeFilter
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
-      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, @rttFramebuffer.width, @rttFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null
-      renderbuffer = gl.createRenderbuffer()
-
-      # TODO: Do we need depth stuff? Probably not.
-      gl.bindRenderbuffer gl.RENDERBUFFER, renderbuffer
-      gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, @rttFramebuffer.width, @rttFramebuffer.height
-
-      gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, @rttTexture, 0
-      gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer
-      gl.bindTexture gl.TEXTURE_2D, null
-      gl.bindRenderbuffer gl.RENDERBUFFER, null
-      gl.bindFramebuffer gl.FRAMEBUFFER, null
-
-      @screenCoordBufferHandle = gl.createBuffer()
-
-    ###
-    @private
-    ###
-    checkVisibility: (displayObject, globalVisible) ->
-      children = displayObject.children
-      i = 0
-      while i < children.length
-        child = children[i]
-        
-        # TODO optimize... shouldt need to loop through everything all the time
-        actualVisibility = child.visible and globalVisible
-        
-        # everything should have a batch!
-        # time to see whats new!
-        if child.textureChange
-          child.textureChange = false
-          if actualVisibility
-            @removeDisplayObject child
-            @addDisplayObject child
-        
-        # update texture!!
-        unless child.cacheVisible is actualVisibility
-          child.cacheVisible = actualVisibility
-          if child.cacheVisible
-            @addDisplayObject child
-          else
-            @removeDisplayObject child
-        @checkVisibility child, actualVisibility  if child.children.length > 0
-        i++
-
-      return
-
-
-    ###
-    Renders the stage to its GLES view
-    @method render
-    @param stage {Stage} the Stage element to be rendered
-    ###
-    __render: (stage) ->
-      return  if @contextLost
-
-      # clear objects left behind by the previous stage
-      if not @__stage?
-        @__stage = stage
-      else if @__stage isnt stage
-        @checkVisibility @__stage, false
-        @__stage = stage
-
-      # update children if need be
-      # best to remove first!
-      i = 0
-      while i < stage.__childrenRemoved.length
-        @removeDisplayObject stage.__childrenRemoved[i]
-        i++
       
-      # LOU TODO: Should this be specific to WebGLRenderer?
-      # update any textures	
-      i = 0
-      while i < BaseTexture.texturesToUpdate.length
-        @updateTexture BaseTexture.texturesToUpdate[i]
-        i++
+      # set the flipped matrix..
+      gl.uniformMatrix4fv GLESShaders.shaderProgram.mvMatrixUniform, false, projectionMatrix
       
-      # empty out the arrays
-      stage.__childrenRemoved = []
-      stage.__childrenAdded = []
-      BaseTexture.texturesToUpdate = []
+      # TODO remove this by replacing visible with getter setters.. 
+      @checkVisibility @root, @root.visible
       
-      # recursivly loop through all items!
-      @checkVisibility stage, true
-      
-      # update the scene graph
-      stage.updateTransform()
-      gl = @gl
-      gl.useProgram @shaderProgram.handle
-
-      gl.clear gl.COLOR_BUFFER_BIT
-      gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], 0
-
-      # set the correct blend mode!
-      gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
-      gl.uniformMatrix4fv @mvMatrixUniform, false, @projectionMatrix
-      
-      # render all the batchs!
+      # will render all the elements in the group
       renderable = undefined
       i = 0
 
@@ -255,86 +71,163 @@ define 'Coffixi/renderers/GLESRenderer', [
         renderable = @batchs[i]
         if renderable instanceof Batch
           @batchs[i].render()
-        ++i
-      
-      return
+        else if renderable instanceof TilingSprite
+          @renderTilingSprite renderable, projectionMatrix  if renderable.visible
+        else @renderStrip renderable, projectionMatrix  if renderable.visible  if renderable instanceof Strip
+        i++
 
-    ###
-    @private
-    ###
+    renderSpecific: (displayObject, projectionMatrix) ->
+      GLESRenderer.updateTextures @textureFilter
+      gl = @gl
+      @checkVisibility displayObject, displayObject.visible
+      gl.uniformMatrix4fv GLESShaders.shaderProgram.mvMatrixUniform, false, projectionMatrix
+      
+      #console.log("SPECIFIC");
+      # to do!
+      # render part of the scene...
+      startIndex = undefined
+      startBatchIndex = undefined
+      endIndex = undefined
+      endBatchIndex = undefined
+      
+      # get NEXT Renderable!
+      nextRenderable = (if displayObject.renderable then displayObject else @getNextRenderable(displayObject))
+      startBatch = nextRenderable.batch
+      if nextRenderable instanceof Sprite
+        startBatch = nextRenderable.batch
+        head = startBatch.head
+        next = head
+        
+        # ok now we have the batch.. need to find the start index!
+        if head is nextRenderable
+          startIndex = 0
+        else
+          startIndex = 1
+          until head.__next is nextRenderable
+            startIndex++
+            head = head.__next
+      else
+        startBatch = nextRenderable
+      
+      # Get the LAST renderable object
+      lastRenderable = displayObject
+      endBatch = undefined
+      lastItem = displayObject
+      while lastItem.children.length > 0
+        lastItem = lastItem.children[lastItem.children.length - 1]
+        lastRenderable = lastItem  if lastItem.renderable
+      if lastRenderable instanceof Sprite
+        endBatch = lastRenderable.batch
+        head = endBatch.head
+        if head is lastRenderable
+          endIndex = 0
+        else
+          endIndex = 1
+          until head.__next is lastRenderable
+            endIndex++
+            head = head.__next
+      else
+        endBatch = lastRenderable
+      
+      # TODO - need to fold this up a bit!
+      if startBatch is endBatch
+        if startBatch instanceof Batch
+          startBatch.render startIndex, endIndex + 1
+        else if startBatch instanceof TilingSprite
+          @renderTilingSprite startBatch, projectionMatrix  if startBatch.visible
+        else if startBatch instanceof Strip
+          @renderStrip startBatch, projectionMatrix  if startBatch.visible
+        else startBatch.renderWebGL this, projectionMatrix  if startBatch.visible  if startBatch instanceof CustomRenderable
+        return
+      
+      # now we have first and last!
+      startBatchIndex = @batchs.indexOf(startBatch)
+      endBatchIndex = @batchs.indexOf(endBatch)
+      
+      # DO the first batch
+      if startBatch instanceof Batch
+        startBatch.render startIndex
+      else if startBatch instanceof TilingSprite
+        @renderTilingSprite startBatch, projectionMatrix  if startBatch.visible
+      else if startBatch instanceof Strip
+        @renderStrip startBatch, projectionMatrix  if startBatch.visible
+      else startBatch.renderWebGL this, projectionMatrix  if startBatch.visible  if startBatch instanceof CustomRenderable
+      
+      # DO the middle batchs..
+      i = startBatchIndex + 1
+
+      while i < endBatchIndex
+        renderable = @batchs[i]
+        if renderable instanceof Batch
+          @batchs[i].render()
+        else if renderable instanceof TilingSprite
+          @renderTilingSprite renderable, projectionMatrix  if renderable.visible
+        else if renderable instanceof Strip
+          @renderStrip renderable, projectionMatrix  if renderable.visible
+        else renderable.renderWebGL this, projectionMatrix  if renderable.visible  if renderable instanceof CustomRenderable
+        i++
+      
+      # DO the last batch..
+      if endBatch instanceof Batch
+        endBatch.render 0, endIndex + 1
+      else if endBatch instanceof TilingSprite
+        @renderTilingSprite endBatch  if endBatch.visible
+      else if endBatch instanceof Strip
+        @renderStrip endBatch  if endBatch.visible
+      else endBatch.renderWebGL this, projectionMatrix  if endBatch.visible  if endBatch instanceof CustomRenderable
+
+    checkVisibility: (displayObject, globalVisible) ->
+      
+      # give the dp a refference to its renderGroup...
+      children = displayObject.children
+      
+      #displayObject.worldVisible = globalVisible;
+      i = 0
+
+      while i < children.length
+        child = children[i]
+        
+        # TODO optimize... shouldt need to loop through everything all the time
+        child.worldVisible = child.visible and globalVisible
+        
+        # everything should have a batch!
+        # time to see whats new!
+        if child.textureChange
+          child.textureChange = false
+          if child.worldVisible
+            @removeDisplayObject child
+            @addDisplayObject child
+        
+        # update texture!!
+        @checkVisibility child, child.worldVisible  if child.children.length > 0
+        i++
+
     addDisplayObject: (displayObject) ->
-      return  unless displayObject.stage # means it was removed
-      return  if displayObject.__inGLES #means it is already in GLES
       
-      #displayObject.cacheVisible = displayObject.visible;
+      # add a child to the render group..
+      displayObject.__renderGroup.removeDisplayObjectAndChildren displayObject  if displayObject.__renderGroup
       
-      # TODO if objects parent is not visible then dont add to stage!!!!
-      #if(!displayObject.visible)return;
-      displayObject.batch = null
+      # DONT htink this is needed?
+      # displayObject.batch = null;
+      displayObject.__renderGroup = this
       
       #displayObject.cacheVisible = true;
       return  unless displayObject.renderable
       
       # while looping below THE OBJECT MAY NOT HAVE BEEN ADDED
-      displayObject.__inGLES = true
+      #displayObject.__inWebGL = true;
+      previousSprite = @getPreviousRenderable(displayObject)
+      nextSprite = @getNextRenderable(displayObject)
       
       #
-      #	 *  LOOK FOR THE PREVIOUS SPRITE
-      #	 *  This part looks for the closest previous sprite that can go into a batch
-      #	 *  It keeps going back until it finds a sprite or the stage
-      #
-      previousSprite = displayObject
-      loop
-        if previousSprite.childIndex is 0
-          previousSprite = previousSprite.parent
-        else
-          previousSprite = previousSprite.parent.children[previousSprite.childIndex - 1]
-          
-          # what if the bloop has children???
-          
-          # keep diggin till we get to the last child
-          until previousSprite.children.length is 0
-            previousSprite = previousSprite.children[previousSprite.children.length - 1]
-        break  if previousSprite is displayObject.stage
-        break  unless not previousSprite.renderable or not previousSprite.__inGLES
-      
-      #while(!(previousSprite instanceof Sprite))
-      
-      #
-      #	 *  LOOK FOR THE NEXT SPRITE
-      #	 *  This part looks for the closest next sprite that can go into a batch
-      #	 *  it keeps looking until it finds a sprite or gets to the end of the display
-      #	 *  scene graph
-      #	 * 
-      #	 *  These look a lot scarier than the actually are...
-      #	 
-      nextSprite = displayObject
-      loop
-        
-        # moving forward!
-        # if it has no children.. 
-        if nextSprite.children.length is 0
-          
-          # go along to the parent..
-          while nextSprite.childIndex is nextSprite.parent.children.length - 1
-            nextSprite = nextSprite.parent
-            if nextSprite is displayObject.stage
-              nextSprite = null
-              break
-          nextSprite = nextSprite.parent.children[nextSprite.childIndex + 1]  if nextSprite
-        else
-          nextSprite = nextSprite.children[0]
-        break  unless nextSprite
-        break  unless not nextSprite.renderable or not nextSprite.__inGLES
-      
-      #
-      #	 * so now we have the next renderable and the previous renderable
-      #	 * 
-      #	 
+      #  * so now we have the next renderable and the previous renderable
+      #  * 
+      #  
       if displayObject instanceof Sprite
         previousBatch = undefined
         nextBatch = undefined
-
+        
+        #console.log( previousSprite)
         if previousSprite instanceof Sprite
           previousBatch = previousSprite.batch
           if previousBatch
@@ -342,17 +235,14 @@ define 'Coffixi/renderers/GLESRenderer', [
               previousBatch.insertAfter displayObject, previousSprite
               return
         else
+          
           # TODO reword!
           previousBatch = previousSprite
-
         if nextSprite
-          if not (nextSprite instanceof Sprite)
-            # TODO re-word!
-            nextBatch = nextSprite
-          else
+          if nextSprite instanceof Sprite
             nextBatch = nextSprite.batch
             
-            #batch may not exist if item was added to the display list but not to the GLES
+            #batch may not exist if item was added to the display list but not to the webGL
             if nextBatch
               if nextBatch.texture is displayObject.texture.baseTexture and nextBatch.blendMode is displayObject.blendMode
                 nextBatch.insertBefore displayObject, nextSprite
@@ -370,36 +260,63 @@ define 'Coffixi/renderers/GLESRenderer', [
                   #              * seems the new sprite is in the middle of a batch
                   #              * lets split it.. 
                   #              
-                  batch = Batch._getBatch(@gl)
+                  batch = GLESRenderer.getBatch()
                   index = @batchs.indexOf(previousBatch)
                   batch.init displayObject
                   @batchs.splice index + 1, 0, batch, splitBatch
                   return
+          else
+            
+            # TODO re-word!
+            nextBatch = nextSprite
+        
         #
         #    * looks like it does not belong to any batch!
         #    * but is also not intersecting one..
         #    * time to create anew one!
         #    
-        batch = Batch._getBatch(@gl)
+        batch = GLESRenderer.getBatch()
         batch.init displayObject
-        if previousBatch
+        if previousBatch # if this is invalid it means
           index = @batchs.indexOf(previousBatch)
           @batchs.splice index + 1, 0, batch
         else
           @batchs.push batch
+      else if displayObject instanceof TilingSprite
+        
+        # add to a batch!!
+        @initTilingSprite displayObject
+        @batchs.push displayObject
+      else if displayObject instanceof Strip
+        
+        # add to a batch!!
+        @initStrip displayObject
+        @batchs.push displayObject
       
       # if its somthing else... then custom codes!
       @batchUpdate = true
 
-    ###
-    @private
-    ###
+    addDisplayObjectAndChildren: (displayObject) ->
+      
+      # TODO - this can be faster - but not as important right now
+      @addDisplayObject displayObject
+      children = displayObject.children
+      i = 0
+
+      while i < children.length
+        @addDisplayObjectAndChildren children[i]
+        i++
+
     removeDisplayObject: (displayObject) ->
       
-      #if(displayObject.stage)return;
-      displayObject.cacheVisible = false #displayObject.visible;
+      # loop through children..
+      # display object //
+      
+      # add a child from the render group..
+      # remove it and all its children!
+      #displayObject.cacheVisible = false;//displayObject.visible;
+      displayObject.__renderGroup = null
       return  unless displayObject.renderable
-      displayObject.__inGLES = false
       
       #
       #  * removing is a lot quicker..
@@ -429,109 +346,445 @@ define 'Coffixi/renderers/GLESRenderer', [
           
           # wha - eva! just get of the empty batch!
           @batchs.splice index, 1
-          Batch._returnBatch batchToRemove  if batchToRemove instanceof Batch
+          GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
           return
         if @batchs[index - 1] instanceof Batch and @batchs[index + 1] instanceof Batch
           if @batchs[index - 1].texture is @batchs[index + 1].texture and @batchs[index - 1].blendMode is @batchs[index + 1].blendMode
             
             #console.log("MERGE")
             @batchs[index - 1].merge @batchs[index + 1]
-            Batch._returnBatch batchToRemove  if batchToRemove instanceof Batch
-            Batch._returnBatch @batchs[index + 1]
+            GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
+            GLESRenderer.returnBatch @batchs[index + 1]
             @batchs.splice index, 2
             return
         @batchs.splice index, 1
-        Batch._returnBatch batchToRemove  if batchToRemove instanceof Batch
+        GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
+
+    removeDisplayObjectAndChildren: (displayObject) ->
+      # TODO - this can be faster - but not as important right now
+      return  unless displayObject.__renderGroup is this
+      @removeDisplayObject displayObject
+      children = displayObject.children
+      i = 0
+
+      while i < children.length
+        @removeDisplayObjectAndChildren children[i]
+        i++
 
     ###
-    resizes the GLES view to the specified width and height
-    @method resize
-    @param width {Number} the new width of the GLES view
-    @param height {Number} the new height of the GLES view
-    @param scale {Number} the size of one game-pixel in device-pixels
+    @private
     ###
-    resize: (width, height, scale) ->
-      @width = Math.round width
-      @height = Math.round height
-      @scale = scale
+    getNextRenderable: (displayObject) ->
+      #
+      #  *  LOOK FOR THE NEXT SPRITE
+      #  *  This part looks for the closest next sprite that can go into a batch
+      #  *  it keeps looking until it finds a sprite or gets to the end of the display
+      #  *  scene graph
+      #  * 
+      #  *  These look a lot scarier than the actually are...
+      #  
+      nextSprite = displayObject
+      loop
+        
+        # moving forward!
+        # if it has no children.. 
+        if nextSprite.children.length is 0
+          
+          #maynot have a parent
+          return null  unless nextSprite.parent
+          
+          # go along to the parent..
+          while nextSprite.childIndex is nextSprite.parent.children.length - 1
+            nextSprite = nextSprite.parent
+            
+            #console.log(">" + nextSprite);
+            #       console.log(">-" + this.root);
+            if nextSprite is @root or not nextSprite.parent #displayObject.stage)
+              nextSprite = null
+              break
+          nextSprite = nextSprite.parent.children[nextSprite.childIndex + 1]  if nextSprite
+        else
+          nextSprite = nextSprite.children[0]
+        break  unless nextSprite
+        break unless not nextSprite.renderable or not nextSprite.__renderGroup
+      nextSprite
+
+    getPreviousRenderable: (displayObject) ->
+      #
+      #  *  LOOK FOR THE PREVIOUS SPRITE
+      #  *  This part looks for the closest previous sprite that can go into a batch
+      #  *  It keeps going back until it finds a sprite or the stage
+      #  
+      previousSprite = displayObject
+      loop
+        if previousSprite.childIndex is 0
+          previousSprite = previousSprite.parent
+          return null  unless previousSprite
+        else
+          previousSprite = previousSprite.parent.children[previousSprite.childIndex - 1]
+          
+          # what if the bloop has children???
+          
+          # keep diggin till we get to the last child
+          previousSprite = previousSprite.children[previousSprite.children.length - 1]  until previousSprite.children.length is 0
+        break  if previousSprite is @root
+        break unless not previousSprite.renderable or not previousSprite.__renderGroup
+      previousSprite
+
+    ###
+    @private
+    ###
+    initTilingSprite: (sprite) ->
       gl = @gl
-      @offsetX = (@getContainerWidth() - (@width*scale)) / 2
-      @offsetY = (@getContainerHeight() - (@height*scale)) / 2
-      gl.viewport @offsetX, @offsetY, @width*scale, @height*scale
+      
+      # make the texture tilable..
+      sprite.verticies = new Utils.Float32Array([0, 0, sprite.width, 0, sprite.width, sprite.height, 0, sprite.height])
+      sprite.uvs = new Utils.Float32Array([0, 0, 1, 0, 1, 1, 0, 1])
+      sprite.colors = new Utils.Float32Array([1, 1, 1, 1])
+      sprite.indices = new Utils.Uint16Array([0, 1, 3, 2]) #, 2]);
+      sprite._vertexBuffer = gl.createBuffer()
+      sprite._indexBuffer = gl.createBuffer()
+      sprite._uvBuffer = gl.createBuffer()
+      sprite._colorBuffer = gl.createBuffer()
+      gl.bindBuffer gl.ARRAY_BUFFER, sprite._vertexBuffer
+      gl.bufferData gl.ARRAY_BUFFER, sprite.verticies, gl.STATIC_DRAW
+      gl.bindBuffer gl.ARRAY_BUFFER, sprite._uvBuffer
+      gl.bufferData gl.ARRAY_BUFFER, sprite.uvs, gl.DYNAMIC_DRAW
+      gl.bindBuffer gl.ARRAY_BUFFER, sprite._colorBuffer
+      gl.bufferData gl.ARRAY_BUFFER, sprite.colors, gl.STATIC_DRAW
+      gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, sprite._indexBuffer
+      gl.bufferData gl.ELEMENT_ARRAY_BUFFER, sprite.indices, gl.STATIC_DRAW
+      
+      #    return ( (x > 0) && ((x & (x - 1)) == 0) );
+      if sprite.texture.baseTexture._glTexture
+        gl.bindTexture gl.TEXTURE_2D, sprite.texture.baseTexture._glTexture
+        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT
+        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT
+        sprite.texture.baseTexture._powerOf2 = true
+      else
+        sprite.texture.baseTexture._powerOf2 = true
+
+    ###
+    @private
+    ###
+    renderStrip: (strip, projectionMatrix) ->
+      gl = @gl
+      shaderProgram = GLESShaders.shaderProgram
+      
+      # mat
+      mat4Real = Matrix.mat3.toMat4(strip.worldTransform)
+      Matrix.mat4.transpose mat4Real
+      Matrix.mat4.multiply projectionMatrix, mat4Real, mat4Real
+      gl.uniformMatrix4fv shaderProgram.mvMatrixUniform, false, mat4Real
+      if strip.blendMode is Sprite.blendModes.NORMAL
+        gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+      else
+        gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_COLOR
+      unless strip.dirty
+        gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
+        gl.bufferSubData gl.ARRAY_BUFFER, 0, strip.verticies
+        gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+        
+        # update the uvs
+        gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
+        gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.activeTexture gl.TEXTURE0
+        gl.bindTexture gl.TEXTURE_2D, strip.texture.baseTexture._glTexture
+        gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
+        gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+        
+        # dont need to upload!
+        gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
+      else
+        strip.dirty = false
+        gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
+        gl.bufferData gl.ARRAY_BUFFER, strip.verticies, gl.STATIC_DRAW
+        gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+        
+        # update the uvs
+        gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
+        gl.bufferData gl.ARRAY_BUFFER, strip.uvs, gl.STATIC_DRAW
+        gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.activeTexture gl.TEXTURE0
+        gl.bindTexture gl.TEXTURE_2D, strip.texture.baseTexture._glTexture
+        gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
+        gl.bufferData gl.ARRAY_BUFFER, strip.colors, gl.STATIC_DRAW
+        gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+        
+        # dont need to upload!
+        gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
+        gl.bufferData gl.ELEMENT_ARRAY_BUFFER, strip.indices, gl.STATIC_DRAW
+      
+      #console.log(gl.TRIANGLE_STRIP)
+      gl.drawElements gl.TRIANGLE_STRIP, strip.indices.length, gl.UNSIGNED_SHORT, 0
+      gl.uniformMatrix4fv shaderProgram.mvMatrixUniform, false, projectionMatrix
+
+    ###
+    @private
+    ###
+    renderTilingSprite: (sprite, projectionMatrix) ->
+      gl = @gl
+      shaderProgram = GLESShaders.shaderProgram
+      tilePosition = sprite.tilePosition
+      tileScale = sprite.tileScale
+      offsetX = tilePosition.x / sprite.texture.baseTexture.width
+      offsetY = tilePosition.y / sprite.texture.baseTexture.height
+      scaleX = (sprite.width / sprite.texture.baseTexture.width) / tileScale.x
+      scaleY = (sprite.height / sprite.texture.baseTexture.height) / tileScale.y
+      sprite.uvs[0] = 0 - offsetX
+      sprite.uvs[1] = 0 - offsetY
+      sprite.uvs[2] = (1 * scaleX) - offsetX
+      sprite.uvs[3] = 0 - offsetY
+      sprite.uvs[4] = (1 * scaleX) - offsetX
+      sprite.uvs[5] = (1 * scaleY) - offsetY
+      sprite.uvs[6] = 0 - offsetX
+      sprite.uvs[7] = (1 * scaleY) - offsetY
+      gl.bindBuffer gl.ARRAY_BUFFER, sprite._uvBuffer
+      gl.bufferSubData gl.ARRAY_BUFFER, 0, sprite.uvs
+      @renderStrip sprite, projectionMatrix
+
+    ###
+    @private
+    ###
+    initStrip: (strip) ->
+      
+      # build the strip!
+      gl = @gl
+      shaderProgram = @shaderProgram
+      strip._vertexBuffer = gl.createBuffer()
+      strip._indexBuffer = gl.createBuffer()
+      strip._uvBuffer = gl.createBuffer()
+      strip._colorBuffer = gl.createBuffer()
+      gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
+      gl.bufferData gl.ARRAY_BUFFER, strip.verticies, gl.DYNAMIC_DRAW
+      gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
+      gl.bufferData gl.ARRAY_BUFFER, strip.uvs, gl.STATIC_DRAW
+      gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
+      gl.bufferData gl.ARRAY_BUFFER, strip.colors, gl.STATIC_DRAW
+      gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
+      gl.bufferData gl.ELEMENT_ARRAY_BUFFER, strip.indices, gl.STATIC_DRAW
+
+  Batch = undefined
+
+  ###
+  Draws the stage and all its content with pseudo-openGL ES 2. This Render works by automatically managing Batches. So no need for Sprite Batches or Sprite Clouds
+  @class GLESRenderer
+  @constructor
+  @param width {Number} the width of the canvas view
+  @default 0
+  @param height {Number} the height of the canvas view
+  @default 0
+  @param view {Canvas} the canvas to use as a view, optional
+  @param transparent {Boolean} the transparency of the render view, default false
+  @default false
+  ###
+  class GLESRenderer
+    @GLESRenderGroup: GLESRenderGroup
+    @setBatchClass: (BatchClass) ->
+      Batch = BatchClass
+    constructor: (@gl, width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
+      #console.log(transparent)
+      @transparent = !!transparent
+      @width = width or 800
+      @height = height or 600
+      
+      @initShaders()
+      gl = GLESRenderer.gl = @gl
+      @batch = new Batch(gl)
+      gl.disable gl.DEPTH_TEST
+      gl.disable gl.CULL_FACE
+      gl.enable gl.BLEND
+      gl.colorMask true, true, true, @transparent
+      @projectionMatrix = Matrix.mat4.create()
+      @resize @width, @height
+      @contextLost = false
+      @stageRenderGroup = new GLESRenderGroup gl, @textureFilter
+
+    ###
+    @private
+    ###
+    @getBatch: ->
+      if Batch._batchs.length is 0
+        return new Batch(GLESRenderer.gl)
+      else
+        return Batch._batchs.pop()
+
+    ###
+    @private
+    ###
+    @returnBatch: (batch) ->
+      batch.clean()
+      Batch._batchs.push batch
+
+    ###
+    @private
+    ###
+    initShaders: ->
+      gl = @gl
+      fragmentShader = GLESShaders.CompileFragmentShader(gl, GLESShaders.shaderFragmentSrc)
+      vertexShader = GLESShaders.CompileVertexShader(gl, GLESShaders.shaderVertexSrc)
+      GLESShaders.shaderProgram = {}
+      GLESShaders.shaderProgram.handle = gl.createProgram()
+      shaderProgram = GLESShaders.shaderProgram
+      gl.attachShader shaderProgram.handle, vertexShader
+      gl.attachShader shaderProgram.handle, fragmentShader
+      gl.linkProgram shaderProgram.handle
+
+      if not gl.getProgramParameter(shaderProgram.handle, gl.LINK_STATUS)
+        alert "Could not initialise shaders"
+
+      gl.useProgram shaderProgram.handle
+      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram.handle, "aVertexPosition")
+      gl.enableVertexAttribArray shaderProgram.vertexPositionAttribute
+      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram.handle, "aTextureCoord")
+      gl.enableVertexAttribArray shaderProgram.textureCoordAttribute
+      shaderProgram.colorAttribute = gl.getAttribLocation(shaderProgram.handle, "aColor")
+      gl.enableVertexAttribArray shaderProgram.colorAttribute
+      shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram.handle, "uMVMatrix")
+      shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram.handle, "uSampler")
+
+    ###
+    Renders the stage to its webGL view
+    @method render
+    @param stage {Stage} the Stage element to be rendered
+    ###
+    render: (stage) ->
+      return  if @contextLost
+      
+      # if rendering a new stage clear the batchs..
+      if @__stage isnt stage
+        
+        # TODO make this work
+        # dont think this is needed any more?
+        #if(this.__stage)this.checkVisibility(this.__stage, false)
+        @__stage = stage
+        @stageRenderGroup.setRenderable stage
+      
+      # TODO not needed now... 
+      # update children if need be
+      # best to remove first!
+      #for (var i=0; i < stage.__childrenRemoved.length; i++)
+      # {
+      #   var group = stage.__childrenRemoved[i].__renderGroup
+      #   if(group)group.removeDisplayObject(stage.__childrenRemoved[i]);
+      # }
+      
+      # update any textures 
+      GLESRenderer.updateTextures @textureFilter
+      
+      # recursivly loop through all items!
+      #this.checkVisibility(stage, true);
+      
+      # update the scene graph  
+      stage.updateTransform()
+      gl = @gl
+      
+      # -- Does this need to be set every frame? -- //
+      gl.colorMask true, true, true, @transparent
+      gl.viewport 0, 0, @width, @height
+      
+      # set the correct matrix..  
+      # gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.projectionMatrix);
+      gl.bindFramebuffer gl.FRAMEBUFFER, null
+      gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], @transparent
+      gl.clear gl.COLOR_BUFFER_BIT
+      @stageRenderGroup.backgroundColor = stage.backgroundColorSplit
+      @stageRenderGroup.render @projectionMatrix
+      
+      # interaction
+      # run interaction!
+      if stage.interactive
+        
+        #need to add some events!
+        unless stage._interactiveEventsAdded
+          stage._interactiveEventsAdded = true
+          stage.interactionManager.setTarget this
+      
+      # after rendering lets confirm all frames that have been uodated..
+      if Texture.frameUpdates.length > 0
+        i = 0
+
+        while i < Texture.frameUpdates.length
+          Texture.frameUpdates[i].updateFrame = false
+          i++
+        Texture.frameUpdates = []
+
+    ###
+    @private
+    ###
+    @updateTextures: (textureFilter) ->
+      i = 0
+
+      while i < BaseTexture.texturesToUpdate.length
+        @updateTexture BaseTexture.texturesToUpdate[i], textureFilter
+        i++
+      i = 0
+
+      while i < BaseTexture.texturesToDestroy.length
+        @destroyTexture BaseTexture.texturesToDestroy[i]
+        i++
+      BaseTexture.texturesToUpdate = []
+      BaseTexture.texturesToDestroy = []
+
+    ###
+    @private
+    ###
+    @getGLFilterMode: (filterMode) ->
+      switch filterMode
+        when BaseTexture.filterModes.NEAREST
+          glFilterMode = @gl.NEAREST
+        when BaseTexture.filterModes.LINEAR
+          glFilterMode = @gl.LINEAR
+        else
+          console.warn 'Unexpected value for filterMode: ' + filterMode + '. Defaulting to LINEAR'
+          glFilterMode = @gl.LINEAR
+      return glFilterMode
+
+    @updateTexture: (texture, defaultFilterMode) ->
+      if texture.filterMode?
+        filterMode = texture.filterMode
+      else
+        filterMode = defaultFilterMode
+
+      gl = GLESRenderer.gl
+      texture._glTexture = gl.createTexture()  unless texture._glTexture
+      if texture.hasLoaded
+        gl.bindTexture gl.TEXTURE_2D, texture._glTexture
+        gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true
+        gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.source
+        glFilterMode = @getGLFilterMode filterMode
+        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode
+        gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
+        
+        # reguler...
+        unless texture._powerOf2
+          gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
+          gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
+        else
+          gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT
+          gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT
+        gl.bindTexture gl.TEXTURE_2D, null
+    
+    destroyTexture: (texture) ->
+      gl = @gl
+      if texture._glTexture
+        texture._glTexture = gl.createTexture()
+        gl.deleteTexture gl.TEXTURE_2D, texture._glTexture
+
+    ###
+    resizes the webGL view to the specified width and height
+    @method resize
+    @param width {Number} the new width of the webGL view
+    @param height {Number} the new height of the webGL view
+    ###
+    resize: (width, height) ->
+      @width = width
+      @height = height
+      @gl.viewport 0, 0, @width, @height
       projectionMatrix = @projectionMatrix
       projectionMatrix[0] = 2 / @width
       projectionMatrix[5] = -2 / @height
       projectionMatrix[12] = -1
       projectionMatrix[13] = 1
-
-      if (@resizeFilter != BaseTexture.filterModes.NEAREST) or scale == 1
-        gl.enable gl.BLEND
-        @render = @__render
-      else
-        @initFB()
-
-        widthCoord = @width / @rttFramebuffer.width
-        heightCoord = @height / @rttFramebuffer.height
-
-        buf = new GLESRenderer.Float32Array 24
-        buf[ 0] = -1
-        buf[ 1] = -1
-        buf[ 2] = 0
-        buf[ 3] = 0
-        buf[ 4] = 1
-        buf[ 5] = -1
-        buf[ 6] = widthCoord
-        buf[ 7] = 0
-        buf[ 8] = -1
-        buf[ 9] = 1
-        buf[10] = 0
-        buf[11] = heightCoord
-        buf[12] = -1
-        buf[13] = 1
-        buf[14] = 0
-        buf[15] = heightCoord
-        buf[16] = 1
-        buf[17] = -1
-        buf[18] = widthCoord
-        buf[19] = 0
-        buf[20] = 1
-        buf[21] = 1
-        buf[22] = widthCoord
-        buf[23] = heightCoord
-        @screenCoordBuffer = buf
-
-        screenProgram = @screenProgram
-        gl.useProgram screenProgram.handle
-        
-        gl.bindBuffer gl.ARRAY_BUFFER, @screenCoordBufferHandle
-        gl.bufferData gl.ARRAY_BUFFER, @screenCoordBuffer, gl.STATIC_DRAW
-
-        @render = (stage) =>
-          return  if @contextLost
-
-          gl.bindFramebuffer gl.FRAMEBUFFER, @rttFramebuffer.handle
-          gl.viewport 0,0, @width, @height
-
-          gl.enable gl.BLEND
-          @__render(stage)
-          gl.useProgram screenProgram.handle
-
-          gl.bindFramebuffer gl.FRAMEBUFFER, null
-          gl.viewport @offsetX, @offsetY, @width*scale, @height*scale
-
-          gl.activeTexture gl.TEXTURE0
-          gl.bindTexture gl.TEXTURE_2D, @rttTexture
-
-          gl.bindBuffer gl.ARRAY_BUFFER, @screenCoordBufferHandle
-          gl.enableVertexAttribArray screenProgram.vertexPositionAttribute
-          gl.vertexAttribPointer screenProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 16, 0
-
-          gl.enableVertexAttribArray screenProgram.textureCoordAttribute
-          gl.vertexAttribPointer screenProgram.textureCoordAttribute, 2, gl.FLOAT, false, 16, 8
-
-          gl.disable gl.BLEND
-          gl.drawArrays gl.TRIANGLES, 0, @screenCoordBuffer.length / 4
-    
-    getView: -> @view
 
   return GLESRenderer

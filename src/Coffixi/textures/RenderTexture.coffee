@@ -2,23 +2,25 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/textures/BaseTexture', [
+define 'Coffixi/textures/RenderTexture', [
   '../Rectangle'
   '../utils/EventTarget'
   '../utils/Matrix'
   '../renderers/CanvasRenderer'
-  '../renderers/WebGLRenderer'
+  '../renderers/GLESRenderer'
   './BaseTexture'
+  './Texture'
 ], (
   Rectangle
   EventTarget
   Matrix
   CanvasRenderer
-  WebGLRenderer
+  GLESRenderer
   BaseTexture
+  Texture
 ) ->
 
-  WebGLRenderGroup = WebGLRenderer.WebGLRenderGroup
+  GLESRenderGroup = GLESRenderer.GLESRenderGroup
 
   ###
   A RenderTexture is a special texture that allows any pixi displayObject to be rendered to it.
@@ -49,7 +51,7 @@ define 'Coffixi/textures/BaseTexture', [
   @param height {Number}
   ###
   class RenderTexture extends Texture
-    constructor: (width, height) ->
+    constructor: (width, height, @textureFilter=BaseTexture.filterModes.LINEAR, @filterMode=BaseTexture.filterModes.LINEAR) ->
       # LOU TODO: Can we just call original Texture super?
       EventTarget.call this
 
@@ -57,13 +59,13 @@ define 'Coffixi/textures/BaseTexture', [
       @height = height or 100
       @indetityMatrix = Matrix.mat3.create()
       @frame = new Rectangle(0, 0, @width, @height)
-      if WebGLRenderer.gl
-        @initWebGL()
+      if GLESRenderer.gl
+        @initGLES()
       else
         @initCanvas()
 
-    initWebGL: ->
-      gl = WebGLRenderer.gl
+    initGLES: ->
+      gl = GLESRenderer.gl
       @glFramebuffer = gl.createFramebuffer()
       gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
       @glFramebuffer.width = @width
@@ -74,8 +76,9 @@ define 'Coffixi/textures/BaseTexture', [
       @baseTexture._glTexture = gl.createTexture()
       gl.bindTexture gl.TEXTURE_2D, @baseTexture._glTexture
       gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, @width, @height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR
+      filterMode = GLESRenderer.getGLFilterMode @filterMode
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filterMode
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filterMode
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
       @baseTexture.isRender = true
@@ -90,7 +93,7 @@ define 'Coffixi/textures/BaseTexture', [
       @projectionMatrix[12] = -1
       
       # set the correct render function..
-      @render = @renderWebGL
+      @render = @renderGLES
 
     initCanvas: ->
       @renderer = new CanvasRenderer(@width, @height, null, 0)
@@ -104,8 +107,8 @@ define 'Coffixi/textures/BaseTexture', [
     @param displayObject {DisplayObject}
     @param clear {Boolean} If true the texture will be cleared before the displayObject is drawn
     ###
-    renderWebGL: (displayObject, clear) ->
-      gl = WebGLRenderer.gl
+    renderGLES: (displayObject, clear) ->
+      gl = GLESRenderer.gl
       
       # enable the alpha color mask..
       gl.colorMask true, true, true, true
@@ -133,7 +136,7 @@ define 'Coffixi/textures/BaseTexture', [
         else
           renderGroup.renderSpecific displayObject, @projectionMatrix
       else
-        @renderGroup = new WebGLRenderGroup(gl)  unless @renderGroup
+        @renderGroup = new GLESRenderGroup(gl, @textureFilter)  unless @renderGroup
         @renderGroup.setRenderable displayObject
         @renderGroup.render @projectionMatrix
 
