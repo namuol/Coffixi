@@ -574,7 +574,6 @@ define 'Coffixi/renderers/GLESRenderer', [
   @default 0
   @param height {Number} the height of the canvas view
   @default 0
-  @param view {Canvas} the canvas to use as a view, optional
   @param transparent {Boolean} the transparency of the render view, default false
   @default false
   ###
@@ -582,7 +581,7 @@ define 'Coffixi/renderers/GLESRenderer', [
     @GLESRenderGroup: GLESRenderGroup
     @setBatchClass: (BatchClass) ->
       Batch = BatchClass
-    constructor: (@gl, width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
+    constructor: (@gl, width, height, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
       #console.log(transparent)
       @transparent = !!transparent
       @width = width or 800

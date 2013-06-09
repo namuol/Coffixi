@@ -47,7 +47,7 @@ define 'Coffixi/renderers/WebGLRenderer', [
 
       GLESRenderer.setBatchClass WebGLBatch
 
-      super webGL, width, height, view, transparent, textureFilter
+      super webGL, width, height, transparent, textureFilter
 
     ###
     @private
