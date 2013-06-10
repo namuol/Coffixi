@@ -399,7 +399,8 @@ define 'Coffixi/renderers/WebGLBatch', [
           @verticies[index + 7] = 0
         indexRun++
         displayObject = displayObject.__next
-
+      return
+    
     ###
     Draws the batch to the frame buffer
     @method render

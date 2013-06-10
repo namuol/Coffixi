@@ -80,8 +80,8 @@ define 'Coffixi/renderers/WebGLRenderer', [
     resize: (width, height) ->
       @view.width = width
       @view.height = height
-      super width, height
-    
+      super
+        
     getView: -> @view
     getContainerWidth: -> @view.width
     getContainerHeight: -> @view.height

@@ -680,7 +680,7 @@ define 'Coffixi/renderers/GLESRenderer', [
       
       # -- Does this need to be set every frame? -- //
       gl.colorMask true, true, true, @transparent
-      gl.viewport 0, 0, @width, @height
+      gl.viewport @viewportX, @viewportY, @viewportWidth, @viewportHeight
       
       # set the correct matrix..  
       # gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.projectionMatrix);
@@ -689,15 +689,6 @@ define 'Coffixi/renderers/GLESRenderer', [
       gl.clear gl.COLOR_BUFFER_BIT
       @stageRenderGroup.backgroundColor = stage.backgroundColorSplit
       @stageRenderGroup.render @projectionMatrix
-      
-      # interaction
-      # run interaction!
-      if stage.interactive
-        
-        #need to add some events!
-        unless stage._interactiveEventsAdded
-          stage._interactiveEventsAdded = true
-          stage.interactionManager.setTarget this
       
       # after rendering lets confirm all frames that have been uodated..
       if Texture.frameUpdates.length > 0
@@ -776,13 +767,20 @@ define 'Coffixi/renderers/GLESRenderer', [
     @param width {Number} the new width of the webGL view
     @param height {Number} the new height of the webGL view
     ###
-    resize: (width, height) ->
+    resize: (width, height, viewportWidth, viewportHeight, viewportX, viewportY) ->
       @width = width
       @height = height
-      @gl.viewport 0, 0, @width, @height
+      
+      @viewportX = viewportX ? 0
+      @viewportY = viewportY ? 0
+
+      @viewportWidth = viewportWidth ? @width
+      @viewportHeight = viewportHeight ? @height
+      @gl.viewport @viewportX, @viewportY, @viewportWidth, @viewportHeight
+      
       projectionMatrix = @projectionMatrix
-      projectionMatrix[0] = 2 / @width
-      projectionMatrix[5] = -2 / @height
+      projectionMatrix[0] = 2 / @viewportWidth
+      projectionMatrix[5] = -2 / @viewportHeight
       projectionMatrix[12] = -1
       projectionMatrix[13] = 1
 

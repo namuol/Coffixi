@@ -96,17 +96,7 @@ define 'Coffixi/renderers/CanvasRenderer', [
       @context.setTransform 1, 0, 0, 1, 0, 0
       @context.clearRect 0, 0, @width, @height
       @renderDisplayObject stage
-      
-      #as
-      
-      # run interaction!
-      if stage.interactive
-        
-        #need to add some events!
-        unless stage._interactiveEventsAdded
-          stage._interactiveEventsAdded = true
-          stage.interactionManager.setTarget this
-      
+            
       # remove frame updates..
       Texture.frameUpdates = []  if Texture.frameUpdates.length > 0
 
@@ -115,9 +105,16 @@ define 'Coffixi/renderers/CanvasRenderer', [
     @param the new width of the canvas view
     @param the new height of the canvas view
     ###
-    resize: (width, height) ->
+    resize: (width, height, viewportWidth, viewportHeight, viewportX, viewportY) ->
       @width = width
       @height = height
+      
+      @viewportX = viewportX ? 0
+      @viewportY = viewportY ? 0
+
+      @viewportWidth = viewportWidth ? @width
+      @viewportHeight = viewportHeight ? @height
+      
       @view.width = width
       @view.height = height
 
