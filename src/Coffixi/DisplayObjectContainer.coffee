@@ -168,10 +168,9 @@ define 'Coffixi/DisplayObjectContainer', [
     @method clearChildren
     ###
     clearChildren: ->
-      if @stage
-        for child in @children
-          @stage.__removeChild child
-          child.parent = undefined
+      children = @children.slice 0
+      for child in children
+        @removeChild child
       @children = []
 
     ###
