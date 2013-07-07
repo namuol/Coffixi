@@ -82,21 +82,29 @@ define 'Coffixi/Sprite', [
     # LOU TODO: Decide if we really want these.
     # OOH! shiney new getters and setters for width and height
     # The width and height now modify the scale (this is what flash does, nice and tidy!)
-    # Object.defineProperty Sprite::, "width",
-    #   get: ->
-    #     @scaleX * @texture.frame.width
+    Object.defineProperty Sprite::, "width",
+      get: ->
+        if @texture
+          @scaleX * @texture.frame.width
+        else
+          @_width
 
-    #   set: (value) ->
-    #     @scaleX = value / @texture.frame.width
-    #     @_width = value
+      set: (value) ->
+        @_width = value
+        if @texture
+          @scaleX = value / @texture.frame.width
 
-    # Object.defineProperty Sprite::, "height",
-    #   get: ->
-    #     @scaleY * @texture.frame.height
+    Object.defineProperty Sprite::, "height",
+      get: ->
+        if @texture
+          @scaleY * @texture.frame.height
+        else
+          @_height
 
-    #   set: (value) ->
-    #     @scaleY = value / @texture.frame.height
-    #     @_height = value
+      set: (value) ->
+        @_height = value
+        if @texture
+          @scaleY = value / @texture.frame.height
 
     ###
     @method setTexture
