@@ -75,11 +75,12 @@ define 'Coffixi/display/Sprite', [
       ###
       @_height = 0
 
-      if texture.baseTexture.hasLoaded
-        @updateFrame = true
-      else
-        @onTextureUpdateBind = @onTextureUpdate.bind(this)
-        @texture.addEventListener "update", @onTextureUpdateBind
+      if @texture?
+        if @texture.baseTexture.hasLoaded
+          @updateFrame = true
+        else
+          @onTextureUpdateBind = @onTextureUpdate.bind(this)
+          @texture.addEventListener "update", @onTextureUpdateBind
 
       @renderable = true
 
@@ -119,7 +120,8 @@ define 'Coffixi/display/Sprite', [
     ###
     setTexture: (texture) ->
       # stop current texture;
-      @textureChange = true  unless @texture.baseTexture is texture.baseTexture
+      if @texture? and @texture.baseTexture isnt texture.baseTexture
+        @textureChange = true
       @texture = texture
       @updateFrame = true
 

@@ -915,7 +915,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       #	}
       
       # update any textures	
-      GLESRenderer.updateTextures()
+      GLESRenderer.updateTextures @textureFilter
       
       # recursivly loop through all items!
       #this.checkVisibility(stage, true);
