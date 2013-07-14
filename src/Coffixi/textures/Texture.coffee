@@ -3,10 +3,10 @@
 ###
 
 define 'Coffixi/textures/Texture', [
-  '../utils/EventTarget'
+  'Coffixi/utils/EventTarget'
   './BaseTexture'
-  '../Rectangle'
-  '../Point'
+  'Coffixi/core/Rectangle'
+  'Coffixi/core/Point'
 ], (
   EventTarget
   BaseTexture
@@ -15,30 +15,29 @@ define 'Coffixi/textures/Texture', [
 ) ->
 
   ###
-  A texture stores the information that represents an image or part of an image. It cannot be added to the display list directly. To do this use Sprite. If no frame is provided then the whole image is used
+  A texture stores the information that represents an image or part of an image. It cannot be added
+  to the display list directly. To do this use Sprite. If no frame is provided then the whole image is used
+
   @class Texture
-  @extends EventTarget
+  @uses EventTarget
   @constructor
-  @param baseTexture {BaseTexture}
-  @param frmae {Rectangle}
+  @param baseTexture {BaseTexture} The base texture source to create the texture from
+  @param frmae {Rectangle} The rectangle frame of the texture to show
   ###
   class Texture extends EventTarget
     @cache: {}
-    @frameCache: {}
+    @frameUpdates: []
     constructor: (baseTexture, frame) ->
       super
 
-      if not frame
+      unless frame
         @noFrame = true
         frame = new Rectangle(0, 0, 1, 1)
-
-      @trim = new Point()
-
-      if baseTexture instanceof Texture
-        baseTexture = baseTexture.baseTexture
-    
+      baseTexture = baseTexture.baseTexture  if baseTexture instanceof Texture
+      
       ###
       The base texture of this texture
+      
       @property baseTexture
       @type BaseTexture
       ###
@@ -46,37 +45,62 @@ define 'Coffixi/textures/Texture', [
       
       ###
       The frame specifies the region of the base texture that this texture uses
+      
       @property frame
-      @type #Rectangle
+      @type Rectangle
       ###
       @frame = frame
+      
+      ###
+      The trim point
+      
+      @property trim
+      @type Point
+      ###
+      @trim = new Point()
       @scope = this
       if baseTexture.hasLoaded
         frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
+        
+        #console.log(frame)
         @setFrame frame
       else
         scope = this
-        baseTexture.on "loaded", ->
+        baseTexture.addEventListener "loaded", ->
           scope.onBaseTextureLoaded()
 
+    ###
+    Called when the base texture is loaded
+
+    @method onBaseTextureLoaded
+    @param event
+    @private
+    ###
     onBaseTextureLoaded: (event) ->
       baseTexture = @baseTexture
-      baseTexture.off 'loaded', @onLoaded
+      baseTexture.removeEventListener "loaded", @onLoaded
       @frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
       @noFrame = false
       @width = @frame.width
       @height = @frame.height
-      @scope.emit
+      @scope.dispatchEvent
         type: "update"
         content: this
 
+    ###
+    Destroys this texture
+
+    @method destroy
+    @param destroyBase {Boolean} Whether to destroy the base texture as well
+    ###
     destroy: (destroyBase) ->
       @baseTexture.destroy()  if destroyBase
 
     ###
     Specifies the rectangle region of the baseTexture
+
     @method setFrame
-    @param frame {Rectangle}
+    @param frame {Rectangle} The frame of the texture to set it to
     ###
     setFrame: (frame) ->
       @frame = frame
@@ -89,12 +113,15 @@ define 'Coffixi/textures/Texture', [
     getPixel: (x,y) -> @baseTexture.getPixel @frame.x + x, @frame.y + y
     beginRead: -> @baseTexture.beginRead()
     endRead: -> @baseTexture.endRead()
+    
     ###
     Helper function that returns a texture based on an image url
     If the image is not in the texture cache it will be  created and loaded
+
     @static
     @method fromImage
     @param imageUrl {String} The image url of the texture
+    @param crossorigin {Boolean} Whether requests should be treated as crossorigin
     @return Texture
     ###
     @fromImage: (imageUrl, crossorigin) ->
@@ -107,19 +134,21 @@ define 'Coffixi/textures/Texture', [
     ###
     Helper function that returns a texture based on a frame id
     If the frame id is not in the texture cache an error will be thrown
+
+    @static
     @method fromFrame
     @param frameId {String} The frame id of the texture
     @return Texture
     ###
     @fromFrame: (frameId) ->
       texture = Texture.cache[frameId]
-      unless texture
-        throw new Error("The frameId '" + frameId + "' does not exist in the texture cache " + this)
+      throw new Error("The frameId '" + frameId + "' does not exist in the texture cache " + this)  unless texture
       texture
 
     ###
     Helper function that returns a texture based on a canvas element
     If the canvas is not in the texture cache it will be  created and loaded
+
     @static
     @method fromCanvas
     @param canvas {Canvas} The canvas element source of the texture
@@ -131,6 +160,7 @@ define 'Coffixi/textures/Texture', [
 
     ###
     Adds a texture to the textureCache.
+
     @static
     @method addTextureToCache
     @param texture {Texture}
@@ -141,6 +171,7 @@ define 'Coffixi/textures/Texture', [
 
     ###
     Remove a texture from the textureCache.
+
     @static
     @method removeTextureFromCache
     @param id {String} the id of the texture to be removed
@@ -150,6 +181,3 @@ define 'Coffixi/textures/Texture', [
       texture = Texture.cache[id]
       Texture.cache[id] = null
       texture
-
-    # this is more for webGL.. it contains updated frames..
-    @frameUpdates = []

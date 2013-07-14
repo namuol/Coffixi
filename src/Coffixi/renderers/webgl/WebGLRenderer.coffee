@@ -1,7 +1,7 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define 'Coffixi/renderers/WebGLRenderer', [
+define 'Coffixi/renderers/webgl/WebGLRenderer', [
   './GLESRenderer'
   './WebGLBatch'
 ], (
@@ -28,19 +28,22 @@ define 'Coffixi/renderers/WebGLRenderer', [
       @view.width = @width
       @view.height = @height
       
-      # deal with losing context..
-      @view.addEventListener "webglcontextlost", ((event) =>
-        @handleContextLost event
+      # deal with losing context..  
+      scope = this
+      @view.addEventListener "webglcontextlost", ((event) ->
+        scope.handleContextLost event
       ), false
-      @view.addEventListener "webglcontextrestored", ((event) =>
-        @handleContextRestored event
+      @view.addEventListener "webglcontextrestored", ((event) ->
+        scope.handleContextRestored event
       ), false
+
       @batchs = []
       try
         webGL = @view.getContext("experimental-webgl",
           alpha: @transparent
-          antialias: false # SPEED UP??
-          premultipliedAlpha: true
+          antialias: true # SPEED UP??
+          premultipliedAlpha: false
+          stencil: true
         )
       catch e
         throw new Error(" This browser does not support webGL. Try using the canvas renderer" + this)
@@ -48,7 +51,6 @@ define 'Coffixi/renderers/WebGLRenderer', [
       GLESRenderer.setBatchClass WebGLBatch
 
       super webGL, width, height, transparent, textureFilter
-
     ###
     @private
     ###

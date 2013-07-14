@@ -3,18 +3,19 @@
 ###
 
 define 'Coffixi/extras/Strip', [
-  '../utils/Utils'
-  '../DisplayObjectContainer'
-  '../Sprite'
+  'Coffixi/display/DisplayObjectContainer'
+  'Coffixi/display/Sprite'
+  'Coffixi/utils/Utils'
 ], (
-  Utils
   DisplayObjectContainer
   Sprite
+  Utils
 ) ->
 
   class Strip extends DisplayObjectContainer
     constructor: (texture, width, height) ->
       super
+
       @texture = texture
       @blendMode = Sprite.blendModes.NORMAL
       try
@@ -29,10 +30,10 @@ define 'Coffixi/extras/Strip', [
         @indices = [0, 1, 2, 3]
       
       #
-      # this.uvs = new Utils.Float32Array()
-      # this.verticies = new Utils.Float32Array()
-      # this.colors = new Utils.Float32Array()
-      # this.indices = new Utils.Uint16Array()
+      #	this.uvs = new Utils.Float32Array()
+      #	this.verticies = new Utils.Float32Array()
+      #	this.colors = new Utils.Float32Array()
+      #	this.indices = new Utils.Uint16Array()
       #
       @width = width
       @height = height
@@ -48,7 +49,6 @@ define 'Coffixi/extras/Strip', [
       @renderable = true
 
     setTexture: (texture) ->
-      
       #TODO SET THE TEXTURES
       #TODO VISIBILITY
       
