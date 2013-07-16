@@ -30,10 +30,12 @@ define 'Coffixi/textures/Texture', [
     constructor: (baseTexture, frame) ->
       super
 
-      unless frame
+      if not frame
         @noFrame = true
         frame = new Rectangle(0, 0, 1, 1)
-      baseTexture = baseTexture.baseTexture  if baseTexture instanceof Texture
+
+      if baseTexture instanceof Texture
+        baseTexture = baseTexture.baseTexture
       
       ###
       The base texture of this texture
@@ -66,7 +68,7 @@ define 'Coffixi/textures/Texture', [
         @setFrame frame
       else
         scope = this
-        baseTexture.addEventListener "loaded", ->
+        baseTexture.on "loaded", ->
           scope.onBaseTextureLoaded()
 
     ###
@@ -78,12 +80,12 @@ define 'Coffixi/textures/Texture', [
     ###
     onBaseTextureLoaded: (event) ->
       baseTexture = @baseTexture
-      baseTexture.removeEventListener "loaded", @onLoaded
+      baseTexture.off "loaded", @onLoaded
       @frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
       @noFrame = false
       @width = @frame.width
       @height = @frame.height
-      @scope.dispatchEvent
+      @scope.emit
         type: "update"
         content: this
 
@@ -106,7 +108,8 @@ define 'Coffixi/textures/Texture', [
       @frame = frame
       @width = frame.width
       @height = frame.height
-      throw new Error("Texture Error: frame does not fit inside the base Texture dimensions " + this)  if frame.x + frame.width > @baseTexture.width or frame.y + frame.height > @baseTexture.height
+      if frame.x + frame.width > @baseTexture.width or frame.y + frame.height > @baseTexture.height
+        throw new Error("Texture Error: frame does not fit inside the base Texture dimensions " + this)
       @updateFrame = true
       Texture.frameUpdates.push this
 

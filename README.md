@@ -14,9 +14,11 @@ I want to keep the pixi.js code doing what it does best: rendering sprites.
 Simpler APIs have fewer disagreements with other games/game engines.
 
 ### What's Changed?
-Only a few things have been removed, so far:
-* `Strip`s & `Rope`s (from `extras`)
-It's also likely that the Interactivity functionality will be removed.
+Some things have been removed:
+* Interactivity
+* MovieClip
+* Text
+* `Rope` (from `extras`)
 
 I also intend to change any parts of the API as needed to integrate with my
 engine or other games/engines.

@@ -156,11 +156,12 @@ define 'Coffixi/textures/RenderTexture', [
       #TODO -? create a new one??? dont think so!
       displayObject.worldTransform = Matrix.mat3.create() #sthis.indetityMatrix;
       # modify to flip...
-      displayObject.worldTransform[4] = -1
-      displayObject.worldTransform[5] = @projection.y * 2
-      if position
-        displayObject.worldTransform[2] = position.x
-        displayObject.worldTransform[5] -= position.y
+      # LOU TODO: Don't think we really need this.      
+      # displayObject.worldTransform[4] = -1
+      # displayObject.worldTransform[5] = @projection.y * 2
+      # if position
+      #   displayObject.worldTransform[2] = position.x
+      #   displayObject.worldTransform[5] -= position.y
       i = 0
       j = children.length
 

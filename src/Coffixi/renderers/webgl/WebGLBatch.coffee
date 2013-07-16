@@ -52,6 +52,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       while i < WebGLBatch.length
         WebGLBatch[i].restoreLostContext gl
         i++
+      return
 
     constructor: (gl) ->
       @gl = gl
@@ -235,6 +236,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       while sprite
         sprite.batch = this
         sprite = sprite.__next
+      return
 
     ###
     Grows the size of the batch. As the elements in the batch cannot have a dynamic size this
@@ -311,14 +313,16 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
         frame = texture.frame
         tw = texture.baseTexture.width
         th = texture.baseTexture.height
-        @uvs[index + 0] = frame.x / tw
-        @uvs[index + 1] = frame.y / th
-        @uvs[index + 2] = (frame.x + frame.width) / tw
-        @uvs[index + 3] = frame.y / th
-        @uvs[index + 4] = (frame.x + frame.width) / tw
-        @uvs[index + 5] = (frame.y + frame.height) / th
-        @uvs[index + 6] = frame.x / tw
-        @uvs[index + 7] = (frame.y + frame.height) / th
+        fx = frame.x
+        fy = frame.y
+        @uvs[index + 0] = fx / tw
+        @uvs[index + 1] = fy / th
+        @uvs[index + 2] = (fx + frame.width) / tw
+        @uvs[index + 3] = fy / th
+        @uvs[index + 4] = (fx + frame.width) / tw
+        @uvs[index + 5] = (fy + frame.height) / th
+        @uvs[index + 6] = fx / tw
+        @uvs[index + 7] = (fy + frame.height) / th
         displayObject.updateFrame = false
         colorIndex = indexRun * 4
         @colors[colorIndex] = @colors[colorIndex + 1] = @colors[colorIndex + 2] = @colors[colorIndex + 3] = displayObject.worldAlpha
@@ -416,6 +420,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
           @verticies[index + 7] = 0
         indexRun++
         displayObject = displayObject.__next
+      return
 
     ###
     Draws the batch to the frame buffer

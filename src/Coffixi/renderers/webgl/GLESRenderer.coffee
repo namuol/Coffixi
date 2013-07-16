@@ -939,15 +939,6 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @stageRenderGroup.backgroundColor = stage.backgroundColorSplit
       @stageRenderGroup.render GLESRenderer.projection
       
-      # interaction
-      # run interaction!
-      if stage.interactive
-        
-        #need to add some events!
-        unless stage._interactiveEventsAdded
-          stage._interactiveEventsAdded = true
-          stage.interactionManager.setTarget this
-      
       # after rendering lets confirm all frames that have been uodated..
       if Texture.frameUpdates.length > 0
         i = 0
@@ -1017,10 +1008,11 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
         
         # reguler...
-        unless texture._powerOf2
+        if true or (not texture._powerOf2) or glFilterMode is gl.NEAREST # LOU TODO HACK
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
         else
+          console.log 'GL_REPEAT'
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT
         gl.bindTexture gl.TEXTURE_2D, null
@@ -1033,7 +1025,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     @param texture {Texture} The texture to update
     @private
     ###
-    destroyTexture: (texture) ->
+    @destroyTexture: (texture) ->
       gl = @gl
       if texture._glTexture
         texture._glTexture = gl.createTexture()

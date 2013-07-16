@@ -64,7 +64,7 @@ define 'Coffixi/display/Sprite', [
       @type Number
       @private
       ###
-      @_width = 0
+      @_width ?= 0
       
       ###
       The height of the sprite (this is initially set by the texture)
@@ -73,7 +73,7 @@ define 'Coffixi/display/Sprite', [
       @type Number
       @private
       ###
-      @_height = 0
+      @_height ?= 0
 
       if @texture?
         if @texture.baseTexture.hasLoaded
@@ -84,33 +84,41 @@ define 'Coffixi/display/Sprite', [
 
       @renderable = true
 
-    # ###
-    # The width of the sprite, setting this will actually modify the scale to acheive the value set
+    ###
+    The width of the sprite, setting this will actually modify the scale to acheive the value set
 
-    # @property width
-    # @type Number
-    # ###
-    # Object.defineProperty Sprite::, "width",
-    #   get: ->
-    #     @scaleX * @texture.frame.width
+    @property width
+    @type Number
+    ###
+    Object.defineProperty Sprite::, "width",
+      get: ->
+        if @texture
+          @scaleX * @texture.frame.width
+        else
+          @_width
 
-    #   set: (value) ->
-    #     @scaleX = value / @texture.frame.width
-    #     @_width = value
+      set: (value) ->
+        @_width = value
+        if @texture
+          @scaleX = value / @texture.frame.width
 
-    # ###
-    # The height of the sprite, setting this will actually modify the scale to acheive the value set
+    ###
+    The height of the sprite, setting this will actually modify the scale to acheive the value set
 
-    # @property height
-    # @type Number
-    # ###
-    # Object.defineProperty Sprite::, "height",
-    #   get: ->
-    #     @scaleY * @texture.frame.height
+    @property height
+    @type Number
+    ###
+    Object.defineProperty Sprite::, "height",
+      get: ->
+        if @texture
+          @scaleY * @texture.frame.height
+        else
+          @_height
 
-    #   set: (value) ->
-    #     @scaleY = value / @texture.frame.height
-    #     @_height = value
+      set: (value) ->
+        @_height = value
+        if @texture
+          @scaleY = value / @texture.frame.height
 
     ###
     Sets the texture of the sprite

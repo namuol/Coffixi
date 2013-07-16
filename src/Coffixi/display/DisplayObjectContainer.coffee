@@ -61,7 +61,6 @@ define 'Coffixi/display/DisplayObjectContainer', [
       if @stage
         tmpChild = child
         loop
-          @stage.dirty = true  if tmpChild.interactive
           tmpChild.stage = @stage
           tmpChild = tmpChild._iNext
           break unless tmpChild
@@ -114,12 +113,11 @@ define 'Coffixi/display/DisplayObjectContainer', [
     ###
     addChildAt: (child, index) ->
       if index >= 0 and index <= @children.length
-        child.parent.removeChild child  unless child.parent is `undefined`
+        child.parent.removeChild(child)  if child.parent?
         child.parent = this
         if @stage
           tmpChild = child
           loop
-            @stage.dirty = true  if tmpChild.interactive
             tmpChild.stage = @stage
             tmpChild = tmpChild._iNext
             break unless tmpChild
@@ -257,7 +255,6 @@ define 'Coffixi/display/DisplayObjectContainer', [
         if @stage
           tmpChild = child
           loop
-            @stage.dirty = true  if tmpChild.interactive
             tmpChild.stage = null
             tmpChild = tmpChild._iNext
             break unless tmpChild
