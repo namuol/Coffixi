@@ -5,7 +5,7 @@
 define 'Coffixi/renderers/webgl/GLESRenderer', [
   'Coffixi/utils/Utils'
   'Coffixi/utils/Module'
-  'Coffixi/utils/Matrix'
+  'Coffixi/core/Matrix'
   'Coffixi/display/Sprite'
   'Coffixi/textures/BaseTexture'
   'Coffixi/textures/Texture'
