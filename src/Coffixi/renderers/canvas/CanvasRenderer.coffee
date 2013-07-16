@@ -3,7 +3,7 @@
 ###
 
 define 'Coffixi/renderers/CanvasRenderer', [
-  '../Sprite'
+  'Coffixi/display/Sprite'
   '../textures/BaseTexture'
   '../textures/Texture'
   '../utils/Module'

@@ -1,10 +1,10 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define 'Coffixi/renderers/WebGLBatch', [
-  '../utils/Utils'
-  '../utils/Module'
-  '../Sprite'
+define 'Coffixi/renderers/webgl/WebGLBatch', [
+  'Coffixi/utils/Utils'
+  'Coffixi/utils/Module'
+  'Coffixi/display/Sprite'
   './GLESShaders'
 ], (
   Utils

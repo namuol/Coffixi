@@ -1,15 +1,16 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define 'Coffixi/renderers/GLESRenderer', [
-  '../utils/Utils'
-  '../utils/Module'
-  '../utils/Matrix'
-  '../Sprite'
-  '../textures/BaseTexture'
-  '../textures/Texture'
-  '../Rectangle'
+define 'Coffixi/renderers/webgl/GLESRenderer', [
+  'Coffixi/utils/Utils'
+  'Coffixi/utils/Module'
+  'Coffixi/core/Matrix'
+  'Coffixi/display/Sprite'
+  'Coffixi/textures/BaseTexture'
+  'Coffixi/textures/Texture'
+  'Coffixi/core/Rectangle'
   './GLESShaders'
+  'Coffixi/extras/TilingSprite'
 ], (
   Utils
   Module
@@ -19,6 +20,7 @@ define 'Coffixi/renderers/GLESRenderer', [
   Texture
   Rectangle
   GLESShaders
+  TilingSprite
 ) ->
   
   ###

@@ -2,10 +2,10 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/Sprite', [
-  './Point'
-  './DisplayObjectContainer'
-  './textures/Texture'
+define 'Coffixi/display/Sprite', [
+  'Coffixi/core/Point'
+  'Coffixi/display/DisplayObjectContainer'
+  'Coffixi/textures/Texture'
 ], (
   Point
   DisplayObjectContainer

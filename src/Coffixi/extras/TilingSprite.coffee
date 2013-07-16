@@ -3,10 +3,10 @@
 ###
 
 define 'Coffixi/extras/TilingSprite', [
-  '../utils/Utils'
-  '../Point'
-  '../DisplayObjectContainer'
-  '../Sprite'
+  'Coffixi/utils/Utils'
+  'Coffixi/core/Point'
+  'Coffixi/display/DisplayObjectContainer'
+  'Coffixi/display/Sprite'
 ], (
   Utils
   Point

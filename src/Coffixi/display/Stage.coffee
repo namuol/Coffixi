@@ -2,10 +2,10 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/Stage', [
-  './utils/Utils'
-  './utils/Matrix'
-  './DisplayObjectContainer'
+define 'Coffixi/display/Stage', [
+  'Coffixi/utils/Utils'
+  'Coffixi/core/Matrix'
+  'Coffixi/display/DisplayObjectContainer'
 ], (
   Utils
   Matrix

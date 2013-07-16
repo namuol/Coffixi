@@ -2,7 +2,7 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/renderers/GLESShaders', ->
+define 'Coffixi/renderers/webgl/GLESShaders', ->
   GLESShaders = {}
 
   GLESShaders.shaderVertexSrc = [

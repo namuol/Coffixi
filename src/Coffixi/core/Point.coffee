@@ -2,7 +2,7 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/Point', ->
+define 'Coffixi/core/Point', ->
   ###
   The Point object represents a location in a two-dimensional coordinate system, where x represents the horizontal axis and y represents the vertical axis.
   @class Point

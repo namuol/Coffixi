@@ -1,7 +1,8 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
-define 'Coffixi/renderers/WebGLRenderer', [
+
+define 'Coffixi/renderers/webgl/WebGLRenderer', [
   './GLESRenderer'
   './WebGLBatch'
 ], (

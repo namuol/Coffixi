@@ -3,11 +3,11 @@
 ###
 
 define 'Coffixi/textures/RenderTexture', [
-  '../Rectangle'
-  '../utils/EventTarget'
-  '../utils/Matrix'
-  '../renderers/CanvasRenderer'
-  '../renderers/GLESRenderer'
+  'Coffixi/core/Rectangle'
+  'Coffixi/utils/EventTarget'
+  'Coffixi/core/Matrix'
+  'Coffixi/renderers/canvas/CanvasRenderer'
+  'Coffixi/renderers/webgl/GLESRenderer'
   './BaseTexture'
   './Texture'
 ], (

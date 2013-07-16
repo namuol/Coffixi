@@ -5,8 +5,8 @@
 define 'Coffixi/textures/Texture', [
   '../utils/EventTarget'
   './BaseTexture'
-  '../Rectangle'
-  '../Point'
+  'Coffixi/core/Rectangle'
+  'Coffixi/core/Point'
 ], (
   EventTarget
   BaseTexture

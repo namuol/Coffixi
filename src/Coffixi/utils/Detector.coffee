@@ -3,9 +3,9 @@
 ###
 
 define 'Coffixi/utils/Detector', [
-  '../renderers/WebGLRenderer'
-  '../renderers/CanvasRenderer'
-  '../textures/BaseTexture'
+  'Coffixi/renderers/webgl/WebGLRenderer'
+  'Coffixi/renderers/canvas/CanvasRenderer'
+  'Coffixi/textures/BaseTexture'
 ], (
   WebGLRenderer
   CanvasRenderer

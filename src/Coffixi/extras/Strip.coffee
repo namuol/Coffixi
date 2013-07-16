@@ -4,8 +4,8 @@
 
 define 'Coffixi/extras/Strip', [
   '../utils/Utils'
-  '../DisplayObjectContainer'
-  '../Sprite'
+  'Coffixi/display/DisplayObjectContainer'
+  'Coffixi/display/Sprite'
 ], (
   Utils
   DisplayObjectContainer

@@ -3,7 +3,7 @@
 ###
 
 define 'Coffixi/extras/CustomRenderable', [
-  '../DisplayObject'
+  'Coffixi/display/DisplayObject'
 ], (
   DisplayObject
 ) ->

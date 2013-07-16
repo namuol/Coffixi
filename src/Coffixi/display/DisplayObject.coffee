@@ -2,9 +2,9 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/DisplayObject', [
-  './utils/Matrix'
-  './utils/Module'
+define 'Coffixi/display/DisplayObject', [
+  'Coffixi/core/Matrix'
+  'Coffixi/utils/Module'
 ], (
   Matrix
   Module  
