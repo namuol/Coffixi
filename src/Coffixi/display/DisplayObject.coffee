@@ -87,7 +87,7 @@ define 'Coffixi/display/DisplayObject', [
       @property stage
       @type Stage
       ###
-      @stage = null
+      @stage ?= null
       
       ###
       This is the defined area that will pick up mouse / touch events. It is null by default.
