@@ -7,21 +7,29 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
   'Coffixi/utils/Module'
   'Coffixi/core/Matrix'
   'Coffixi/display/Sprite'
+  'Coffixi/extras/TilingSprite'
+  'Coffixi/extras/Strip'
+  'Coffixi/primitives/Graphics'
   'Coffixi/textures/BaseTexture'
   'Coffixi/textures/Texture'
   'Coffixi/core/Rectangle'
   'Coffixi/core/Point'
-  './GLESShaders'
+  'Coffixi/renderers/webgl/GLESShaders'
+  'Coffixi/renderers/webgl/GLESGraphics'
 ], (
   Utils
   Module
   Matrix
   Sprite
+  TilingSprite
+  Strip
+  Graphics
   BaseTexture
   Texture
   Rectangle
   Point
   GLESShaders
+  GLESGraphics
 ) ->
 
   Batch = undefined
@@ -837,6 +845,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       Batch = BatchClass
     constructor: (@gl, width, height, transparent, @textureFilter=BaseTexture.filterModes.LINEAR) ->
       # do a catch.. only 1 webGL renderer..
+      GLESGraphics.gl = @gl
+
       @transparent = !!transparent
       @width = width or 800
       @height = height or 600

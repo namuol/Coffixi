@@ -124,7 +124,7 @@ define 'Coffixi/display/DisplayObject', [
       @type Stage
       @readOnly
       ###
-      @stage = null
+      @stage ?= null
       
       ###
       [read-only] The index of this object in the parent's `children` array

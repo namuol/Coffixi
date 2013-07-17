@@ -4,17 +4,17 @@
 
 define 'Coffixi/renderers/webgl/GLESGraphics', [
   'Coffixi/core/Point'
+  'Coffixi/core/Matrix'
   'Coffixi/utils/PolyK'
   'Coffixi/primitives/Graphics'
   'Coffixi/renderers/webgl/GLESShaders'
-  'Coffixi/renderers/webgl/GLESRenderer'
   'Coffixi/utils/Utils'
 ], (
-  PolyK
   Point
+  Matrix
+  PolyK
   Graphics
   GLESShaders
-  GLESRenderer
   Utils
 ) ->
 
@@ -24,8 +24,6 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
   @class CanvasGraphics
   ###
   class GLESGraphics
-    constructor: ->
-
     ###
     Renders the graphics object
 
@@ -36,7 +34,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
     @param projection {Object}
     ###
     @renderGraphics: (graphics, projection) ->
-      gl = GLESRenderer.gl
+      gl = @gl
       unless graphics._GL
         graphics._GL =
           points: []
@@ -52,7 +50,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
           graphics._GL.points = []
           graphics._GL.indices = []
         GLESGraphics.updateGraphics graphics
-      GLESShaders.activatePrimitiveShader()
+      GLESShaders.activatePrimitiveShader gl
       m = Matrix.mat3.clone(graphics.worldTransform)
       Matrix.mat3.transpose m
       gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
@@ -65,7 +63,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
       gl.vertexAttribPointer GLESShaders.primitiveProgram.colorAttribute, 4, gl.FLOAT, false, 4 * 6, 2 * 4
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, graphics._GL.indexBuffer
       gl.drawElements gl.TRIANGLE_STRIP, graphics._GL.indices.length, gl.UNSIGNED_SHORT, 0
-      GLESShaders.activateDefaultShader()
+      GLESShaders.activateDefaultShader gl
 
     ###
     Updates the graphics object
@@ -88,7 +86,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
         else GLESGraphics.buildCircle data, graphics._GL  if data.type is Graphics.CIRC or data.type is Graphics.ELIP
         i++
       graphics._GL.lastIndex = graphics.graphicsData.length
-      gl = GLESRenderer.gl
+      gl = @gl
       graphics._GL.glPoints = new Utils.Float32Array(graphics._GL.points)
       gl.bindBuffer gl.ARRAY_BUFFER, graphics._GL.buffer
       gl.bufferData gl.ARRAY_BUFFER, graphics._GL.glPoints, gl.STATIC_DRAW

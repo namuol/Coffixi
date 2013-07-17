@@ -1,7 +1,7 @@
 ###
 @author Mat Groves http://matgroves.com/
 ###
-define 'Coffixi/extras/CustomRenderable', [
+define 'Coffixi/extras/TilingSprite', [
   'Coffixi/core/Point'
   'Coffixi/display/DisplayObjectContainer'
 ], (
