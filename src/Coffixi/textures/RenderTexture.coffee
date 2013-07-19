@@ -149,6 +149,8 @@ define 'Coffixi/textures/RenderTexture', [
       while i < j
         children[i].updateTransform()
         i++
-      @renderer.context.clearRect 0, 0, @width, @height  if clear
+      
+      if clear
+        @renderer.context.clearRect 0, 0, @width, @height
       @renderer.renderDisplayObject displayObject
       BaseTexture.texturesToUpdate.push @baseTexture

@@ -2,14 +2,14 @@
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
-define 'Coffixi/renderers/CanvasRenderer', [
+define 'Coffixi/renderers/canvas/CanvasRenderer', [
   'Coffixi/display/Sprite'
-  '../textures/BaseTexture'
-  '../textures/Texture'
-  '../utils/Module'
-  '../extras/Strip'
-  '../extras/TilingSprite'
-  '../extras/CustomRenderable'
+  'Coffixi/textures/BaseTexture'
+  'Coffixi/textures/Texture'
+  'Coffixi/utils/Module'
+  'Coffixi/extras/Strip'
+  'Coffixi/extras/TilingSprite'
+  'Coffixi/extras/CustomRenderable'
 ], (
   Sprite
   BaseTexture
