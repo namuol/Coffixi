@@ -479,7 +479,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       Matrix.mat4.multiply projectionMatrix, mat4Real, mat4Real
       gl.uniformMatrix4fv shaderProgram.mvMatrixUniform, false, mat4Real
       if strip.blendMode is Sprite.blendModes.NORMAL
-        gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+        gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
       else
         gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_COLOR
       unless strip.dirty
@@ -742,7 +742,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       texture._glTexture = gl.createTexture()  unless texture._glTexture
       if texture.hasLoaded
         gl.bindTexture gl.TEXTURE_2D, texture._glTexture
-        gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true
+        gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false
         gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.source
         glFilterMode = @getGLFilterMode filterMode
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode

@@ -420,7 +420,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       gl = @gl
       
       #TODO optimize this!
-      gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+      gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
       shaderProgram = GLESShaders.shaderProgram
       gl.useProgram shaderProgram.handle
       

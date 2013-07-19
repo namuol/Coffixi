@@ -41,7 +41,7 @@ define 'Coffixi/renderers/webgl/WebGLRenderer', [
         webGL = @view.getContext("experimental-webgl",
           alpha: @transparent
           antialias: false # SPEED UP??
-          premultipliedAlpha: true
+          premultipliedAlpha: false
         )
       catch e
         throw new Error(" This browser does not support webGL. Try using the canvas renderer" + this)
