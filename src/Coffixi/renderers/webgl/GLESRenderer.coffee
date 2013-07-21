@@ -104,7 +104,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         else if renderable instanceof Strip
           @renderStrip renderable, projection  if renderable.visible
         else if renderable instanceof Graphics
-          GLESGraphics.renderGraphics renderable, projection  if renderable.visible and renderable.renderable #, projectionMatrix);
+          GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable #, projectionMatrix);
         else if renderable instanceof FilterBlock
           
           #
