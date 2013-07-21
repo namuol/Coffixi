@@ -100,9 +100,9 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         if renderable instanceof Batch
           @batchs[i].render()
         else if renderable instanceof TilingSprite
-          @renderTilingSprite renderable, projection  if renderable.visible
+          @renderTilingSprite renderable, projection  if renderable.worldVisible
         else if renderable instanceof Strip
-          @renderStrip renderable, projection  if renderable.visible
+          @renderStrip renderable, projection  if renderable.worldVisible
         else if renderable instanceof Graphics
           GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable #, projectionMatrix);
         else if renderable instanceof FilterBlock

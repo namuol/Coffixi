@@ -205,6 +205,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         #	count++
         displayObject = displayObject._iNext
         break unless displayObject isnt testObject
+      return
 
     ###
     Renders a flat strip
