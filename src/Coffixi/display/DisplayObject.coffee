@@ -127,15 +127,6 @@ define 'Coffixi/display/DisplayObject', [
       @stage ?= null
       
       ###
-      [read-only] The index of this object in the parent's `children` array
-      
-      @property childIndex
-      @type Number
-      @readOnly
-      ###
-      @childIndex = 0
-      
-      ###
       [read-only] The multiplied alpha of the displayobject
       
       @property worldAlpha
@@ -386,3 +377,5 @@ define 'Coffixi/display/DisplayObject', [
     getGlobalY: -> 
       @updateTransform()
       @worldTransform[5]
+
+    getChildIndex: -> @parent.children.indexOf @

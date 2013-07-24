@@ -54,7 +54,6 @@ define 'Coffixi/display/DisplayObjectContainer', [
       
       #	return;
       child.parent = this
-      child.childIndex = @children.length
       @children.push child
       
       # updae the stage refference..
@@ -220,6 +219,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
         @children[index]
       else
         throw new Error(child + " Both the supplied DisplayObjects must be a child of the caller " + this)
+    
 
     ###
     Removes a child from the container.
@@ -263,12 +263,6 @@ define 'Coffixi/display/DisplayObjectContainer', [
         child.__renderGroup.removeDisplayObjectAndChildren child  if child.__renderGroup
         child.parent = `undefined`
         @children.splice index, 1
-
-        i = index
-        j = @children.length
-        while i < j
-          --@children[i].childIndex
-          ++i
       else
         throw new Error(child + " The supplied DisplayObject must be a child of the caller " + this)
     

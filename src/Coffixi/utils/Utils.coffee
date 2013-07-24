@@ -106,10 +106,8 @@ define 'Coffixi/utils/Utils', ->
     while tmp._iNext
       safe++
       
-      #		console.log(tmp.childIndex + tmp);
       tmp = tmp._iNext
-      console.log tmp #.childIndex);
-      #	console.log(tmp);
+      console.log tmp
       if safe > 100
         console.log "BREAK"
         break
