@@ -9,6 +9,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
   'Coffixi/display/Sprite'
   'Coffixi/extras/TilingSprite'
   'Coffixi/extras/Strip'
+  'Coffixi/extras/CustomRenderable'
+  'Coffixi/filters/FilterBlock'
   'Coffixi/primitives/Graphics'
   'Coffixi/textures/BaseTexture'
   'Coffixi/textures/Texture'
@@ -23,6 +25,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
   Sprite
   TilingSprite
   Strip
+  CustomRenderable
+  FilterBlock
   Graphics
   BaseTexture
   Texture
