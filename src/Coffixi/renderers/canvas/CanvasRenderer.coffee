@@ -160,9 +160,11 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         transform = displayObject.worldTransform
         unless displayObject.visible
           displayObject = displayObject.last._iNext
+          break  if displayObject is testObject
           continue
         unless displayObject.renderable
           displayObject = displayObject._iNext
+          break  if displayObject is testObject
           continue
         if displayObject instanceof Sprite
           frame = displayObject.texture.frame
