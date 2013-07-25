@@ -127,15 +127,6 @@ define 'Coffixi/display/DisplayObject', [
       @stage ?= null
       
       ###
-      [read-only] The index of this object in the parent's `children` array
-      
-      @property childIndex
-      @type Number
-      @readOnly
-      ###
-      @childIndex = 0
-      
-      ###
       [read-only] The multiplied alpha of the displayobject
       
       @property worldAlpha
@@ -379,3 +370,12 @@ define 'Coffixi/display/DisplayObject', [
       # because we are using affine transformation, we can optimise the matrix concatenation process.. wooo!
       # mat3.multiply(this.localTransform, this.parent.worldTransform, this.worldTransform);
       @worldAlpha = @alpha * @parent.worldAlpha
+
+    getGlobalX: ->
+      @updateTransform()
+      @worldTransform[2]
+    getGlobalY: -> 
+      @updateTransform()
+      @worldTransform[5]
+
+    getChildIndex: -> @parent.children.indexOf @

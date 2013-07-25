@@ -4,9 +4,11 @@
 define 'Coffixi/extras/TilingSprite', [
   'Coffixi/core/Point'
   'Coffixi/display/DisplayObjectContainer'
+  'Coffixi/display/Sprite'
 ], (
   Point
   DisplayObjectContainer
+  Sprite
 ) ->
 
   ###
