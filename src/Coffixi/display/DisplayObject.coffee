@@ -374,8 +374,36 @@ define 'Coffixi/display/DisplayObject', [
     getGlobalX: ->
       @updateTransform()
       @worldTransform[2]
-    getGlobalY: -> 
+    getGlobalY: ->
       @updateTransform()
       @worldTransform[5]
 
     getChildIndex: -> @parent.children.indexOf @
+    getTreeDepth: ->
+      return 0  if not @parent?
+      return 1 + @parent.getTreeDepth()
+
+    isAbove: (other) ->
+      a = @
+      b = other
+
+      otherDepth = other.getTreeDepth()
+      depth = @getTreeDepth()
+
+      loop
+        return true  if a.parent is b
+        return false  if b.parent is a
+
+        break  if (a.parent is b.parent) or (not a.parent?) or (not b.parent?)
+
+        if depth > otherDepth
+          a = a.parent
+          depth -= 1
+        else if otherDepth > depth
+          b = b.parent
+          otherDepth -= 1
+        else
+          a = a.parent
+          b = b.parent
+
+      return a.getChildIndex() > b.getChildIndex()
