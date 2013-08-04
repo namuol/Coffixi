@@ -162,7 +162,7 @@ define 'Coffixi/display/DisplayObject', [
       @type Array<>
       @private
       ###
-      @color = []
+      # @color = [] # LOU TODO: What is this for?
       
       ###
       [NYI] Holds whether or not this object is dynamic, for rendering optimization
@@ -378,7 +378,7 @@ define 'Coffixi/display/DisplayObject', [
       @updateTransform()
       @worldTransform[5]
 
-    getChildIndex: -> @parent.children.indexOf @
+    getChildIndex: -> @parent?.children.indexOf @ ? NaN
     getTreeDepth: ->
       return 0  if not @parent?
       return 1 + @parent.getTreeDepth()
