@@ -208,14 +208,14 @@ define 'Coffixi/text/Text', [
           if ctx.measureText(text.substring(0, p + 1)).width > wrapWidth
             p
           else
-            arguments_.callee ctx, text, p, end, wrapWidth
+            arguments.callee ctx, text, p, end, wrapWidth
         else
-          arguments_.callee ctx, text, start, p, wrapWidth
+          arguments.callee ctx, text, start, p, wrapWidth
 
       lineWrap = (ctx, text, wrapWidth) ->
         return text  if ctx.measureText(text).width <= wrapWidth or text.length < 1
         pos = searchWrapPos(ctx, text, 0, text.length, wrapWidth)
-        text.substring(0, pos) + "\n" + arguments_.callee(ctx, text.substring(pos), wrapWidth)
+        text.substring(0, pos) + "\n" + arguments.callee(ctx, text.substring(pos), wrapWidth)
 
       result = ""
       lines = text.split("\n")
