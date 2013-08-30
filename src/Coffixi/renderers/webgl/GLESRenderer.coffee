@@ -89,7 +89,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     render: (projection) ->
       GLESRenderer.updateTextures @textureFilter
       gl = @gl
-      gl.uniform2f GLESShaders.shaderProgram.projectionVector, projection.x, projection.y
+      gl.uniform2f GLESShaders.defaultShader.projectionVector, projection.x, projection.y
       gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
       
       # TODO remove this by replacing visible with getter setters.. 
@@ -149,8 +149,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       gl = @gl
       @checkVisibility displayObject, displayObject.visible
       
-      # gl.uniformMatrix4fv(GLESShaders.shaderProgram.mvMatrixUniform, false, projectionMatrix);
-      gl.uniform2f GLESShaders.shaderProgram.projectionVector, projection.x, projection.y
+      # gl.uniformMatrix4fv(GLESShaders.defaultShader.mvMatrixUniform, false, projectionMatrix);
+      gl.uniform2f GLESShaders.defaultShader.projectionVector, projection.x, projection.y
       
       # to do!
       # render part of the scene...
@@ -710,7 +710,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     ###
     renderStrip: (strip, projection) ->
       gl = @gl
-      shaderProgram = GLESShaders.shaderProgram
+      defaultShader = GLESShaders.defaultShader
       
       # mat
       #var mat4Real = Matrix.mat3.toMat4(strip.worldTransform);
@@ -738,15 +738,15 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       unless strip.dirty
         gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
         gl.bufferSubData gl.ARRAY_BUFFER, 0, strip.verticies
-        gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
         
         # update the uvs
         gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
-        gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
         gl.activeTexture gl.TEXTURE0
         gl.bindTexture gl.TEXTURE_2D, strip.texture.baseTexture._glTexture
         gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
-        gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.colorAttribute, 1, gl.FLOAT, false, 0, 0
         
         # dont need to upload!
         gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
@@ -754,17 +754,17 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         strip.dirty = false
         gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
         gl.bufferData gl.ARRAY_BUFFER, strip.verticies, gl.STATIC_DRAW
-        gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
         
         # update the uvs
         gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
         gl.bufferData gl.ARRAY_BUFFER, strip.uvs, gl.STATIC_DRAW
-        gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
         gl.activeTexture gl.TEXTURE0
         gl.bindTexture gl.TEXTURE_2D, strip.texture.baseTexture._glTexture
         gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
         gl.bufferData gl.ARRAY_BUFFER, strip.colors, gl.STATIC_DRAW
-        gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.colorAttribute, 1, gl.FLOAT, false, 0, 0
         
         # dont need to upload!
         gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
@@ -772,7 +772,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       
       #console.log(gl.TRIANGLE_STRIP);
       gl.drawElements gl.TRIANGLE_STRIP, strip.indices.length, gl.UNSIGNED_SHORT, 0
-      gl.useProgram GLESShaders.shaderProgram
+      gl.useProgram GLESShaders.defaultShader
 
 
     ###
@@ -785,7 +785,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     ###
     renderTilingSprite: (sprite, projectionMatrix) ->
       gl = @gl
-      shaderProgram = GLESShaders.shaderProgram
+      defaultShader = GLESShaders.defaultShader
       tilePosition = sprite.tilePosition
       tileScale = sprite.tileScale
       offsetX = tilePosition.x / sprite.texture.baseTexture.width
@@ -816,7 +816,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       
       # build the strip!
       gl = @gl
-      shaderProgram = @shaderProgram
+      defaultShader = @defaultShader
       strip._vertexBuffer = gl.createBuffer()
       strip._indexBuffer = gl.createBuffer()
       strip._uvBuffer = gl.createBuffer()
@@ -943,7 +943,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       gl.viewport 0, 0, @width, @height
       
       # set the correct matrix..	
-      #	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.projectionMatrix);
+      #	gl.uniformMatrix4fv(this.defaultShader.mvMatrixUniform, false, this.projectionMatrix);
       gl.bindFramebuffer gl.FRAMEBUFFER, null
       gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], not @transparent
       gl.clear gl.COLOR_BUFFER_BIT
@@ -1015,7 +1015,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       texture._glTexture = gl.createTexture()  unless texture._glTexture
       if texture.hasLoaded
         gl.bindTexture gl.TEXTURE_2D, texture._glTexture
-        gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true
+        gl.pixelStorei gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false
         gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.source
         glFilterMode = @getGLFilterMode filterMode
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode

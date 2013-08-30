@@ -440,22 +440,22 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       gl = @gl
       
       #TODO optimize this!
-      shaderProgram = GLESShaders.shaderProgram
-      gl.useProgram shaderProgram
+      defaultShader = GLESShaders.defaultShader
+      gl.useProgram defaultShader.program
       
       # update the verts..
       gl.bindBuffer gl.ARRAY_BUFFER, @vertexBuffer
-      
+
       # ok..
       gl.bufferSubData gl.ARRAY_BUFFER, 0, @verticies
-      gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+      gl.vertexAttribPointer defaultShader.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
       
       # update the uvs
       gl.bindBuffer gl.ARRAY_BUFFER, @uvBuffer
       if @dirtyUVS
         @dirtyUVS = false
         gl.bufferSubData gl.ARRAY_BUFFER, 0, @uvs
-      gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+      gl.vertexAttribPointer defaultShader.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
       gl.activeTexture gl.TEXTURE0
       gl.bindTexture gl.TEXTURE_2D, @texture._glTexture
       
@@ -464,7 +464,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       if @dirtyColors
         @dirtyColors = false
         gl.bufferSubData gl.ARRAY_BUFFER, 0, @colors
-      gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+      gl.vertexAttribPointer defaultShader.colorAttribute, 1, gl.FLOAT, false, 0, 0
       
       # dont need to upload!
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, @indexBuffer

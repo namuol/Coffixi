@@ -76,8 +76,9 @@ define 'Coffixi/textures/RenderTexture', [
       gl = GLESRenderer.gl
       @glFramebuffer = gl.createFramebuffer()
       gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
-      @glFramebuffer.width = @width
-      @glFramebuffer.height = @height
+      # LOU TODO: Do we need this?
+      # @glFramebuffer.width = @width
+      # @glFramebuffer.height = @height
       @baseTexture = new BaseTexture()
       @baseTexture.width = @width
       @baseTexture.height = @height
@@ -90,7 +91,8 @@ define 'Coffixi/textures/RenderTexture', [
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
       @baseTexture.isRender = true
-      gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
+      # gl.bindTexture gl.TEXTURE_2D, null
+      # gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
       gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, @baseTexture._glTexture, 0
       
       # create a projection matrix..
@@ -164,7 +166,6 @@ define 'Coffixi/textures/RenderTexture', [
       #   displayObject.worldTransform[5] -= position.y
       i = 0
       j = children.length
-
       while i < j
         children[i].updateTransform()
         i++
@@ -178,6 +179,7 @@ define 'Coffixi/textures/RenderTexture', [
         @renderGroup = new GLESRenderGroup(gl, @textureFilter)  unless @renderGroup
         @renderGroup.setRenderable displayObject
         @renderGroup.render @projection
+
 
     ###
     This function will draw the display object to the texture.

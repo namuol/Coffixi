@@ -7,7 +7,9 @@ define 'Coffixi/renderers/webgl/GLESShaders', ->
 
   # the default super fast shader!
   GLESShaders.shaderFragmentSrc = [
+    "#ifdef GL_ES",
     "precision mediump float;",
+    "#endif",
     "varying vec2 vTextureCoord;",
     "varying float vColor;",
     "uniform sampler2D uSampler;",
@@ -36,7 +38,9 @@ define 'Coffixi/renderers/webgl/GLESShaders', ->
 
   # the triangle strip shader..
   GLESShaders.stripShaderFragmentSrc = [
+    "#ifdef GL_ES",
     "precision mediump float;",
+    "#endif",
     "varying vec2 vTextureCoord;",
     "varying float vColor;",
     "uniform float alpha;",
@@ -65,7 +69,9 @@ define 'Coffixi/renderers/webgl/GLESShaders', ->
 
   # primitive shader..
   GLESShaders.primitiveShaderFragmentSrc = [
+    "#ifdef GL_ES",
     "precision mediump float;",
+    "#endif",
     "varying vec4 vColor;",
     "void main(void) {",
       "gl_FragColor = vColor;",
@@ -87,39 +93,42 @@ define 'Coffixi/renderers/webgl/GLESShaders', ->
   ]
 
   GLESShaders.initPrimitiveShader = (gl) ->
-    shaderProgram = GLESShaders.compileProgram(gl, GLESShaders.primitiveShaderVertexSrc, GLESShaders.primitiveShaderFragmentSrc)
-    gl.useProgram shaderProgram
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition")
-    shaderProgram.colorAttribute = gl.getAttribLocation(shaderProgram, "aColor")
-    shaderProgram.projectionVector = gl.getUniformLocation(shaderProgram, "projectionVector")
-    shaderProgram.translationMatrix = gl.getUniformLocation(shaderProgram, "translationMatrix")
-    shaderProgram.alpha = gl.getUniformLocation(shaderProgram, "alpha")
-    GLESShaders.primitiveProgram = shaderProgram
+    shader = {}
+    shader.program = GLESShaders.compileProgram(gl, GLESShaders.primitiveShaderVertexSrc, GLESShaders.primitiveShaderFragmentSrc)
+    gl.useProgram shader.program
+    shader.vertexPositionAttribute = gl.getAttribLocation(shader.program, "aVertexPosition")
+    shader.colorAttribute = gl.getAttribLocation(shader.program, "aColor")
+    shader.projectionVector = gl.getUniformLocation(shader.program, "projectionVector")
+    shader.translationMatrix = gl.getUniformLocation(shader.program, "translationMatrix")
+    shader.alpha = gl.getUniformLocation(shader.program, "alpha")
+    GLESShaders.primitiveShader = shader
 
   GLESShaders.initDefaultShader = (gl) ->
-    shaderProgram = GLESShaders.compileProgram(gl, GLESShaders.shaderVertexSrc, GLESShaders.shaderFragmentSrc)
-    gl.useProgram shaderProgram
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition")
-    shaderProgram.projectionVector = gl.getUniformLocation(shaderProgram, "projectionVector")
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord")
-    shaderProgram.colorAttribute = gl.getAttribLocation(shaderProgram, "aColor")
+    shader = {}
+    shader.program = GLESShaders.compileProgram(gl, GLESShaders.shaderVertexSrc, GLESShaders.shaderFragmentSrc)
+    gl.useProgram shader.program
+    shader.vertexPositionAttribute = gl.getAttribLocation(shader.program, "aVertexPosition")
+    shader.projectionVector = gl.getUniformLocation(shader.program, "projectionVector")
+    shader.textureCoordAttribute = gl.getAttribLocation(shader.program, "aTextureCoord")
+    shader.colorAttribute = gl.getAttribLocation(shader.program, "aColor")
     
-    # shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler")
-    GLESShaders.shaderProgram = shaderProgram
+    # shader.mvMatrixUniform = gl.getUniformLocation(shader.program, "uMVMatrix");
+    shader.samplerUniform = gl.getUniformLocation(shader.program, "uSampler")
+    GLESShaders.defaultShader = shader
 
   GLESShaders.initDefaultStripShader = (gl) ->
-    shaderProgram = GLESShaders.compileProgram(gl, GLESShaders.stripShaderVertexSrc, GLESShaders.stripShaderFragmentSrc)
-    gl.useProgram shaderProgram
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition")
-    shaderProgram.projectionVector = gl.getUniformLocation(shaderProgram, "projectionVector")
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord")
-    shaderProgram.translationMatrix = gl.getUniformLocation(shaderProgram, "translationMatrix")
-    shaderProgram.alpha = gl.getUniformLocation(shaderProgram, "alpha")
-    shaderProgram.colorAttribute = gl.getAttribLocation(shaderProgram, "aColor")
-    shaderProgram.projectionVector = gl.getUniformLocation(shaderProgram, "projectionVector")
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler")
-    GLESShaders.stripShaderProgram = shaderProgram
+    shader = {}
+    shader.program = GLESShaders.compileProgram(gl, GLESShaders.stripShaderVertexSrc, GLESShaders.stripShaderFragmentSrc)
+    gl.useProgram shader.program
+    shader.vertexPositionAttribute = gl.getAttribLocation(shader.program, "aVertexPosition")
+    shader.projectionVector = gl.getUniformLocation(shader.program, "projectionVector")
+    shader.textureCoordAttribute = gl.getAttribLocation(shader.program, "aTextureCoord")
+    shader.translationMatrix = gl.getUniformLocation(shader.program, "translationMatrix")
+    shader.alpha = gl.getUniformLocation(shader.program, "alpha")
+    shader.colorAttribute = gl.getAttribLocation(shader.program, "aColor")
+    shader.projectionVector = gl.getUniformLocation(shader.program, "projectionVector")
+    shader.samplerUniform = gl.getUniformLocation(shader.program, "uSampler")
+    GLESShaders.stripShader = shader
 
   GLESShaders.CompileVertexShader = (gl, shaderSrc) ->
     GLESShaders._CompileShader gl, shaderSrc, gl.VERTEX_SHADER
@@ -140,25 +149,25 @@ define 'Coffixi/renderers/webgl/GLESShaders', ->
   GLESShaders.compileProgram = (gl, vertexSrc, fragmentSrc) ->
     fragmentShader = GLESShaders.CompileFragmentShader(gl, fragmentSrc)
     vertexShader = GLESShaders.CompileVertexShader(gl, vertexSrc)
-    shaderProgram = gl.createProgram()
-    gl.attachShader shaderProgram, vertexShader
-    gl.attachShader shaderProgram, fragmentShader
-    gl.linkProgram shaderProgram
-    alert "Could not initialise shaders"  unless gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)
-    shaderProgram
+    program = gl.createProgram()
+    gl.attachShader program, vertexShader
+    gl.attachShader program, fragmentShader
+    gl.linkProgram program
+    alert "Could not initialise shaders"  unless gl.getProgramParameter(program, gl.LINK_STATUS)
+    program
 
   GLESShaders.activateDefaultShader = (gl) ->
-    shaderProgram = GLESShaders.shaderProgram
-    gl.useProgram shaderProgram
-    gl.enableVertexAttribArray shaderProgram.vertexPositionAttribute
-    gl.enableVertexAttribArray shaderProgram.textureCoordAttribute
-    gl.enableVertexAttribArray shaderProgram.colorAttribute
+    shader = GLESShaders.defaultShader
+    gl.useProgram shader.program
+    gl.enableVertexAttribArray shader.vertexPositionAttribute
+    gl.enableVertexAttribArray shader.textureCoordAttribute
+    gl.enableVertexAttribArray shader.colorAttribute
 
   GLESShaders.activatePrimitiveShader = (gl) ->
-    gl.disableVertexAttribArray GLESShaders.shaderProgram.textureCoordAttribute
-    gl.disableVertexAttribArray GLESShaders.shaderProgram.colorAttribute
-    gl.useProgram GLESShaders.primitiveProgram
-    gl.enableVertexAttribArray GLESShaders.primitiveProgram.vertexPositionAttribute
-    gl.enableVertexAttribArray GLESShaders.primitiveProgram.colorAttribute
+    gl.disableVertexAttribArray GLESShaders.defaultShader.textureCoordAttribute
+    gl.disableVertexAttribArray GLESShaders.defaultShader.colorAttribute
+    gl.useProgram GLESShaders.primitiveShader.program
+    gl.enableVertexAttribArray GLESShaders.primitiveShader.vertexPositionAttribute
+    gl.enableVertexAttribArray GLESShaders.primitiveShader.colorAttribute
 
   return GLESShaders

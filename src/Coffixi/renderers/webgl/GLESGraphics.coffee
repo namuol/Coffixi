@@ -53,14 +53,14 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
       GLESShaders.activatePrimitiveShader gl
       m = Matrix.mat3.clone(graphics.worldTransform)
       Matrix.mat3.transpose m
-      gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
-      gl.uniformMatrix3fv GLESShaders.primitiveProgram.translationMatrix, false, m
-      gl.uniform2f GLESShaders.primitiveProgram.projectionVector, projection.x, projection.y
-      gl.uniform1f GLESShaders.primitiveProgram.alpha, graphics.worldAlpha
+      gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
+      gl.uniformMatrix3fv GLESShaders.primitiveShader.translationMatrix, false, m
+      gl.uniform2f GLESShaders.primitiveShader.projectionVector, projection.x, projection.y
+      gl.uniform1f GLESShaders.primitiveShader.alpha, graphics.worldAlpha
       gl.bindBuffer gl.ARRAY_BUFFER, graphics._GL.buffer
-      gl.vertexAttribPointer GLESShaders.shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
-      gl.vertexAttribPointer GLESShaders.primitiveProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 4 * 6, 0
-      gl.vertexAttribPointer GLESShaders.primitiveProgram.colorAttribute, 4, gl.FLOAT, false, 4 * 6, 2 * 4
+      gl.vertexAttribPointer GLESShaders.defaultShader.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+      gl.vertexAttribPointer GLESShaders.primitiveShader.vertexPositionAttribute, 2, gl.FLOAT, false, 4 * 6, 0
+      gl.vertexAttribPointer GLESShaders.primitiveShader.colorAttribute, 4, gl.FLOAT, false, 4 * 6, 2 * 4
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, graphics._GL.indexBuffer
       gl.drawElements gl.TRIANGLE_STRIP, graphics._GL.indices.length, gl.UNSIGNED_SHORT, 0
       GLESShaders.activateDefaultShader gl
