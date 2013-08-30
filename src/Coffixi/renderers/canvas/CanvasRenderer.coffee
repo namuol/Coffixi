@@ -36,7 +36,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
   @param transparent=false {Boolean} the transparency of the render view, default false
   ###
   class CanvasRenderer
-    constructor: (width, height, view, transparent) ->
+    constructor: (width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = transparent
       
       ###
@@ -97,6 +97,11 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       BaseTexture.texturesToDestroy = []
       stage.updateTransform()
       
+      imageSmoothingEnabled = @textureFilter is BaseTexture.filterModes.LINEAR
+      @context.imageSmoothingEnabled = imageSmoothingEnabled
+      @context.webkitImageSmoothingEnabled = imageSmoothingEnabled
+      @context.mozImageSmoothingEnabled = imageSmoothingEnabled
+
       # update the background color
       @view.style.backgroundColor = stage.backgroundColorString  if @view.style.backgroundColor isnt stage.backgroundColorString and not @transparent
       @context.setTransform 1, 0, 0, 1, 0, 0
