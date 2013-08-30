@@ -41,7 +41,7 @@ define 'Coffixi/renderers/webgl/WebGLRenderer', [
       try
         webGL = @view.getContext("experimental-webgl",
           alpha: @transparent
-          antialias: false # SPEED UP??
+          antialias: false
           premultipliedAlpha: false
           stencil: true
         )

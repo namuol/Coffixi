@@ -64,7 +64,7 @@ define 'Coffixi/core/Rectangle', ->
     contains: (x, y) ->
       return false  if @width <= 0 or @height <= 0
       x1 = @x
-      if x > x1 and x < x1 + @width
+      if x >= x1 and x <= x1 + @width
         y1 = @y
-        return true  if y > y1 and y < y1 + @height
+        return true  if y >= y1 and y <= y1 + @height
       false

@@ -141,7 +141,7 @@ define 'Coffixi/primitives/Graphics', [
     beginFill: (color, alpha) ->
       @filling = true
       @fillColor = color or 0
-      @fillAlpha = alpha or 1
+      @fillAlpha = alpha ? 1
 
     ###
     Applies a fill to the lines and shapes that were added since the last call to the beginFill() method.

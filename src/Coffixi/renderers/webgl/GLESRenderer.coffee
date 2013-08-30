@@ -252,13 +252,13 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     ###
     renderSpecial: (renderable, projection) ->
       if renderable instanceof TilingSprite
-        @renderTilingSprite renderable, projection  if renderable.visible
+        @renderTilingSprite renderable, projection  if renderable.worldVisible
       else if renderable instanceof Strip
-        @renderStrip renderable, projection  if renderable.visible
+        @renderStrip renderable, projection  if renderable.worldVisible
       else if renderable instanceof CustomRenderable
-        renderable.renderGLES this, projection  if renderable.visible
+        renderable.renderGLES this, projection  if renderable.worldVisible
       else if renderable instanceof Graphics
-        GLESGraphics.renderGraphics renderable, projection  if renderable.visible and renderable.renderable
+        GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable
       else if renderable instanceof FilterBlock
         
         #
