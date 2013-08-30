@@ -3,20 +3,26 @@
 ###
 
 define 'Coffixi/display/DisplayObject', [
+  'Coffixi/core/Point'
   'Coffixi/core/Matrix'
-  'Coffixi/utils/Module'
+  'Coffixi/filters/FilterBlock'
 ], (
+  Point
   Matrix
-  Module  
+  FilterBlock
 ) ->
 
   ###
-  this is the base class for all objects that are rendered on the screen.
+  The base class for all objects that are rendered on the screen.
+
   @class DisplayObject
   @constructor
   ###
-  class DisplayObject extends Module
+  class DisplayObject
     constructor: ->
+      @last = this
+      @first = this
+      
       ###
       The x coordinate of the object relative to the local coordinates of the parent.
       @property x
@@ -52,9 +58,10 @@ define 'Coffixi/display/DisplayObject', [
       @property pivotX
       ###
       @pivotY = 0
-
+      
       ###
       The rotation of the object in radians.
+      
       @property rotation
       @type Number
       ###
@@ -62,6 +69,7 @@ define 'Coffixi/display/DisplayObject', [
       
       ###
       The opacity of the object.
+      
       @property alpha
       @type Number
       ###
@@ -69,48 +77,109 @@ define 'Coffixi/display/DisplayObject', [
       
       ###
       The visibility of the object.
+      
       @property visible
       @type Boolean
       ###
       @visible = true
+      
+      ###
+      This is used to indicate if the displayObject should display a mouse hand cursor on rollover
+      
+      @property buttonMode
+      @type Boolean
+      ###
+      @buttonMode = false
+      
+      ###
+      Can this object be rendered
+      
+      @property renderable
+      @type Boolean
+      ###
+      @renderable = false
+      
+      ###
+      [read-only] The visibility of the object based on world (parent) factors.
+      
+      @property worldVisible
+      @type Boolean
+      @readOnly
+      ###
       @worldVisible = false
       
       ###
       [read-only] The display object container that contains this display object.
+      
       @property parent
       @type DisplayObjectContainer
+      @readOnly
       ###
       @parent = null
       
       ###
       [read-only] The stage the display object is connected to, or undefined if it is not connected to the stage.
+      
       @property stage
       @type Stage
+      @readOnly
       ###
       @stage ?= null
       
       ###
-      This is the defined area that will pick up mouse / touch events. It is null by default.
-      Setting it is a neat way of optimising the hitTest function that the interactionManager will use (as it will not need to hit test all the children)
-      @property hitArea
-      @type Rectangle
+      [read-only] The multiplied alpha of the displayobject
+      
+      @property worldAlpha
+      @type Number
+      @readOnly
       ###
-      @hitArea = null
       @worldAlpha = 1
-      @color = []
+            
+      ###
+      [read-only] Current transform of the object based on world (parent) factors
+      
+      @property worldTransform
+      @type Mat3
+      @readOnly
+      @private
+      ###
       @worldTransform = Matrix.mat3.create() #mat3.identity();
+      
+      ###
+      [read-only] Current transform of the object locally
+      
+      @property localTransform
+      @type Mat3
+      @readOnly
+      @private
+      ###
       @localTransform = Matrix.mat3.create() #mat3.identity();
+      
+      ###
+      [NYI] Unkown
+      
+      @property color
+      @type Array<>
+      @private
+      ###
+      # @color = [] # LOU TODO: What is this for?
+      
+      ###
+      [NYI] Holds whether or not this object is dynamic, for rendering optimization
+      
+      @property dynamic
+      @type Boolean
+      @private
+      ###
       @dynamic = true
       
       # chach that puppy!
       @_sr = 0
       @_cr = 1
-      @childIndex = 0
-      @renderable = false
 
     #TODO make visible a getter setter
     #
-    #Object.defineProperty(PIXI.DisplayObject.prototype, 'visible', {
+    #Object.defineProperty(DisplayObject.prototype, 'visible', {
     #    get: function() {
     #        return this._visible;
     #    },
@@ -120,8 +189,141 @@ define 'Coffixi/display/DisplayObject', [
     #});
 
     ###
-    @private
+    Sets a mask for the displayObject. A mask is an object that limits the visibility of an object to the shape of the mask applied to it.
+    A regular mask must be a Graphics object. This allows for much faster masking in canvas as it utilises shape clipping.
+    To remove a mask, set this property to null.
+
+    @property mask
+    @type Graphics
     ###
+    Object.defineProperty DisplayObject::, "mask",
+      get: ->
+        @_mask
+
+      set: (value) ->
+        @_mask = value
+        if value
+          @addFilter value
+        else
+          @removeFilter()
+
+    #
+    # * Adds a filter to this displayObject
+    # *
+    # * @method addFilter
+    # * @param mask {Graphics} the graphics object to use as a filter
+    # * @private
+    # 
+    addFilter: (mask) ->
+      return  if @filter
+      @filter = true
+      
+      # insert a filter block..
+      start = new FilterBlock()
+      end = new FilterBlock()
+      start.mask = mask
+      end.mask = mask
+      start.first = start.last = this
+      end.first = end.last = this
+      start.open = true
+      
+      #
+      #	 * 
+      #	 * insert start
+      #	 * 
+      #	 
+      childFirst = start
+      childLast = start
+      nextObject = undefined
+      previousObject = undefined
+      previousObject = @first._iPrev
+      if previousObject
+        nextObject = previousObject._iNext
+        childFirst._iPrev = previousObject
+        previousObject._iNext = childFirst
+      else
+        nextObject = this
+      if nextObject
+        nextObject._iPrev = childLast
+        childLast._iNext = nextObject
+      
+      # now insert the end filter block..
+      
+      #
+      #	 * 
+      #	 * insert end filter
+      #	 * 
+      #	 
+      childFirst = end
+      childLast = end
+      nextObject = null
+      previousObject = null
+      previousObject = @last
+      nextObject = previousObject._iNext
+      if nextObject
+        nextObject._iPrev = childLast
+        childLast._iNext = nextObject
+      childFirst._iPrev = previousObject
+      previousObject._iNext = childFirst
+      updateLast = this
+      prevLast = @last
+      while updateLast
+        updateLast.last = end  if updateLast.last is prevLast
+        updateLast = updateLast.parent
+      @first = start
+      
+      # if webGL...
+      @__renderGroup.addFilterBlocks start, end  if @__renderGroup
+      mask.renderable = false
+
+    #
+    # * Removes the filter to this displayObject
+    # *
+    # * @method removeFilter
+    # * @private
+    # 
+    removeFilter: ->
+      return  unless @filter
+      @filter = false
+      
+      # modify the list..
+      startBlock = @first
+      nextObject = startBlock._iNext
+      previousObject = startBlock._iPrev
+      nextObject._iPrev = previousObject  if nextObject
+      previousObject._iNext = nextObject  if previousObject
+      @first = startBlock._iNext
+      
+      # remove the end filter
+      lastBlock = @last
+      nextObject = lastBlock._iNext
+      previousObject = lastBlock._iPrev
+      nextObject._iPrev = previousObject  if nextObject
+      previousObject._iNext = nextObject
+      
+      # this is always true too!
+      #	if(this.last == lastBlock)
+      #{
+      tempLast = lastBlock._iPrev
+      
+      # need to make sure the parents last is updated too
+      updateLast = this
+      while updateLast.last is lastBlock
+        updateLast.last = tempLast
+        updateLast = updateLast.parent
+        break  unless updateLast
+      mask = startBlock.mask
+      mask.renderable = true
+      
+      # if webGL...
+      @__renderGroup.removeFilterBlocks startBlock, lastBlock  if @__renderGroup
+
+    #
+    # * Updates the object transform for rendering
+    # *
+    # * @method updateTransform
+    # * @private
+    # 
     updateTransform: ->
       
       # TODO OPTIMIZE THIS!! with dirty
@@ -139,29 +341,25 @@ define 'Coffixi/display/DisplayObject', [
       localTransform[3] = @_sr * @scaleX
       localTransform[4] = @_cr * @scaleY
       
-      #/AAARR GETTER SETTTER!
-      #localTransform[2] = this.x;
-      #localTransform[5] = this.y;
+      # TODO --> do we even need a local matrix???
       px = @pivotX
       py = @pivotY
-      
-      #/AAARR GETTER SETTTER!
-      localTransform[2] = @x - localTransform[0] * px - py * localTransform[1]
-      localTransform[5] = @y - localTransform[4] * py - px * localTransform[3]
       
       # Cache the matrix values (makes for huge speed increases!)
       a00 = localTransform[0]
       a01 = localTransform[1]
-      a02 = localTransform[2]
+      a02 = @x - localTransform[0] * px - py * localTransform[1]
       a10 = localTransform[3]
       a11 = localTransform[4]
-      a12 = localTransform[5]
+      a12 = @y - localTransform[4] * py - px * localTransform[3]
       b00 = parentTransform[0]
       b01 = parentTransform[1]
       b02 = parentTransform[2]
       b10 = parentTransform[3]
       b11 = parentTransform[4]
       b12 = parentTransform[5]
+      localTransform[2] = a02
+      localTransform[5] = a12
       worldTransform[0] = b00 * a00 + b01 * a10
       worldTransform[1] = b00 * a01 + b01 * a11
       worldTransform[2] = b00 * a02 + b01 * a12 + b02
@@ -172,3 +370,40 @@ define 'Coffixi/display/DisplayObject', [
       # because we are using affine transformation, we can optimise the matrix concatenation process.. wooo!
       # mat3.multiply(this.localTransform, this.parent.worldTransform, this.worldTransform);
       @worldAlpha = @alpha * @parent.worldAlpha
+
+    getGlobalX: ->
+      @updateTransform()
+      @worldTransform[2]
+    getGlobalY: ->
+      @updateTransform()
+      @worldTransform[5]
+
+    getChildIndex: -> @parent?.children.indexOf @ ? NaN
+    getTreeDepth: ->
+      return 0  if not @parent?
+      return 1 + @parent.getTreeDepth()
+
+    isAbove: (other) ->
+      a = @
+      b = other
+
+      otherDepth = other.getTreeDepth()
+      depth = @getTreeDepth()
+
+      loop
+        return true  if a.parent is b
+        return false  if b.parent is a
+
+        break  if (a.parent is b.parent) or (not a.parent?) or (not b.parent?)
+
+        if depth > otherDepth
+          a = a.parent
+          depth -= 1
+        else if otherDepth > depth
+          b = b.parent
+          otherDepth -= 1
+        else
+          a = a.parent
+          b = b.parent
+
+      return a.getChildIndex() > b.getChildIndex()

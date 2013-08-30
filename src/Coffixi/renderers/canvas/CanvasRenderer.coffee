@@ -3,42 +3,45 @@
 ###
 
 define 'Coffixi/renderers/canvas/CanvasRenderer', [
-  'Coffixi/display/Sprite'
-  'Coffixi/textures/BaseTexture'
   'Coffixi/textures/Texture'
-  'Coffixi/utils/Module'
+  'Coffixi/textures/BaseTexture'
+  'Coffixi/display/Sprite'
   'Coffixi/extras/Strip'
   'Coffixi/extras/TilingSprite'
   'Coffixi/extras/CustomRenderable'
+  'Coffixi/primitives/Graphics'
+  './CanvasGraphics'
+  'Coffixi/filters/FilterBlock'
 ], (
-  Sprite
-  BaseTexture
   Texture
-  Module
+  BaseTexture
+  Sprite
   Strip
   TilingSprite
   CustomRenderable
+  Graphics
+  CanvasGraphics
+  FilterBlock
 ) ->
 
   ###
   the CanvasRenderer draws the stage and all its content onto a 2d canvas. This renderer should be used for browsers that do not support webGL.
   Dont forget to add the view to your DOM or you will not see anything :)
+
   @class CanvasRenderer
   @constructor
-  @param width {Number} the width of the canvas view
-  @default 0
-  @param height {Number} the height of the canvas view
-  @default 0
+  @param width=0 {Number} the width of the canvas view
+  @param height=0 {Number} the height of the canvas view
   @param view {Canvas} the canvas to use as a view, optional
-  @param transparent {Boolean} the transparency of the render view, default false
-  @default false
+  @param transparent=false {Boolean} the transparency of the render view, default false
   ###
-  class CanvasRenderer extends Module
+  class CanvasRenderer
     constructor: (width, height, view, transparent) ->
       @transparent = transparent
       
       ###
       The width of the canvas view
+      
       @property width
       @type Number
       @default 800
@@ -47,25 +50,20 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       
       ###
       The height of the canvas view
+      
       @property height
       @type Number
       @default 600
       ###
       @height = height or 600
-      @refresh = true
       
       ###
       The canvas element that the everything is drawn to
+      
       @property view
       @type Canvas
       ###
       @view = view or document.createElement("canvas")
-      
-      # hack to enable some hardware acceleration!
-      #this.view.style["transform"] = "translatez(0)";
-      @view.width = @width
-      @view.height = @height
-      @count = 0
       
       ###
       The canvas context that the everything is drawn to
@@ -73,9 +71,17 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       @type Canvas 2d Context
       ###
       @context = @view.getContext("2d")
+      @refresh = true
+      
+      # hack to enable some hardware acceleration!
+      #this.view.style["transform"] = "translatez(0)";
+      @view.width = @width
+      @view.height = @height
+      @count = 0
 
     ###
     Renders the stage to its canvas view
+
     @method render
     @param stage {Stage} the Stage element to be rendered
     ###
@@ -96,14 +102,27 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       @context.setTransform 1, 0, 0, 1, 0, 0
       @context.clearRect 0, 0, @width, @height
       @renderDisplayObject stage
-            
+      
+      #as
+      
+      # run interaction!
+      if stage.interactive
+        
+        #need to add some events!
+        unless stage._interactiveEventsAdded
+          stage._interactiveEventsAdded = true
+          stage.interactionManager.setTarget this
+      
       # remove frame updates..
       Texture.frameUpdates = []  if Texture.frameUpdates.length > 0
 
+
     ###
     resizes the canvas view to the specified width and height
-    @param the new width of the canvas view
-    @param the new height of the canvas view
+
+    @method resize
+    @param width {Number} the new width of the canvas view
+    @param height {Number} the new height of the canvas view
     ###
     resize: (width, height, viewportWidth, viewportHeight, viewportX, viewportY) ->
       @width = width
@@ -117,74 +136,84 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       
       @view.width = width
       @view.height = height
-
+      
     getView: -> @view
 
     ###
+    Renders a display object
+
+    @method renderDisplayObject
+    @param displayObject {DisplayObject} The displayObject to render
     @private
     ###
     renderDisplayObject: (displayObject) ->
-      transform = displayObject.worldTransform
+      
+      # no loger recurrsive!
+      transform = undefined
       context = @context
+      context.globalCompositeOperation = "source-over"
       
-      #context.globalCompositeOperation = "source-over"
-      blit = false
-      return  unless displayObject.visible
-      if displayObject instanceof Sprite
-        frame = displayObject.texture.frame
-        if frame
-          context.globalAlpha = displayObject.worldAlpha
-          
-          # BLITZ!!!
-          #
-          #      * if the rotation is 0 then we can blitz it
-          #      * meaning we dont need to do a transform and also we
-          #      * can round to the nearest round number for a little extra speed!
-          #      
-          
-          #if(displayObject.rotation == 0)
-          #     {
-          #       if(!blit)this.context.setTransform(1,0,0,1,0,0); 
-          #       blit = true;
-          #       context.drawImage(displayObject.texture.baseTexture.image, 
-          #                  frame.x,
-          #                  frame.y,
-          #                  frame.width,
-          #                  frame.height,
-          #                  (transform[2]+ ((displayObject.anchor.x - displayObject.texture.trim.x) * -frame.width) * transform[0]),
-          #                  (transform[5]+ ((displayObject.anchor.y - displayObject.texture.trim.y) * -frame.height)* transform[4]),
-          #                  (displayObject.width * transform[0]),
-          #                  (displayObject.height * transform[4]));
-          #       
-          #     } 
-          #     else
-          #     {
-          
-          # blit = false;
+      # one the display object hits this. we can break the loop	
+      testObject = displayObject.last._iNext
+      displayObject = displayObject.first
+      loop
+        transform = displayObject.worldTransform
+        unless displayObject.visible
+          displayObject = displayObject.last._iNext
+          break  if displayObject is testObject
+          continue
+        unless displayObject.renderable
+          displayObject = displayObject._iNext
+          break  if displayObject is testObject
+          continue
+        if displayObject instanceof Sprite
+          frame = displayObject.texture.frame
+          if frame
+            context.globalAlpha = displayObject.worldAlpha
+            context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+            context.drawImage displayObject.texture.baseTexture.source, frame.x, frame.y, frame.width, frame.height, (displayObject.anchor.x) * -frame.width, (displayObject.anchor.y) * -frame.height, frame.width, frame.height
+        else if displayObject instanceof Strip
           context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+          @renderStrip displayObject
+        else if displayObject instanceof TilingSprite
+          context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+          @renderTilingSprite displayObject
+        else if displayObject instanceof CustomRenderable
+          displayObject.renderCanvas this
+        else if displayObject instanceof Graphics
+          context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+          CanvasGraphics.renderGraphics displayObject, context
+        else if displayObject instanceof FilterBlock
+          if displayObject.open
+            context.save()
+            cacheAlpha = displayObject.mask.alpha
+            maskTransform = displayObject.mask.worldTransform
+            context.setTransform maskTransform[0], maskTransform[3], maskTransform[1], maskTransform[4], maskTransform[2], maskTransform[5]
+            displayObject.mask.worldAlpha = 0.5
+            context.worldAlpha = 0
+            CanvasGraphics.renderGraphicsMask displayObject.mask, context
+            
+            #		context.fillStyle = 0xFF0000;
+            #	context.fillRect(0, 0, 200, 200);
+            context.clip()
+            displayObject.mask.worldAlpha = cacheAlpha
           
-          #   (displayObject.anchor.x - displayObject.texture.trim.x) * -frame.width, 
-          # (displayObject.anchor.y - displayObject.texture.trim.y) * -frame.height,
-          context.drawImage displayObject.texture.baseTexture.source, frame.x, frame.y, frame.width, frame.height, (displayObject.anchor.x) * -frame.width, (displayObject.anchor.y) * -frame.height, frame.width, frame.height
-      
-      #}
-      else if displayObject instanceof Strip
-        context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-        @renderStrip displayObject
-      else if displayObject instanceof TilingSprite
-        context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-        @renderTilingSprite displayObject
-      else displayObject.renderCanvas this  if displayObject instanceof CustomRenderable
-      
-      # render!
-      i = 0
-
-      while i < displayObject.children.length
-        @renderDisplayObject displayObject.children[i]
-        i++
-      @context.setTransform 1, 0, 0, 1, 0, 0
+          #context.globalCompositeOperation = 'lighter';
+          else
+            
+            #context.globalCompositeOperation = 'source-over';
+            context.restore()
+        
+        #	count++
+        displayObject = displayObject._iNext
+        break unless displayObject isnt testObject
+      return
 
     ###
+    Renders a flat strip
+
+    @method renderStripFlat
+    @param strip {Strip} The Strip to render
     @private
     ###
     renderStripFlat: (strip) ->
@@ -210,19 +239,20 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         context.lineTo x1, y1
         context.lineTo x2, y2
         i++
-      
-      # context.globalCompositeOperation = 'lighter';
       context.fillStyle = "#FF0000"
       context.fill()
       context.closePath()
 
-    #context.globalCompositeOperation = 'source-over';  
-
     ###
+    Renders a tiling sprite
+
+    @method renderTilingSprite
+    @param sprite {TilingSprite} The tilingsprite to render
     @private
     ###
     renderTilingSprite: (sprite) ->
       context = @context
+      context.globalAlpha = sprite.worldAlpha
       sprite.__tilePattern = context.createPattern(sprite.texture.baseTexture.source, "repeat")  unless sprite.__tilePattern
       context.beginPath()
       tilePosition = sprite.tilePosition
@@ -238,6 +268,10 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       context.closePath()
 
     ###
+    Renders a strip
+
+    @method renderStrip
+    @param strip {Strip} The Strip to render
     @private
     ###
     renderStrip: (strip) ->
@@ -274,8 +308,8 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         context.lineTo x2, y2
         context.closePath()
         
-        # context.fillStyle = "white"//rgb(1, 1, 1,1));
-        # context.fill();
+        #	context.fillStyle = "white"//rgb(1, 1, 1,1));
+        #	context.fill();
         context.clip()
         
         # Compute matrix transform
@@ -291,4 +325,4 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         context.restore()
         i++
 
-    # context.globalCompositeOperation = 'source-over'; 
+    #	context.globalCompositeOperation = 'source-over';	

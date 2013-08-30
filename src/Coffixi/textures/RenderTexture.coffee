@@ -4,24 +4,26 @@
 
 define 'Coffixi/textures/RenderTexture', [
   'Coffixi/core/Rectangle'
-  'Coffixi/utils/EventTarget'
+  'Coffixi/core/Point'
   'Coffixi/core/Matrix'
+  'Coffixi/utils/EventTarget'
   'Coffixi/renderers/canvas/CanvasRenderer'
   'Coffixi/renderers/webgl/GLESRenderer'
   './BaseTexture'
   './Texture'
 ], (
   Rectangle
-  EventTarget
+  Point
   Matrix
+  EventTarget
   CanvasRenderer
   GLESRenderer
   BaseTexture
   Texture
 ) ->
-
+  
   GLESRenderGroup = GLESRenderer.GLESRenderGroup
-
+  
   ###
   A RenderTexture is a special texture that allows any pixi displayObject to be rendered to it.
 
@@ -47,8 +49,8 @@ define 'Coffixi/textures/RenderTexture', [
   @class RenderTexture
   @extends Texture
   @constructor
-  @param width {Number}
-  @param height {Number}
+  @param width {Number} The width of the render texture
+  @param height {Number} The height of the render texture
   ###
   class RenderTexture extends Texture
     constructor: (width, height, @textureFilter=BaseTexture.filterModes.LINEAR, @filterMode=BaseTexture.filterModes.LINEAR) ->
@@ -64,28 +66,37 @@ define 'Coffixi/textures/RenderTexture', [
       else
         @initCanvas()
 
+    ###
+    Initializes the webgl data for this texture
+
+    @method initGLES
+    @private
+    ###
     initGLES: ->
       gl = GLESRenderer.gl
       @glFramebuffer = gl.createFramebuffer()
       gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
-      @glFramebuffer.width = @width
-      @glFramebuffer.height = @height
+      # LOU TODO: Do we need this?
+      # @glFramebuffer.width = @width
+      # @glFramebuffer.height = @height
       @baseTexture = new BaseTexture()
       @baseTexture.width = @width
       @baseTexture.height = @height
       @baseTexture._glTexture = gl.createTexture()
       gl.bindTexture gl.TEXTURE_2D, @baseTexture._glTexture
       gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, @width, @height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null
-      filterMode = GLESRenderer.getGLFilterMode @filterMode
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filterMode
-      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filterMode
+      glFilterMode = GLESRenderer.getGLFilterMode @filterMode
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilterMode
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
       gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
       @baseTexture.isRender = true
-      gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
+      # gl.bindTexture gl.TEXTURE_2D, null
+      # gl.bindFramebuffer gl.FRAMEBUFFER, @glFramebuffer
       gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, @baseTexture._glTexture, 0
       
       # create a projection matrix..
+      @projection = new Point(@width / 2, @height / 2)
       @projectionMatrix = Matrix.mat4.create()
       @projectionMatrix[5] = 2 / @height # * 0.5;
       @projectionMatrix[13] = -1
@@ -95,19 +106,42 @@ define 'Coffixi/textures/RenderTexture', [
       # set the correct render function..
       @render = @renderGLES
 
+    resize: (width, height) ->
+      @width = width
+      @height = height
+      @projection = new Point(@width / 2, @height / 2)
+      if GLESRenderer.gl
+        gl = GLESRenderer.gl
+        gl.bindTexture gl.TEXTURE_2D, @baseTexture._glTexture
+        gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, @width, @height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null
+      else
+        @frame.width = @width
+        @frame.height = @height
+        @renderer.resize @width, @height
+
+
+    ###
+    Initializes the canvas data for this texture
+
+    @method initCanvas
+    @private
+    ###
     initCanvas: ->
       @renderer = new CanvasRenderer(@width, @height, null, 0)
       @baseTexture = new BaseTexture(@renderer.view)
       @frame = new Rectangle(0, 0, @width, @height)
       @render = @renderCanvas
 
+
     ###
     This function will draw the display object to the texture.
-    @method render
-    @param displayObject {DisplayObject}
+
+    @method renderGLES
+    @param displayObject {DisplayObject} The display object to render this texture on
     @param clear {Boolean} If true the texture will be cleared before the displayObject is drawn
+    @private
     ###
-    renderGLES: (displayObject, clear) ->
+    renderGLES: (displayObject, position, clear) ->
       gl = GLESRenderer.gl
       
       # enable the alpha color mask..
@@ -123,34 +157,52 @@ define 'Coffixi/textures/RenderTexture', [
       
       #TODO -? create a new one??? dont think so!
       displayObject.worldTransform = Matrix.mat3.create() #sthis.indetityMatrix;
+      # modify to flip...
+      # LOU TODO: Don't think we really need this.      
+      # displayObject.worldTransform[4] = -1
+      # displayObject.worldTransform[5] = @projection.y * 2
+      # if position
+      #   displayObject.worldTransform[2] = position.x
+      #   displayObject.worldTransform[5] -= position.y
       i = 0
       j = children.length
-
       while i < j
         children[i].updateTransform()
         i++
       renderGroup = displayObject.__renderGroup
       if renderGroup
         if displayObject is renderGroup.root
-          renderGroup.render @projectionMatrix
+          renderGroup.render @projection
         else
-          renderGroup.renderSpecific displayObject, @projectionMatrix
+          renderGroup.renderSpecific displayObject, @projection
       else
         @renderGroup = new GLESRenderGroup(gl, @textureFilter)  unless @renderGroup
         @renderGroup.setRenderable displayObject
-        @renderGroup.render @projectionMatrix
+        @renderGroup.render @projection
 
-    renderCanvas: (displayObject, clear) ->
+
+    ###
+    This function will draw the display object to the texture.
+
+    @method renderCanvas
+    @param displayObject {DisplayObject} The display object to render this texture on
+    @param clear {Boolean} If true the texture will be cleared before the displayObject is drawn
+    @private
+    ###
+    renderCanvas: (displayObject, position, clear) ->
       children = displayObject.children
       displayObject.worldTransform = Matrix.mat3.create()
+      if position
+        displayObject.worldTransform[2] = position.x
+        displayObject.worldTransform[5] = position.y
       i = 0
       j = children.length
 
       while i < j
         children[i].updateTransform()
         i++
-      
-      if clear
-        @renderer.context.clearRect 0, 0, @width, @height
+      @renderer.context.clearRect 0, 0, @width, @height  if clear
       @renderer.renderDisplayObject displayObject
-      BaseTexture.texturesToUpdate.push @baseTexture
+      @renderer.context.setTransform 1, 0, 0, 1, 0, 0
+
+    #  BaseTexture.texturesToUpdate.push(this.baseTexture);

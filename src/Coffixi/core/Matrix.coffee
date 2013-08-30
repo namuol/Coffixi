@@ -1,15 +1,7 @@
-###
-@author Mat Groves http://matgroves.com/ @Doormat23
-###
-
-# A lighter version of the rad gl-matrix created by Brandon Jones, Colin MacKenzie IV you both rock!
 define 'Coffixi/core/Matrix', ->
   Matrix = {}
 
-  if Float32Array?
-    Matrix.Matrix = Float32Array
-  else
-    Matrix.Matrix = Array
+  Matrix.Matrix = (if (typeof Float32Array isnt "undefined") then Float32Array else Array)
 
   Matrix.mat3 = {}
   Matrix.mat3.create = ->
@@ -23,7 +15,40 @@ define 'Coffixi/core/Matrix', ->
     matrix[6] = 0
     matrix[7] = 0
     matrix[8] = 1
-    return matrix
+    matrix
+
+  Matrix.mat3.identity = (matrix) ->
+    matrix[0] = 1
+    matrix[1] = 0
+    matrix[2] = 0
+    matrix[3] = 0
+    matrix[4] = 1
+    matrix[5] = 0
+    matrix[6] = 0
+    matrix[7] = 0
+    matrix[8] = 1
+    matrix
+
+  Matrix.mat4 = {}
+  Matrix.mat4.create = ->
+    matrix = new Matrix.Matrix(16)
+    matrix[0] = 1
+    matrix[1] = 0
+    matrix[2] = 0
+    matrix[3] = 0
+    matrix[4] = 0
+    matrix[5] = 1
+    matrix[6] = 0
+    matrix[7] = 0
+    matrix[8] = 0
+    matrix[9] = 0
+    matrix[10] = 1
+    matrix[11] = 0
+    matrix[12] = 0
+    matrix[13] = 0
+    matrix[14] = 0
+    matrix[15] = 1
+    matrix
 
   Matrix.mat3.multiply = (mat, mat2, dest) ->
     dest = mat  unless dest
@@ -56,7 +81,44 @@ define 'Coffixi/core/Matrix', ->
     dest[6] = b20 * a00 + b21 * a10 + b22 * a20
     dest[7] = b20 * a01 + b21 * a11 + b22 * a21
     dest[8] = b20 * a02 + b21 * a12 + b22 * a22
-    return dest
+    dest
+
+  Matrix.mat3.clone = (mat) ->
+    matrix = new Matrix.Matrix(9)
+    matrix[0] = mat[0]
+    matrix[1] = mat[1]
+    matrix[2] = mat[2]
+    matrix[3] = mat[3]
+    matrix[4] = mat[4]
+    matrix[5] = mat[5]
+    matrix[6] = mat[6]
+    matrix[7] = mat[7]
+    matrix[8] = mat[8]
+    matrix
+
+  Matrix.mat3.transpose = (mat, dest) ->
+    # If we are transposing ourselves we can skip a few steps but have to cache some values
+    if not dest or mat is dest
+      a01 = mat[1]
+      a02 = mat[2]
+      a12 = mat[5]
+      mat[1] = mat[3]
+      mat[2] = mat[6]
+      mat[3] = a01
+      mat[5] = mat[7]
+      mat[6] = a02
+      mat[7] = a12
+      return mat
+    dest[0] = mat[0]
+    dest[1] = mat[3]
+    dest[2] = mat[6]
+    dest[3] = mat[1]
+    dest[4] = mat[4]
+    dest[5] = mat[7]
+    dest[6] = mat[2]
+    dest[7] = mat[5]
+    dest[8] = mat[8]
+    dest
 
   Matrix.mat3.toMat4 = (mat, dest) ->
     dest = Matrix.mat4.create()  unless dest
@@ -76,9 +138,8 @@ define 'Coffixi/core/Matrix', ->
     dest[2] = mat[2]
     dest[1] = mat[1]
     dest[0] = mat[0]
-    return dest
+    dest
 
-  Matrix.mat4 = {}
   Matrix.mat4.create = ->
     matrix = new Matrix.Matrix(16)
     matrix[0] = 1
@@ -97,7 +158,7 @@ define 'Coffixi/core/Matrix', ->
     matrix[13] = 0
     matrix[14] = 0
     matrix[15] = 1
-    return matrix
+    matrix
 
   Matrix.mat4.transpose = (mat, dest) ->
     # If we are transposing ourselves we can skip a few steps but have to cache some values
@@ -137,11 +198,10 @@ define 'Coffixi/core/Matrix', ->
     dest[13] = mat[7]
     dest[14] = mat[11]
     dest[15] = mat[15]
-    return dest
+    dest
 
   Matrix.mat4.multiply = (mat, mat2, dest) ->
-    if !dest
-      dest = mat
+    dest = mat  unless dest
     
     # Cache the matrix values (makes for huge speed increases!)
     a00 = mat[0]
@@ -194,6 +254,6 @@ define 'Coffixi/core/Matrix', ->
     dest[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31
     dest[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32
     dest[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33
-    return dest
+    dest
 
   return Matrix

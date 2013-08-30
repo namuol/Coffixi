@@ -1,36 +1,57 @@
 ###
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
+
 define 'Coffixi/renderers/webgl/GLESRenderer', [
   'Coffixi/utils/Utils'
   'Coffixi/utils/Module'
   'Coffixi/core/Matrix'
   'Coffixi/display/Sprite'
+  'Coffixi/extras/TilingSprite'
+  'Coffixi/extras/Strip'
+  'Coffixi/extras/CustomRenderable'
+  'Coffixi/filters/FilterBlock'
+  'Coffixi/primitives/Graphics'
   'Coffixi/textures/BaseTexture'
   'Coffixi/textures/Texture'
   'Coffixi/core/Rectangle'
-  './GLESShaders'
-  'Coffixi/extras/TilingSprite'
+  'Coffixi/core/Point'
+  'Coffixi/renderers/webgl/GLESShaders'
+  'Coffixi/renderers/webgl/GLESGraphics'
 ], (
   Utils
   Module
   Matrix
   Sprite
+  TilingSprite
+  Strip
+  CustomRenderable
+  FilterBlock
+  Graphics
   BaseTexture
   Texture
   Rectangle
+  Point
   GLESShaders
-  TilingSprite
+  GLESGraphics
 ) ->
+
+  Batch = undefined
   
   ###
-  A Batch Enables a group of sprites to be drawn using the same settings.
-  if a group of sprites all have the same baseTexture and blendMode then they can be grouped into a batch. All the sprites in a batch can then be drawn in one go by the GPU which is hugely efficient. ALL sprites in the webGL renderer are added to a batch even if the batch only contains one sprite. Batching is handled automatically by the webGL renderer. A good tip is: the smaller the number of batchs there are, the faster the webGL renderer will run.
-  @class Batch
-  @param an instance of the webGL context
-  @return {Batch} Batch {@link Batch}
+  A GLESRenderGroup Enables a group of sprites to be drawn using the same settings.
+  if a group of sprites all have the same baseTexture and blendMode then they can be
+  grouped into a batch. All the sprites in a batch can then be drawn in one go by the
+  GPU which is hugely efficient. ALL sprites in the GLES renderer are added to a batch
+  even if the batch only contains one sprite. Batching is handled automatically by the
+  GLES renderer. A good tip is: the smaller the number of batchs there are, the faster
+  the GLES renderer will run.
+
+  @class GLESRenderGroup
+  @contructor
+  @param gl {GLESContext} An instance of the GLES context
   ###
-  class GLESRenderGroup extends Module
+  class GLESRenderGroup
     constructor: (gl, @textureFilter=BaseTexture.filterModes.LINEAR) ->
       @gl = gl
       @root
@@ -38,6 +59,13 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @batchs = []
       @toRemove = []
 
+    ###
+    Add a display object to the webgl renderer
+
+    @method setRenderable
+    @param displayObject {DisplayObject}
+    @private
+    ###
     setRenderable: (displayObject) ->
       
       # has this changed??
@@ -49,18 +77,20 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       
       # TODO what if its already has an object? should remove it
       @root = displayObject
-      
-      #displayObject.__renderGroup = this;
       @addDisplayObjectAndChildren displayObject
 
 
-    #displayObject
-    render: (projectionMatrix) ->
+    ###
+    Renders the stage to its webgl view
+
+    @method render
+    @param projection {Object}
+    ###
+    render: (projection) ->
       GLESRenderer.updateTextures @textureFilter
       gl = @gl
-      
-      # set the flipped matrix..
-      gl.uniformMatrix4fv GLESShaders.shaderProgram.mvMatrixUniform, false, projectionMatrix
+      gl.uniform2f GLESShaders.defaultShader.projectionVector, projection.x, projection.y
+      gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_ALPHA
       
       # TODO remove this by replacing visible with getter setters.. 
       @checkVisibility @root, @root.visible
@@ -74,17 +104,54 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         if renderable instanceof Batch
           @batchs[i].render()
         else if renderable instanceof TilingSprite
-          @renderTilingSprite renderable, projectionMatrix  if renderable.visible
-        else @renderStrip renderable, projectionMatrix  if renderable.visible  if renderable instanceof Strip
+          @renderTilingSprite renderable, projection  if renderable.worldVisible
+        else if renderable instanceof Strip
+          @renderStrip renderable, projection  if renderable.worldVisible
+        else if renderable instanceof Graphics
+          GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable #, projectionMatrix);
+        else if renderable instanceof FilterBlock
+          
+          #
+          #      * for now only masks are supported..
+          #      
+          if renderable.open
+            gl.enable gl.STENCIL_TEST
+            gl.colorMask false, false, false, false
+            gl.stencilFunc gl.ALWAYS, 1, 0xff
+            gl.stencilOp gl.KEEP, gl.KEEP, gl.REPLACE
+            GLESGraphics.renderGraphics renderable.mask, projection
+            gl.colorMask true, true, true, false
+            gl.stencilFunc gl.NOTEQUAL, 0, 0xff
+            gl.stencilOp gl.KEEP, gl.KEEP, gl.KEEP
+          else
+            gl.disable gl.STENCIL_TEST
         i++
 
-    renderSpecific: (displayObject, projectionMatrix) ->
+    ###
+    Renders the stage to its webgl view
+
+    @method handleFilter
+    @param filter {FilterBlock}
+    @private
+    ###
+    handleFilter: (filter, projection) ->
+
+    ###
+    Renders a specific displayObject
+
+    @method renderSpecific
+    @param displayObject {DisplayObject}
+    @param projection {Object}
+    @private
+    ###
+    renderSpecific: (displayObject, projection) ->
       GLESRenderer.updateTextures @textureFilter
       gl = @gl
       @checkVisibility displayObject, displayObject.visible
-      gl.uniformMatrix4fv GLESShaders.shaderProgram.mvMatrixUniform, false, projectionMatrix
       
-      #console.log("SPECIFIC");
+      # gl.uniformMatrix4fv(GLESShaders.defaultShader.mvMatrixUniform, false, projectionMatrix);
+      gl.uniform2f GLESShaders.defaultShader.projectionVector, projection.x, projection.y
+      
       # to do!
       # render part of the scene...
       startIndex = undefined
@@ -92,8 +159,16 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       endIndex = undefined
       endBatchIndex = undefined
       
-      # get NEXT Renderable!
-      nextRenderable = (if displayObject.renderable then displayObject else @getNextRenderable(displayObject))
+      #
+      #  *  LOOK FOR THE NEXT SPRITE
+      #  *  This part looks for the closest next sprite that can go into a batch
+      #  *  it keeps looking until it finds a sprite or gets to the end of the display
+      #  *  scene graph
+      #  
+      nextRenderable = displayObject.first
+      while nextRenderable._iNext
+        nextRenderable = nextRenderable._iNext
+        break  if nextRenderable.renderable and nextRenderable.__renderGroup
       startBatch = nextRenderable.batch
       if nextRenderable instanceof Sprite
         startBatch = nextRenderable.batch
@@ -135,11 +210,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       if startBatch is endBatch
         if startBatch instanceof Batch
           startBatch.render startIndex, endIndex + 1
-        else if startBatch instanceof TilingSprite
-          @renderTilingSprite startBatch, projectionMatrix  if startBatch.visible
-        else if startBatch instanceof Strip
-          @renderStrip startBatch, projectionMatrix  if startBatch.visible
-        else startBatch.renderWebGL this, projectionMatrix  if startBatch.visible  if startBatch instanceof CustomRenderable
+        else
+          @renderSpecial startBatch, projection
         return
       
       # now we have first and last!
@@ -149,11 +221,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       # DO the first batch
       if startBatch instanceof Batch
         startBatch.render startIndex
-      else if startBatch instanceof TilingSprite
-        @renderTilingSprite startBatch, projectionMatrix  if startBatch.visible
-      else if startBatch instanceof Strip
-        @renderStrip startBatch, projectionMatrix  if startBatch.visible
-      else startBatch.renderWebGL this, projectionMatrix  if startBatch.visible  if startBatch instanceof CustomRenderable
+      else
+        @renderSpecial startBatch, projection
       
       # DO the middle batchs..
       i = startBatchIndex + 1
@@ -162,25 +231,66 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         renderable = @batchs[i]
         if renderable instanceof Batch
           @batchs[i].render()
-        else if renderable instanceof TilingSprite
-          @renderTilingSprite renderable, projectionMatrix  if renderable.visible
-        else if renderable instanceof Strip
-          @renderStrip renderable, projectionMatrix  if renderable.visible
-        else renderable.renderWebGL this, projectionMatrix  if renderable.visible  if renderable instanceof CustomRenderable
+        else
+          @renderSpecial renderable, projection
         i++
       
       # DO the last batch..
       if endBatch instanceof Batch
         endBatch.render 0, endIndex + 1
-      else if endBatch instanceof TilingSprite
-        @renderTilingSprite endBatch  if endBatch.visible
-      else if endBatch instanceof Strip
-        @renderStrip endBatch  if endBatch.visible
-      else endBatch.renderWebGL this, projectionMatrix  if endBatch.visible  if endBatch instanceof CustomRenderable
+      else
+        @renderSpecial endBatch, projection
 
+
+    ###
+    Renders a specific renderable
+
+    @method renderSpecial
+    @param renderable {DisplayObject}
+    @param projection {Object}
+    @private
+    ###
+    renderSpecial: (renderable, projection) ->
+      if renderable instanceof TilingSprite
+        @renderTilingSprite renderable, projection  if renderable.visible
+      else if renderable instanceof Strip
+        @renderStrip renderable, projection  if renderable.visible
+      else if renderable instanceof CustomRenderable
+        renderable.renderGLES this, projection  if renderable.visible
+      else if renderable instanceof Graphics
+        GLESGraphics.renderGraphics renderable, projection  if renderable.visible and renderable.renderable
+      else if renderable instanceof FilterBlock
+        
+        #
+        #    * for now only masks are supported..
+        #    
+        gl = GLESRenderer.gl
+        if renderable.open
+          gl.enable gl.STENCIL_TEST
+          gl.colorMask false, false, false, false
+          gl.stencilFunc gl.ALWAYS, 1, 0xff
+          gl.stencilOp gl.KEEP, gl.KEEP, gl.REPLACE
+          GLESGraphics.renderGraphics renderable.mask, projection
+          
+          # we know this is a render texture so enable alpha too..
+          gl.colorMask true, true, true, true
+          gl.stencilFunc gl.NOTEQUAL, 0, 0xff
+          gl.stencilOp gl.KEEP, gl.KEEP, gl.KEEP
+        else
+          gl.disable gl.STENCIL_TEST
+
+
+    ###
+    Checks the visibility of a displayObject
+
+    @method checkVisibility
+    @param displayObject {DisplayObject}
+    @param globalVisible {Boolean}
+    @private
+    ###
     checkVisibility: (displayObject, globalVisible) ->
       
-      # give the dp a refference to its renderGroup...
+      # give the dp a reference to its renderGroup...
       children = displayObject.children
       
       #displayObject.worldVisible = globalVisible;
@@ -189,37 +299,180 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       while i < children.length
         child = children[i]
         
-        # TODO optimize... shouldt need to loop through everything all the time
+        # TODO optimize... should'nt need to loop through everything all the time
         child.worldVisible = child.visible and globalVisible
         
         # everything should have a batch!
         # time to see whats new!
         if child.textureChange
           child.textureChange = false
-          if child.worldVisible
-            @removeDisplayObject child
-            @addDisplayObject child
+          @updateTexture child  if child.worldVisible
         
         # update texture!!
         @checkVisibility child, child.worldVisible  if child.children.length > 0
         i++
 
-    addDisplayObject: (displayObject) ->
+
+    ###
+    Updates a webgl texture
+
+    @method updateTexture
+    @param displayObject {DisplayObject}
+    @private
+    ###
+    updateTexture: (displayObject) ->
       
-      # add a child to the render group..
+      # TODO definitely can optimse this function..
+      @removeObject displayObject
+      
+      #
+      #  *  LOOK FOR THE PREVIOUS RENDERABLE
+      #  *  This part looks for the closest previous sprite that can go into a batch
+      #  *  It keeps going back until it finds a sprite or the stage
+      #  
+      previousRenderable = displayObject.first
+      until previousRenderable is @root
+        previousRenderable = previousRenderable._iPrev
+        break  if previousRenderable.renderable and previousRenderable.__renderGroup
+      
+      #
+      #  *  LOOK FOR THE NEXT SPRITE
+      #  *  This part looks for the closest next sprite that can go into a batch
+      #  *  it keeps looking until it finds a sprite or gets to the end of the display
+      #  *  scene graph
+      #  
+      nextRenderable = displayObject.last
+      while nextRenderable._iNext
+        nextRenderable = nextRenderable._iNext
+        break  if nextRenderable.renderable and nextRenderable.__renderGroup
+      @insertObject displayObject, previousRenderable, nextRenderable
+
+
+    ###
+    Adds filter blocks
+
+    @method addFilterBlocks
+    @param start {FilterBlock}
+    @param end {FilterBlock}
+    @private
+    ###
+    addFilterBlocks: (start, end) ->
+      start.__renderGroup = this
+      end.__renderGroup = this
+      
+      #
+      #  *  LOOK FOR THE PREVIOUS RENDERABLE
+      #  *  This part looks for the closest previous sprite that can go into a batch
+      #  *  It keeps going back until it finds a sprite or the stage
+      #  
+      previousRenderable = start
+      until previousRenderable is @root
+        previousRenderable = previousRenderable._iPrev
+        break  if previousRenderable.renderable and previousRenderable.__renderGroup
+      @insertAfter start, previousRenderable
+      
+      #
+      #  *  LOOK FOR THE NEXT SPRITE
+      #  *  This part looks for the closest next sprite that can go into a batch
+      #  *  it keeps looking until it finds a sprite or gets to the end of the display
+      #  *  scene graph
+      #  
+      previousRenderable2 = end
+      until previousRenderable2 is @root
+        previousRenderable2 = previousRenderable2._iPrev
+        break  if previousRenderable2.renderable and previousRenderable2.__renderGroup
+      @insertAfter end, previousRenderable2
+
+
+    ###
+    Remove filter blocks
+
+    @method removeFilterBlocks
+    @param start {FilterBlock}
+    @param end {FilterBlock}
+    @private
+    ###
+    removeFilterBlocks: (start, end) ->
+      @removeObject start
+      @removeObject end
+
+
+    ###
+    Adds a display object and children to the webgl context
+
+    @method addDisplayObjectAndChildren
+    @param displayObject {DisplayObject}
+    @private
+    ###
+    addDisplayObjectAndChildren: (displayObject) ->
       displayObject.__renderGroup.removeDisplayObjectAndChildren displayObject  if displayObject.__renderGroup
       
-      # DONT htink this is needed?
-      # displayObject.batch = null;
-      displayObject.__renderGroup = this
+      #
+      #  *  LOOK FOR THE PREVIOUS RENDERABLE
+      #  *  This part looks for the closest previous sprite that can go into a batch
+      #  *  It keeps going back until it finds a sprite or the stage
+      #  
+      previousRenderable = displayObject.first
+      until previousRenderable is @root
+        previousRenderable = previousRenderable._iPrev
+        break  if previousRenderable.renderable and previousRenderable.__renderGroup
       
-      #displayObject.cacheVisible = true;
-      return  unless displayObject.renderable
+      #
+      #  *  LOOK FOR THE NEXT SPRITE
+      #  *  This part looks for the closest next sprite that can go into a batch
+      #  *  it keeps looking until it finds a sprite or gets to the end of the display
+      #  *  scene graph
+      #  
+      nextRenderable = displayObject.last
+      while nextRenderable._iNext
+        nextRenderable = nextRenderable._iNext
+        break  if nextRenderable.renderable and nextRenderable.__renderGroup
+      
+      # one the display object hits this. we can break the loop 
+      tempObject = displayObject.first
+      testObject = displayObject.last._iNext
+      loop
+        tempObject.__renderGroup = this
+        if tempObject.renderable
+          @insertObject tempObject, previousRenderable, nextRenderable
+          previousRenderable = tempObject
+        tempObject = tempObject._iNext
+        break unless tempObject isnt testObject
+
+
+    ###
+    Removes a display object and children to the webgl context
+
+    @method removeDisplayObjectAndChildren
+    @param displayObject {DisplayObject}
+    @private
+    ###
+    removeDisplayObjectAndChildren: (displayObject) ->
+      return  unless displayObject.__renderGroup is this
+      
+      # var displayObject = displayObject.first;
+      lastObject = displayObject.last
+      loop
+        displayObject.__renderGroup = null
+        @removeObject displayObject  if displayObject.renderable
+        displayObject = displayObject._iNext
+        break unless displayObject
+
+
+    ###
+    Inserts a displayObject into the linked list
+
+    @method insertObject
+    @param displayObject {DisplayObject}
+    @param previousObject {DisplayObject}
+    @param nextObject {DisplayObject}
+    @private
+    ###
+    insertObject: (displayObject, previousObject, nextObject) ->
       
       # while looping below THE OBJECT MAY NOT HAVE BEEN ADDED
-      #displayObject.__inWebGL = true;
-      previousSprite = @getPreviousRenderable(displayObject)
-      nextSprite = @getNextRenderable(displayObject)
+      previousSprite = previousObject
+      nextSprite = nextObject
       
       #
       #  * so now we have the next renderable and the previous renderable
@@ -228,8 +481,6 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       if displayObject instanceof Sprite
         previousBatch = undefined
         nextBatch = undefined
-        
-        #console.log( previousSprite)
         if previousSprite instanceof Sprite
           previousBatch = previousSprite.batch
           if previousBatch
@@ -284,32 +535,83 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           @batchs.splice index + 1, 0, batch
         else
           @batchs.push batch
+        return
       else if displayObject instanceof TilingSprite
         
         # add to a batch!!
         @initTilingSprite displayObject
-        @batchs.push displayObject
+      
+      # this.batchs.push(displayObject);
       else if displayObject instanceof Strip
         
         # add to a batch!!
         @initStrip displayObject
-        @batchs.push displayObject
       
-      # if its somthing else... then custom codes!
-      @batchUpdate = true
-
-    addDisplayObjectAndChildren: (displayObject) ->
+      # this.batchs.push(displayObject);
+      else displayObject # instanceof Graphics)
       
-      # TODO - this can be faster - but not as important right now
-      @addDisplayObject displayObject
-      children = displayObject.children
-      i = 0
+      #displayObject.initWebGL(this);
+      
+      # add to a batch!!
+      #this.initStrip(displayObject);
+      #this.batchs.push(displayObject);
+      @insertAfter displayObject, previousSprite
 
-      while i < children.length
-        @addDisplayObjectAndChildren children[i]
-        i++
 
-    removeDisplayObject: (displayObject) ->
+    # insert and SPLIT!
+
+    ###
+    Inserts a displayObject into the linked list
+
+    @method insertAfter
+    @param item {DisplayObject}
+    @param displayObject {DisplayObject} The object to insert
+    @private
+    ###
+    insertAfter: (item, displayObject) ->
+      if displayObject instanceof Sprite
+        previousBatch = displayObject.batch
+        if previousBatch
+          
+          # so this object is in a batch!
+          
+          # is it not? need to split the batch
+          if previousBatch.tail is displayObject
+            
+            # is it tail? insert in to batchs 
+            index = @batchs.indexOf(previousBatch)
+            @batchs.splice index + 1, 0, item
+          else
+            
+            # TODO MODIFY ADD / REMOVE CHILD TO ACCOUNT FOR FILTERS (also get prev and next) //
+            
+            # THERE IS A SPLIT IN THIS BATCH! //
+            splitBatch = previousBatch.split(displayObject.__next)
+            
+            # COOL!
+            # add it back into the array  
+            #
+            #        * OOPS!
+            #        * seems the new sprite is in the middle of a batch
+            #        * lets split it.. 
+            #        
+            index = @batchs.indexOf(previousBatch)
+            @batchs.splice index + 1, 0, item, splitBatch
+        else
+          @batchs.push item
+      else
+        index = @batchs.indexOf(displayObject)
+        @batchs.splice index + 1, 0, item
+
+
+    ###
+    Removes a displayObject from the linked list
+
+    @method removeObject
+    @param displayObject {DisplayObject} The object to remove
+    @private
+    ###
+    removeObject: (displayObject) ->
       
       # loop through children..
       # display object //
@@ -317,8 +619,6 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       # add a child from the render group..
       # remove it and all its children!
       #displayObject.cacheVisible = false;//displayObject.visible;
-      displayObject.__renderGroup = null
-      return  unless displayObject.renderable
       
       #
       #  * removing is a lot quicker..
@@ -362,78 +662,12 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         @batchs.splice index, 1
         GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
 
-    removeDisplayObjectAndChildren: (displayObject) ->
-      # TODO - this can be faster - but not as important right now
-      return  unless displayObject.__renderGroup is this
-      @removeDisplayObject displayObject
-      children = displayObject.children
-      i = 0
-
-      while i < children.length
-        @removeDisplayObjectAndChildren children[i]
-        i++
 
     ###
-    @private
-    ###
-    getNextRenderable: (displayObject) ->
-      #
-      #  *  LOOK FOR THE NEXT SPRITE
-      #  *  This part looks for the closest next sprite that can go into a batch
-      #  *  it keeps looking until it finds a sprite or gets to the end of the display
-      #  *  scene graph
-      #  * 
-      #  *  These look a lot scarier than the actually are...
-      #  
-      nextSprite = displayObject
-      loop
-        
-        # moving forward!
-        # if it has no children.. 
-        if nextSprite.children.length is 0
-          
-          #maynot have a parent
-          return null  unless nextSprite.parent
-          
-          # go along to the parent..
-          while nextSprite.childIndex is nextSprite.parent.children.length - 1
-            nextSprite = nextSprite.parent
-            
-            #console.log(">" + nextSprite);
-            #       console.log(">-" + this.root);
-            if nextSprite is @root or not nextSprite.parent #displayObject.stage)
-              nextSprite = null
-              break
-          nextSprite = nextSprite.parent.children[nextSprite.childIndex + 1]  if nextSprite
-        else
-          nextSprite = nextSprite.children[0]
-        break  unless nextSprite
-        break unless not nextSprite.renderable or not nextSprite.__renderGroup
-      nextSprite
+    Initializes a tiling sprite
 
-    getPreviousRenderable: (displayObject) ->
-      #
-      #  *  LOOK FOR THE PREVIOUS SPRITE
-      #  *  This part looks for the closest previous sprite that can go into a batch
-      #  *  It keeps going back until it finds a sprite or the stage
-      #  
-      previousSprite = displayObject
-      loop
-        if previousSprite.childIndex is 0
-          previousSprite = previousSprite.parent
-          return null  unless previousSprite
-        else
-          previousSprite = previousSprite.parent.children[previousSprite.childIndex - 1]
-          
-          # what if the bloop has children???
-          
-          # keep diggin till we get to the last child
-          previousSprite = previousSprite.children[previousSprite.children.length - 1]  until previousSprite.children.length is 0
-        break  if previousSprite is @root
-        break unless not previousSprite.renderable or not previousSprite.__renderGroup
-      previousSprite
-
-    ###
+    @method initTilingSprite
+    @param sprite {TilingSprite} The tiling sprite to initialize
     @private
     ###
     initTilingSprite: (sprite) ->
@@ -467,33 +701,52 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         sprite.texture.baseTexture._powerOf2 = true
 
     ###
+    Renders a Strip
+
+    @method renderStrip
+    @param strip {Strip} The strip to render
+    @param projection {Object}
     @private
     ###
-    renderStrip: (strip, projectionMatrix) ->
+    renderStrip: (strip, projection) ->
       gl = @gl
-      shaderProgram = GLESShaders.shaderProgram
+      defaultShader = GLESShaders.defaultShader
       
       # mat
-      mat4Real = Matrix.mat3.toMat4(strip.worldTransform)
-      Matrix.mat4.transpose mat4Real
-      Matrix.mat4.multiply projectionMatrix, mat4Real, mat4Real
-      gl.uniformMatrix4fv shaderProgram.mvMatrixUniform, false, mat4Real
-      if strip.blendMode is Sprite.blendModes.NORMAL
-        gl.blendFunc gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA
-      else
-        gl.blendFunc gl.ONE, gl.ONE_MINUS_SRC_COLOR
+      #var mat4Real = Matrix.mat3.toMat4(strip.worldTransform);
+      #Matrix.mat4.transpose(mat4Real);
+      #Matrix.mat4.multiply(projectionMatrix, mat4Real, mat4Real )
+      gl.useProgram GLESShaders.stripShaderProgram
+      m = Matrix.mat3.clone(strip.worldTransform)
+      Matrix.mat3.transpose m
+      
+      # set the matrix transform for the 
+      gl.uniformMatrix3fv GLESShaders.stripShaderProgram.translationMatrix, false, m
+      gl.uniform2f GLESShaders.stripShaderProgram.projectionVector, projection.x, projection.y
+      gl.uniform1f GLESShaders.stripShaderProgram.alpha, strip.worldAlpha
+      
+      #
+      # if(strip.blendMode == Sprite.blendModes.NORMAL)
+      # {
+      #   gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      # }
+      # else
+      # {
+      #   gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_COLOR);
+      # }
+      # 
       unless strip.dirty
         gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
         gl.bufferSubData gl.ARRAY_BUFFER, 0, strip.verticies
-        gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
         
         # update the uvs
         gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
-        gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
         gl.activeTexture gl.TEXTURE0
         gl.bindTexture gl.TEXTURE_2D, strip.texture.baseTexture._glTexture
         gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
-        gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.colorAttribute, 1, gl.FLOAT, false, 0, 0
         
         # dont need to upload!
         gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
@@ -501,32 +754,38 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         strip.dirty = false
         gl.bindBuffer gl.ARRAY_BUFFER, strip._vertexBuffer
         gl.bufferData gl.ARRAY_BUFFER, strip.verticies, gl.STATIC_DRAW
-        gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0
         
         # update the uvs
         gl.bindBuffer gl.ARRAY_BUFFER, strip._uvBuffer
         gl.bufferData gl.ARRAY_BUFFER, strip.uvs, gl.STATIC_DRAW
-        gl.vertexAttribPointer shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0
         gl.activeTexture gl.TEXTURE0
         gl.bindTexture gl.TEXTURE_2D, strip.texture.baseTexture._glTexture
         gl.bindBuffer gl.ARRAY_BUFFER, strip._colorBuffer
         gl.bufferData gl.ARRAY_BUFFER, strip.colors, gl.STATIC_DRAW
-        gl.vertexAttribPointer shaderProgram.colorAttribute, 1, gl.FLOAT, false, 0, 0
+        gl.vertexAttribPointer defaultShader.colorAttribute, 1, gl.FLOAT, false, 0, 0
         
         # dont need to upload!
         gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
         gl.bufferData gl.ELEMENT_ARRAY_BUFFER, strip.indices, gl.STATIC_DRAW
       
-      #console.log(gl.TRIANGLE_STRIP)
+      #console.log(gl.TRIANGLE_STRIP);
       gl.drawElements gl.TRIANGLE_STRIP, strip.indices.length, gl.UNSIGNED_SHORT, 0
-      gl.uniformMatrix4fv shaderProgram.mvMatrixUniform, false, projectionMatrix
+      gl.useProgram GLESShaders.defaultShader
+
 
     ###
+    Renders a TilingSprite
+
+    @method renderTilingSprite
+    @param sprite {TilingSprite} The tiling sprite to render
+    @param projectionMatrix {Object}
     @private
     ###
     renderTilingSprite: (sprite, projectionMatrix) ->
       gl = @gl
-      shaderProgram = GLESShaders.shaderProgram
+      defaultShader = GLESShaders.defaultShader
       tilePosition = sprite.tilePosition
       tileScale = sprite.tileScale
       offsetX = tilePosition.x / sprite.texture.baseTexture.width
@@ -545,14 +804,19 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       gl.bufferSubData gl.ARRAY_BUFFER, 0, sprite.uvs
       @renderStrip sprite, projectionMatrix
 
+
     ###
+    Initializes a strip to be rendered
+
+    @method initStrip
+    @param strip {Strip} The strip to initialize
     @private
     ###
     initStrip: (strip) ->
       
       # build the strip!
       gl = @gl
-      shaderProgram = @shaderProgram
+      defaultShader = @defaultShader
       strip._vertexBuffer = gl.createBuffer()
       strip._indexBuffer = gl.createBuffer()
       strip._uvBuffer = gl.createBuffer()
@@ -566,51 +830,71 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
       gl.bufferData gl.ELEMENT_ARRAY_BUFFER, strip.indices, gl.STATIC_DRAW
 
-  Batch = undefined
-
   ###
-  Draws the stage and all its content with pseudo-openGL ES 2. This Render works by automatically managing Batches. So no need for Sprite Batches or Sprite Clouds
+  the GLESRenderer is draws the stage and all its content onto a webGL enabled canvas. This renderer
+  should be used for browsers support webGL. This Render works by automatically managing webGLBatchs.
+  So no need for Sprite Batch's or Sprite Cloud's
+  Dont forget to add the view to your DOM or you will not see anything :)
+
   @class GLESRenderer
   @constructor
-  @param width {Number} the width of the canvas view
-  @default 0
-  @param height {Number} the height of the canvas view
-  @default 0
-  @param transparent {Boolean} the transparency of the render view, default false
-  @default false
+  @param width=0 {Number} the width of the canvas view
+  @param height=0 {Number} the height of the canvas view
+  @param view {Canvas} the canvas to use as a view, optional
+  @param transparent=false {Boolean} the transparency of the render view, default false
   ###
   class GLESRenderer
     @GLESRenderGroup: GLESRenderGroup
     @setBatchClass: (BatchClass) ->
       Batch = BatchClass
-    constructor: (@gl, width, height, transparent, @textureFilter=BaseTexture.filterModes.LINEAR, @resizeFilter=BaseTexture.filterModes.LINEAR) ->
-      #console.log(transparent)
+    constructor: (@gl, width, height, transparent, @textureFilter=BaseTexture.filterModes.LINEAR) ->
+      # do a catch.. only 1 webGL renderer..
+      GLESGraphics.gl = @gl
+
       @transparent = !!transparent
       @width = width or 800
       @height = height or 600
-      
+
       @initShaders()
+
       gl = GLESRenderer.gl = @gl
+
       @batch = new Batch(gl)
       gl.disable gl.DEPTH_TEST
       gl.disable gl.CULL_FACE
       gl.enable gl.BLEND
       gl.colorMask true, true, true, @transparent
-      @projectionMatrix = Matrix.mat4.create()
+      GLESRenderer.projection = new Point(400, 300)
       @resize @width, @height
       @contextLost = false
-      @stageRenderGroup = new GLESRenderGroup gl, @textureFilter
+      @stageRenderGroup = new GLESRenderGroup @gl, @textureFilter
+    
+    initShaders: ->
+      GLESShaders.initPrimitiveShader @gl
+      GLESShaders.initDefaultShader @gl
+      GLESShaders.initDefaultStripShader @gl
+      GLESShaders.activateDefaultShader @gl
 
     ###
+    Gets a new Batch from the pool
+
+    @static
+    @method getBatch
+    @return {Batch}
     @private
     ###
     @getBatch: ->
       if Batch._batchs.length is 0
-        return new Batch(GLESRenderer.gl)
+        new Batch(GLESRenderer.gl)
       else
-        return Batch._batchs.pop()
+        Batch._batchs.pop()
 
     ###
+    Puts a batch back into the pool
+
+    @static
+    @method returnBatch
+    @param batch {Batch} The batch to return
     @private
     ###
     @returnBatch: (batch) ->
@@ -618,34 +902,8 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       Batch._batchs.push batch
 
     ###
-    @private
-    ###
-    initShaders: ->
-      gl = @gl
-      fragmentShader = GLESShaders.CompileFragmentShader(gl, GLESShaders.shaderFragmentSrc)
-      vertexShader = GLESShaders.CompileVertexShader(gl, GLESShaders.shaderVertexSrc)
-      GLESShaders.shaderProgram = {}
-      GLESShaders.shaderProgram.handle = gl.createProgram()
-      shaderProgram = GLESShaders.shaderProgram
-      gl.attachShader shaderProgram.handle, vertexShader
-      gl.attachShader shaderProgram.handle, fragmentShader
-      gl.linkProgram shaderProgram.handle
-
-      if not gl.getProgramParameter(shaderProgram.handle, gl.LINK_STATUS)
-        alert "Could not initialise shaders"
-
-      gl.useProgram shaderProgram.handle
-      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram.handle, "aVertexPosition")
-      gl.enableVertexAttribArray shaderProgram.vertexPositionAttribute
-      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram.handle, "aTextureCoord")
-      gl.enableVertexAttribArray shaderProgram.textureCoordAttribute
-      shaderProgram.colorAttribute = gl.getAttribLocation(shaderProgram.handle, "aColor")
-      gl.enableVertexAttribArray shaderProgram.colorAttribute
-      shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram.handle, "uMVMatrix")
-      shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram.handle, "uSampler")
-
-    ###
     Renders the stage to its webGL view
+
     @method render
     @param stage {Stage} the Stage element to be rendered
     ###
@@ -665,32 +923,35 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       # update children if need be
       # best to remove first!
       #for (var i=0; i < stage.__childrenRemoved.length; i++)
-      # {
-      #   var group = stage.__childrenRemoved[i].__renderGroup
-      #   if(group)group.removeDisplayObject(stage.__childrenRemoved[i]);
-      # }
+      #	{
+      #		var group = stage.__childrenRemoved[i].__renderGroup
+      #		if(group)group.removeDisplayObject(stage.__childrenRemoved[i]);
+      #	}
       
-      # update any textures 
+      # update any textures	
       GLESRenderer.updateTextures @textureFilter
       
       # recursivly loop through all items!
       #this.checkVisibility(stage, true);
       
-      # update the scene graph  
+      # update the scene graph	
       stage.updateTransform()
       gl = @gl
       
       # -- Does this need to be set every frame? -- //
       gl.colorMask true, true, true, @transparent
-      gl.viewport @viewportX, @viewportY, @viewportWidth, @viewportHeight
+      gl.viewport 0, 0, @width, @height
       
-      # set the correct matrix..  
-      # gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.projectionMatrix);
+      # set the correct matrix..	
+      #	gl.uniformMatrix4fv(this.defaultShader.mvMatrixUniform, false, this.projectionMatrix);
       gl.bindFramebuffer gl.FRAMEBUFFER, null
-      gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], @transparent
+      gl.clearColor stage.backgroundColorSplit[0], stage.backgroundColorSplit[1], stage.backgroundColorSplit[2], not @transparent
       gl.clear gl.COLOR_BUFFER_BIT
+      
+      # HACK TO TEST
+      #GLESRenderer.projectionMatrix = this.projectionMatrix;
       @stageRenderGroup.backgroundColor = stage.backgroundColorSplit
-      @stageRenderGroup.render @projectionMatrix
+      @stageRenderGroup.render GLESRenderer.projection
       
       # after rendering lets confirm all frames that have been uodated..
       if Texture.frameUpdates.length > 0
@@ -702,6 +963,10 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         Texture.frameUpdates = []
 
     ###
+    Updates the textures loaded into this webgl renderer
+
+    @static
+    @method updateTextures
     @private
     ###
     @updateTextures: (textureFilter) ->
@@ -717,7 +982,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         i++
       BaseTexture.texturesToUpdate = []
       BaseTexture.texturesToDestroy = []
-
+    
     ###
     @private
     ###
@@ -732,6 +997,14 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           glFilterMode = @gl.LINEAR
       return glFilterMode
 
+    ###
+    Updates a loaded webgl texture
+
+    @static
+    @method updateTexture
+    @param texture {Texture} The texture to update
+    @private
+    ###
     @updateTexture: (texture, defaultFilterMode) ->
       if texture.filterMode?
         filterMode = texture.filterMode
@@ -749,22 +1022,33 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilterMode
         
         # reguler...
-        unless texture._powerOf2
+        if not texture._powerOf2
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
         else
+          console.log 'GL_REPEAT'
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT
         gl.bindTexture gl.TEXTURE_2D, null
-    
-    destroyTexture: (texture) ->
+
+
+    ###
+    Destroys a loaded webgl texture
+
+    @method destroyTexture
+    @param texture {Texture} The texture to update
+    @private
+    ###
+    @destroyTexture: (texture) ->
       gl = @gl
       if texture._glTexture
         texture._glTexture = gl.createTexture()
         gl.deleteTexture gl.TEXTURE_2D, texture._glTexture
 
+
     ###
     resizes the webGL view to the specified width and height
+
     @method resize
     @param width {Number} the new width of the webGL view
     @param height {Number} the new height of the webGL view
@@ -780,10 +1064,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @viewportHeight = viewportHeight ? @height
       @gl.viewport @viewportX, @viewportY, @viewportWidth, @viewportHeight
       
-      projectionMatrix = @projectionMatrix
-      projectionMatrix[0] = 2 / @viewportWidth
-      projectionMatrix[5] = -2 / @viewportHeight
-      projectionMatrix[12] = -1
-      projectionMatrix[13] = 1
+      GLESRenderer.projection.x = @width / 2
+      GLESRenderer.projection.y = @height / 2
 
   return GLESRenderer

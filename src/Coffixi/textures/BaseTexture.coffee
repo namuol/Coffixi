@@ -3,49 +3,73 @@
 ###
 
 define 'Coffixi/textures/BaseTexture', [
-  '../utils/EventTarget'
+  'Coffixi/utils/EventTarget'
 ], (
   EventTarget
 ) ->
 
   ###
   A texture stores the information that represents an image. All textures have a base texture
+
   @class BaseTexture
-  @extends EventTarget
+  @uses EventTarget
   @constructor
   @param source {String} the source object (image or canvas)
   ###
   class BaseTexture extends EventTarget
+    @cache: {}
+    @texturesToUpdate: []
+    @texturesToDestroy: []
+    
+    @filterModes:
+      LINEAR: 1
+      NEAREST: 2
+
     constructor: (source) ->
       super
+      
       ###
-      [read only] The width of the base texture set when the image has loaded
+      [read-only] The width of the base texture set when the image has loaded
+      
       @property width
       @type Number
+      @readOnly
       ###
       @width = 100
       
       ###
-      [read only] The height of the base texture set when the image has loaded
+      [read-only] The height of the base texture set when the image has loaded
+      
       @property height
       @type Number
+      @readOnly
       ###
       @height = 100
       
       ###
+      [read-only] Describes if the base texture has loaded or not
+      
+      @property hasLoaded
+      @type Boolean
+      @readOnly
+      ###
+      @hasLoaded = false
+      
+      ###
       The source that is loaded to create the texture
+      
       @property source
       @type Image
       ###
-      @source = source #new Image();
-
+      @source = source
+      
       return  unless source
 
-      if not (@source instanceof Image)
+      if not (@source instanceof Image or @source instanceof HTMLImageElement)
         @hasLoaded = true
         @width = @source.width
         @height = @source.height
-        
+
         @createCanvas @source
       else
         if @source.complete
@@ -61,7 +85,7 @@ define 'Coffixi/textures/BaseTexture', [
             @emit
               type: 'error'
               content: @
-              
+
           @source.onload = =>
             @hasLoaded = true
             @width = @source.width
@@ -72,10 +96,10 @@ define 'Coffixi/textures/BaseTexture', [
             @emit
               type: "loaded"
               content: @
-      
-      @filterMode = undefined # Use renderer's default filter mode.
 
       @_powerOf2 = false
+
+      @filterMode = undefined # Use renderer's default filter mode.
 
     setFilterMode: (mode) ->
       @filterMode = mode
@@ -98,7 +122,7 @@ define 'Coffixi/textures/BaseTexture', [
       # IF we change this back to EDIT, we'd need to update the texture like so:
       # @_ctx.putImageData @_imageData, 0,0
       BaseTexture.texturesToUpdate.push @
-
+    
     # Converts a loaded image to a canvas element and 
     #  sets it as our source for easy pixel access.
     createCanvas: (loadedImage) ->
@@ -111,6 +135,11 @@ define 'Coffixi/textures/BaseTexture', [
       @beginRead()
       @endRead()
 
+    ###
+    Destroys this base texture
+
+    @method destroy
+    ###
     destroy: ->
       @source.src = null  if @source instanceof Image
       @source = null
@@ -119,6 +148,7 @@ define 'Coffixi/textures/BaseTexture', [
     ###
     Helper function that returns a base texture based on an image url
     If the image is not in the base texture cache it will be  created and loaded
+
     @static
     @method fromImage
     @param imageUrl {String} The image url of the texture
@@ -127,16 +157,12 @@ define 'Coffixi/textures/BaseTexture', [
     @fromImage: (imageUrl, crossorigin) ->
       baseTexture = BaseTexture.cache[imageUrl]
       unless baseTexture
-        image = new Image()
+        
+        # new Image() breaks tex loading in some versions of Chrome.
+        # See https://code.google.com/p/chromium/issues/detail?id=238071
+        image = new Image() #document.createElement('img');
         image.crossOrigin = ""  if crossorigin
         image.src = imageUrl
         baseTexture = new BaseTexture(image)
         BaseTexture.cache[imageUrl] = baseTexture
       baseTexture
-
-    @texturesToUpdate: []
-    @texturesToDestroy: []
-    @cache: {}
-    @filterModes:
-      LINEAR: 1
-      NEAREST: 2

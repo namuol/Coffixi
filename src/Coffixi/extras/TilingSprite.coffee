@@ -1,14 +1,11 @@
 ###
 @author Mat Groves http://matgroves.com/
 ###
-
 define 'Coffixi/extras/TilingSprite', [
-  'Coffixi/utils/Utils'
   'Coffixi/core/Point'
   'Coffixi/display/DisplayObjectContainer'
   'Coffixi/display/Sprite'
 ], (
-  Utils
   Point
   DisplayObjectContainer
   Sprite
@@ -16,6 +13,7 @@ define 'Coffixi/extras/TilingSprite', [
 
   ###
   A tiling sprite is a fast way of rendering a tiling image
+
   @class TilingSprite
   @extends DisplayObjectContainer
   @constructor
@@ -26,13 +24,34 @@ define 'Coffixi/extras/TilingSprite', [
   class TilingSprite extends DisplayObjectContainer
     constructor: (texture, width, height) ->
       super
+      
+      ###
+      The texture that the sprite is using
+      
+      @property texture
+      @type Texture
+      ###
       @texture = texture
+      
+      ###
+      The width of the tiling sprite
+      
+      @property width
+      @type Number
+      ###
       @width = width
+      
+      ###
+      The height of the tiling sprite
+      
+      @property height
+      @type Number
+      ###
       @height = height
-      @renderable = true
       
       ###
       The scaling of the image that is being tiled
+      
       @property tileScale
       @type Point
       ###
@@ -40,13 +59,21 @@ define 'Coffixi/extras/TilingSprite', [
       
       ###
       The offset position of the image that is being tiled
+      
       @property tilePosition
       @type Point
       ###
       @tilePosition = new Point(0, 0)
+      @renderable = true
       @blendMode = Sprite.blendModes.NORMAL
 
-    setTexture = (texture) ->
+    ###
+    Sets the texture of the tiling sprite
+
+    @method setTexture
+    @param texture {Texture} The texture that is displayed by the sprite
+    ###
+    setTexture: (texture) ->
       #TODO SET THE TEXTURES
       #TODO VISIBILITY
       
@@ -54,5 +81,12 @@ define 'Coffixi/extras/TilingSprite', [
       @texture = texture
       @updateFrame = true
 
-    onTextureUpdate = (event) ->
+    ###
+    When the texture is updated, this event will fire to update the frame
+
+    @method onTextureUpdate
+    @param event
+    @private
+    ###
+    onTextureUpdate: (event) ->
       @updateFrame = true
