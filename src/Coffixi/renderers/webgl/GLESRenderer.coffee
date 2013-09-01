@@ -940,7 +940,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       
       # -- Does this need to be set every frame? -- //
       gl.colorMask true, true, true, @transparent
-      gl.viewport 0, 0, @width, @height
+      gl.viewport @viewportX, @viewportY, @viewportWidth, @viewportHeight
       
       # set the correct matrix..	
       #	gl.uniformMatrix4fv(this.defaultShader.mvMatrixUniform, false, this.projectionMatrix);
