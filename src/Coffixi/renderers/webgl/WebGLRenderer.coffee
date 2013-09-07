@@ -42,7 +42,7 @@ define 'Coffixi/renderers/webgl/WebGLRenderer', [
         webGL = @view.getContext("experimental-webgl",
           alpha: @transparent
           antialias: false
-          premultipliedAlpha: true
+          premultipliedAlpha: false
           stencil: true
         )
       catch e
