@@ -54,8 +54,7 @@ define 'Coffixi/renderers/canvas/CanvasGraphics', [
             context.stroke()
         else if data.type is Graphics.RECT
           
-          # TODO - need to be Undefined!
-          if data.fillColor
+          if data.fillColor or data.fillColor is 0
             context.globalAlpha = data.fillAlpha * worldAlpha
             context.fillStyle = color = "#" + ("00000" + (data.fillColor | 0).toString(16)).substr(-6)
             context.fillRect points[0], points[1], points[2], points[3]
