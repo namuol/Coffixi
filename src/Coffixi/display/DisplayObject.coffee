@@ -6,10 +6,12 @@ define 'Coffixi/display/DisplayObject', [
   'Coffixi/core/Point'
   'Coffixi/core/Matrix'
   'Coffixi/filters/FilterBlock'
+  'Coffixi/utils/Module'
 ], (
   Point
   Matrix
   FilterBlock
+  Module
 ) ->
 
   ###
@@ -18,7 +20,7 @@ define 'Coffixi/display/DisplayObject', [
   @class DisplayObject
   @constructor
   ###
-  class DisplayObject
+  class DisplayObject extends Module
     constructor: ->
       @last = this
       @first = this

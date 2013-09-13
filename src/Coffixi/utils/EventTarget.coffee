@@ -12,7 +12,7 @@ define 'Coffixi/utils/EventTarget', [
     constructor: ->
       listeners = {}
       @addEventListener = @on = (type, listener) ->
-        listeners[type] = []  if listeners[type] is `undefined`
+        listeners[type] = []  if listeners[type] is undefined
         listeners[type].push listener  if listeners[type].indexOf(listener) is -1
 
       @dispatchEvent = @emit = (event) ->

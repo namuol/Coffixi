@@ -2,22 +2,22 @@ define 'Coffixi/utils/Module', ->
   
   # From http://arcturo.github.io/library/coffeescript/03_classes.html
 
-  moduleKeywords = ['extended', 'included']
+  moduleKeywords = ['onMixinStatic', 'onMixin']
 
   class Module
-    @extend: (obj) ->
+    @mixinStatic: (obj) ->
       for key, value of obj when key not in moduleKeywords
         @[key] = value
 
-      obj.extended?.apply(@)
+      obj.onMixinStatic?.call(@)
       return @
 
-    @include: (obj) ->
+    @mixin: (obj) ->
       for key, value of obj when key not in moduleKeywords
         # Assign properties to the prototype
         @::[key] = value
 
-      obj.included?.apply(@)
+      obj.onMixin?.call(@)
       return @
 
   return Module
