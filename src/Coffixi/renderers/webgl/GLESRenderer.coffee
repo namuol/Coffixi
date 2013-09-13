@@ -120,7 +120,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
             gl.stencilFunc gl.ALWAYS, 1, 0xff
             gl.stencilOp gl.KEEP, gl.KEEP, gl.REPLACE
             GLESGraphics.renderGraphics renderable.mask, projection
-            gl.colorMask true, true, true, false
+            gl.colorMask true, true, true, true
             gl.stencilFunc gl.NOTEQUAL, 0, 0xff
             gl.stencilOp gl.KEEP, gl.KEEP, gl.KEEP
           else
