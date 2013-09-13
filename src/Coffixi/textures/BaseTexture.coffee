@@ -3,20 +3,25 @@
 ###
 
 define 'Coffixi/textures/BaseTexture', [
-  'Coffixi/utils/EventTarget'
+  'Coffixi/utils/Module'
+  'Coffixi/utils/HasSignals'
 ], (
-  EventTarget
+  Module
+  HasSignals
 ) ->
 
   ###
   A texture stores the information that represents an image. All textures have a base texture
 
   @class BaseTexture
-  @uses EventTarget
+  @extends Module
+  @uses HasSignals
   @constructor
   @param source {String} the source object (image or canvas)
   ###
-  class BaseTexture extends EventTarget
+  class BaseTexture extends Module
+    @mixin HasSignals
+
     @cache: {}
     @texturesToUpdate: []
     @texturesToDestroy: []
@@ -77,14 +82,10 @@ define 'Coffixi/textures/BaseTexture', [
           @width = @source.width
           @height = @source.height
           @createCanvas @source
-          @emit
-            type: "loaded"
-            content: @
+          @emit 'loaded', @
         else
           @source.onerror = =>
-            @emit
-              type: 'error'
-              content: @
+            @emit 'error', @
 
           @source.onload = =>
             @hasLoaded = true
@@ -93,9 +94,7 @@ define 'Coffixi/textures/BaseTexture', [
             
             # add it to somewhere...
             @createCanvas @source
-            @emit
-              type: "loaded"
-              content: @
+            @emit 'loaded', @
 
       @_powerOf2 = false
 

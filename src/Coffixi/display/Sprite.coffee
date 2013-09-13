@@ -80,7 +80,7 @@ define 'Coffixi/display/Sprite', [
           @updateFrame = true
         else
           @onTextureUpdateBind = @onTextureUpdate.bind(this)
-          @texture.addEventListener "update", @onTextureUpdateBind
+          @texture.on 'update', @onTextureUpdateBind
 
       @renderable = true
 

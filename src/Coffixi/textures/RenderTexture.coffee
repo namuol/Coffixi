@@ -6,7 +6,6 @@ define 'Coffixi/textures/RenderTexture', [
   'Coffixi/core/Rectangle'
   'Coffixi/core/Point'
   'Coffixi/core/Matrix'
-  'Coffixi/utils/EventTarget'
   'Coffixi/renderers/canvas/CanvasRenderer'
   'Coffixi/renderers/webgl/GLESRenderer'
   './BaseTexture'
@@ -15,7 +14,6 @@ define 'Coffixi/textures/RenderTexture', [
   Rectangle
   Point
   Matrix
-  EventTarget
   CanvasRenderer
   GLESRenderer
   BaseTexture
@@ -54,9 +52,6 @@ define 'Coffixi/textures/RenderTexture', [
   ###
   class RenderTexture extends Texture
     constructor: (width, height, @textureFilter=BaseTexture.filterModes.LINEAR, @filterMode=BaseTexture.filterModes.LINEAR) ->
-      # LOU TODO: Can we just call original Texture super?
-      EventTarget.call this
-
       @width = width or 100
       @height = height or 100
       @indetityMatrix = Matrix.mat3.create()

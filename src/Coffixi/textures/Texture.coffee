@@ -3,12 +3,14 @@
 ###
 
 define 'Coffixi/textures/Texture', [
-  'Coffixi/utils/EventTarget'
+  'Coffixi/utils/Module'
+  'Coffixi/utils/HasSignals'
   './BaseTexture'
   'Coffixi/core/Rectangle'
   'Coffixi/core/Point'
 ], (
-  EventTarget
+  Module
+  HasSignals
   BaseTexture
   Rectangle
   Point
@@ -19,12 +21,15 @@ define 'Coffixi/textures/Texture', [
   to the display list directly. To do this use Sprite. If no frame is provided then the whole image is used
 
   @class Texture
-  @uses EventTarget
+  @extends Module
+  @uses HasSignals
   @constructor
   @param baseTexture {BaseTexture} The base texture source to create the texture from
   @param frmae {Rectangle} The rectangle frame of the texture to show
   ###
-  class Texture extends EventTarget
+  class Texture extends Module
+    @mixin HasSignals
+    
     @cache: {}
     @frameUpdates: []
     constructor: (baseTexture, frame) ->
@@ -60,16 +65,13 @@ define 'Coffixi/textures/Texture', [
       @type Point
       ###
       @trim = new Point()
-      @scope = this
       if baseTexture.hasLoaded
         frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
         
         #console.log(frame)
         @setFrame frame
       else
-        scope = this
-        baseTexture.on "loaded", ->
-          scope.onBaseTextureLoaded()
+        baseTexture.on 'loaded', => @onBaseTextureLoaded()
 
     ###
     Called when the base texture is loaded
@@ -80,14 +82,12 @@ define 'Coffixi/textures/Texture', [
     ###
     onBaseTextureLoaded: (event) ->
       baseTexture = @baseTexture
-      baseTexture.off "loaded", @onLoaded
+      # baseTexture.off 'loaded', @onLoaded
       @frame = new Rectangle(0, 0, baseTexture.width, baseTexture.height)  if @noFrame
       @noFrame = false
       @width = @frame.width
       @height = @frame.height
-      @scope.emit
-        type: "update"
-        content: this
+      @emit 'update', @
 
     ###
     Destroys this texture
@@ -109,7 +109,7 @@ define 'Coffixi/textures/Texture', [
       @width = frame.width
       @height = frame.height
       if frame.x + frame.width > @baseTexture.width or frame.y + frame.height > @baseTexture.height
-        throw new Error("Texture Error: frame does not fit inside the base Texture dimensions " + this)
+        throw new Error('Texture Error: frame does not fit inside the base Texture dimensions ' + this)
       @updateFrame = true
       Texture.frameUpdates.push this
 
