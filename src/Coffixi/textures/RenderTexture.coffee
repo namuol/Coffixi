@@ -190,14 +190,20 @@ define 'Coffixi/textures/RenderTexture', [
       if position
         displayObject.worldTransform[2] = position.x
         displayObject.worldTransform[5] = position.y
+
       i = 0
       j = children.length
-
       while i < j
         children[i].updateTransform()
         i++
+      
+      imageSmoothingEnabled = @textureFilter not in [BaseTexture.filterModes.NEAREST, 'nearest']
+      @renderer.context.imageSmoothingEnabled = imageSmoothingEnabled
+      @renderer.context.webkitImageSmoothingEnabled = imageSmoothingEnabled
+      @renderer.context.mozImageSmoothingEnabled = imageSmoothingEnabled
+
       @renderer.context.clearRect 0, 0, @width, @height  if clear
       @renderer.renderDisplayObject displayObject
       @renderer.context.setTransform 1, 0, 0, 1, 0, 0
 
-    #  BaseTexture.texturesToUpdate.push(this.baseTexture);
+      # BaseTexture.texturesToUpdate.push(@baseTexture)

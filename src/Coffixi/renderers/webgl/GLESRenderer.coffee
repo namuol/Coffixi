@@ -988,9 +988,9 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     ###
     @getGLFilterMode: (filterMode) ->
       switch filterMode
-        when BaseTexture.filterModes.NEAREST
+        when BaseTexture.filterModes.NEAREST, 'nearest'
           glFilterMode = @gl.NEAREST
-        when BaseTexture.filterModes.LINEAR
+        when BaseTexture.filterModes.LINEAR, 'linear'
           glFilterMode = @gl.LINEAR
         else
           console.warn 'Unexpected value for filterMode: ' + filterMode + '. Defaulting to LINEAR'

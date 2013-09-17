@@ -18,7 +18,7 @@ define 'Coffixi/display/Stage', [
 
   ###
   A Stage represents the root of the display tree. Everything connected to the stage is rendered
-
+  
   @class Stage
   @extends DisplayObjectContainer
   @constructor

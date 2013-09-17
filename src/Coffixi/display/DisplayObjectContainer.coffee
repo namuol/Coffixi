@@ -102,6 +102,8 @@ define 'Coffixi/display/DisplayObjectContainer', [
         # add them to the new render group..
         @__renderGroup.addDisplayObjectAndChildren child
 
+      return child
+
 
     ###
     Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown

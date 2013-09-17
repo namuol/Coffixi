@@ -97,7 +97,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       BaseTexture.texturesToDestroy = []
       stage.updateTransform()
       
-      imageSmoothingEnabled = @textureFilter is BaseTexture.filterModes.LINEAR
+      imageSmoothingEnabled = @textureFilter not in [BaseTexture.filterModes.NEAREST, 'nearest']
       @context.imageSmoothingEnabled = imageSmoothingEnabled
       @context.webkitImageSmoothingEnabled = imageSmoothingEnabled
       @context.mozImageSmoothingEnabled = imageSmoothingEnabled
@@ -107,16 +107,6 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       @context.setTransform 1, 0, 0, 1, 0, 0
       @context.clearRect 0, 0, @width, @height
       @renderDisplayObject stage
-      
-      #as
-      
-      # run interaction!
-      if stage.interactive
-        
-        #need to add some events!
-        unless stage._interactiveEventsAdded
-          stage._interactiveEventsAdded = true
-          stage.interactionManager.setTarget this
       
       # remove frame updates..
       Texture.frameUpdates = []  if Texture.frameUpdates.length > 0
@@ -197,21 +187,14 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
             displayObject.mask.worldAlpha = 0.5
             context.worldAlpha = 0
             CanvasGraphics.renderGraphicsMask displayObject.mask, context
-            
-            #		context.fillStyle = 0xFF0000;
-            #	context.fillRect(0, 0, 200, 200);
+
             context.clip()
             displayObject.mask.worldAlpha = cacheAlpha
-          
-          #context.globalCompositeOperation = 'lighter';
           else
-            
-            #context.globalCompositeOperation = 'source-over';
             context.restore()
         
-        #	count++
         displayObject = displayObject._iNext
-        break unless displayObject isnt testObject
+        break  if displayObject is testObject
       return
 
     ###
@@ -282,8 +265,6 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
     renderStrip: (strip) ->
       context = @context
       
-      #context.globalCompositeOperation = 'lighter';
-      # draw triangles!!
       verticies = strip.verticies
       uvs = strip.uvs
       length = verticies.length / 2
@@ -291,7 +272,6 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       i = 1
 
       while i < length - 2
-        
         # draw some triangles!
         index = i * 2
         x0 = verticies[index]
@@ -312,9 +292,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         context.lineTo x1, y1
         context.lineTo x2, y2
         context.closePath()
-        
-        #	context.fillStyle = "white"//rgb(1, 1, 1,1));
-        #	context.fill();
+
         context.clip()
         
         # Compute matrix transform
@@ -329,5 +307,4 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         context.drawImage strip.texture.baseTexture.source, 0, 0
         context.restore()
         i++
-
-    #	context.globalCompositeOperation = 'source-over';	
+      return

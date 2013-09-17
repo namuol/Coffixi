@@ -75,7 +75,7 @@ define 'Coffixi/textures/BaseTexture', [
         @width = @source.width
         @height = @source.height
 
-        @createCanvas @source
+        @createCanvas @source  if @source instanceof Image
       else
         if @source.complete
           @hasLoaded = true
