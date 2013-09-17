@@ -1,10 +1,10 @@
-###
+###*
 @author Chad Engler <chad@pantherdev.com>
 ###
 
 define 'Coffixi/core/Circle', ->
 
-  ###
+  ###*
   The Circle object can be used to specify a hit area for displayobjects
 
   @class Circle
@@ -15,28 +15,28 @@ define 'Coffixi/core/Circle', ->
   ###
   class Circle
     constructor: (x, y, radius) ->
-      ###
+      ###*
       @property x
       @type Number
       @default 0
       ###
       @x = x or 0
       
-      ###
+      ###*
       @property y
       @type Number
       @default 0
       ###
       @y = y or 0
       
-      ###
+      ###*
       @property radius
       @type Number
       @default 0
       ###
       @radius = radius or 0
 
-    ###
+    ###*
     Creates a clone of this Circle instance
 
     @method clone
@@ -46,7 +46,7 @@ define 'Coffixi/core/Circle', ->
       new PIXI.Circle(@x, @y, @radius)
 
 
-    ###
+    ###*
     Checks if the x, and y coords passed to this function are contained within this circle
 
     @method contains

@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -14,9 +14,9 @@ define 'Coffixi/text/Text', [
   Point
 ) ->
 
-  # LOU TODO: Abstract out all the canvas rendering stuff. Native implementation will use FreeType.
+  # LOU TODO: Abstract out all the canvas rendering stuff. Native implementation will use SDL_ttf.
 
-  ###
+  ###*
   A Text Object will create a line(s) of text to split a line you can use "\n"
 
   @class Text
@@ -46,7 +46,7 @@ define 'Coffixi/text/Text', [
       @updateText()
       @dirty = false
 
-    ###
+    ###*
     Set the style of the text
 
     @method setStyle
@@ -71,8 +71,7 @@ define 'Coffixi/text/Text', [
       @style = style
       @dirty = true
 
-
-    ###
+    ###*
     Set the copy for the text object. To split a line you can use "\n"
 
     @methos setText
@@ -82,8 +81,7 @@ define 'Coffixi/text/Text', [
       @text = text.toString() or " "
       @dirty = true
 
-
-    ###
+    ###*
     Renders text
 
     @method updateText
@@ -135,8 +133,7 @@ define 'Coffixi/text/Text', [
         i++
       @updateTexture()
 
-
-    ###
+    ###*
     Updates texture size based on canvas size
 
     @method updateTexture
@@ -151,8 +148,7 @@ define 'Coffixi/text/Text', [
       @height = @canvas.height
       BaseTexture.texturesToUpdate.push @texture.baseTexture
 
-
-    ###
+    ###*
     Updates the transfor of this object
 
     @method updateTransform
@@ -164,15 +160,14 @@ define 'Coffixi/text/Text', [
         @dirty = false
       super
 
+    ###*
+    http://stackoverflow.com/users/34441/ellisbben
+    great solution to the problem!
 
-    #
-    # * http://stackoverflow.com/users/34441/ellisbben
-    # * great solution to the problem!
-    # *
-    # * @method determineFontHeight
-    # * @param fontStyle {Object}
-    # * @private
-    # 
+    @method determineFontHeight
+    @param fontStyle {Object}
+    @private
+    ###    
     determineFontHeight: (fontStyle) ->
       
       # build a little reference dictionary so if the font style has been used return a
@@ -190,8 +185,7 @@ define 'Coffixi/text/Text', [
         body.removeChild dummy
       result
 
-
-    ###
+    ###*
     A Text Object will apply wordwrap
 
     @method wordWrap
@@ -227,7 +221,7 @@ define 'Coffixi/text/Text', [
       result
 
 
-    ###
+    ###*
     Destroys this text object
 
     @method destroy

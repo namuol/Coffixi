@@ -1,5 +1,6 @@
 define 'Coffixi/utils/Module', ->
-  
+  # LOU TODO: Docs
+    
   # From http://arcturo.github.io/library/coffeescript/03_classes.html
 
   moduleKeywords = ['onMixinStatic', 'onMixin']

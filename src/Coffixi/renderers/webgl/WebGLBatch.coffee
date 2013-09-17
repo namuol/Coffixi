@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -12,7 +12,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
   Utils
 ) ->
 
-  ###
+  ###*
   A WebGLBatch Enables a group of sprites to be drawn using the same settings.
   if a group of sprites all have the same baseTexture and blendMode then they can be grouped into a batch.
   All the sprites in a batch can then be drawn in one go by the GPU which is hugely efficient. ALL sprites
@@ -27,7 +27,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
   class WebGLBatch
     @_batchs: []
 
-    ###
+    ###*
     @private
     ###
     @_getBatch: (gl) ->
@@ -36,14 +36,14 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       else
         WebGLBatch.pop()
 
-    ###
+    ###*
     @private
     ###
     @_returnBatch: (batch) ->
       batch.clean()
       WebGLBatch.push batch
 
-    ###
+    ###*
     @private
     ###
     @_restoreBatchs: (gl) ->
@@ -64,7 +64,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       @blendMode = Sprite.blendModes.NORMAL
       @dynamicSize = 1
 
-    ###
+    ###*
     Cleans the batch so that is can be returned to an object pool and reused
 
     @method clean
@@ -83,7 +83,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       @head
       @tail
 
-    ###
+    ###*
     Recreates the buffers in the event of a context loss
 
     @method restoreLostContext
@@ -96,7 +96,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       @uvBuffer = gl.createBuffer()
       @colorBuffer = gl.createBuffer()
 
-    ###
+    ###*
     inits the batch's texture and blend mode based if the supplied sprite
 
     @method init
@@ -115,7 +115,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       @size = 1
       @growBatch()
 
-    ###
+    ###*
     inserts a sprite before the specified sprite
 
     @method insertBefore
@@ -137,7 +137,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
 
     #this.head.__prev = null
 
-    ###
+    ###*
     inserts a sprite after the specified sprite
 
     @method insertAfter
@@ -157,7 +157,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       else
         @tail = sprite
 
-    ###
+    ###*
     removes a sprite from the batch
 
     @method remove
@@ -185,7 +185,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       sprite.__prev = null
       @dirty = true
 
-    ###
+    ###*
     Splits the batch into two with the specified sprite being the start of the new batch.
 
     @method split
@@ -220,7 +220,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       @size -= tempSize
       batch
 
-    ###
+    ###*
     Merges two batchs together
 
     @method merge
@@ -238,7 +238,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
         sprite = sprite.__next
       return
 
-    ###
+    ###*
     Grows the size of the batch. As the elements in the batch cannot have a dynamic size this
     function is used to increase the size of the batch. It also creates a little extra room so
     that the batch does not need to be resized every time a sprite is added
@@ -281,7 +281,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, @indexBuffer
       gl.bufferData gl.ELEMENT_ARRAY_BUFFER, @indices, gl.STATIC_DRAW
 
-    ###
+    ###*
     Refresh's all the data in the batch and sync's it with the webGL buffers
 
     @method refresh
@@ -331,7 +331,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
       @dirtyUVS = true
       @dirtyColors = true
 
-    ###
+    ###*
     Updates all the relevant geometry and uploads the data to the GPU
 
     @method update
@@ -422,7 +422,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
         displayObject = displayObject.__next
       return
 
-    ###
+    ###*
     Draws the batch to the frame buffer
 
     @method render

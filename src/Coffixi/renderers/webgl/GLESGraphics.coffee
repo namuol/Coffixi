@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -18,13 +18,13 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
   Utils
 ) ->
 
-  ###
+  ###*
   A set of functions used by the webGL renderer to draw the primitive graphics data
 
   @class CanvasGraphics
   ###
   class GLESGraphics
-    ###
+    ###*
     Renders the graphics object
 
     @static
@@ -65,7 +65,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
       gl.drawElements gl.TRIANGLE_STRIP, graphics._GL.indices.length, gl.UNSIGNED_SHORT, 0
       GLESShaders.activateDefaultShader gl
 
-    ###
+    ###*
     Updates the graphics object
 
     @static
@@ -94,7 +94,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, graphics._GL.indexBuffer
       gl.bufferData gl.ELEMENT_ARRAY_BUFFER, graphics._GL.glIndicies, gl.STATIC_DRAW
 
-    ###
+    ###*
     Builds a rectangle to draw
 
     @static
@@ -131,7 +131,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
         graphicsData.points = [x, y, x + width, y, x + width, y + height, x, y + height, x, y]
         GLESGraphics.buildLine graphicsData, webGLData
 
-    ###
+    ###*
     Builds a circle to draw
 
     @static
@@ -175,7 +175,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
           i++
         GLESGraphics.buildLine graphicsData, webGLData
 
-    ###
+    ###*
     Builds a line to draw
 
     @static
@@ -323,7 +323,7 @@ define 'Coffixi/renderers/webgl/GLESGraphics', [
         i++
       indices.push indexStart - 1
 
-    ###
+    ###*
     Builds a polygon to draw
 
     @static

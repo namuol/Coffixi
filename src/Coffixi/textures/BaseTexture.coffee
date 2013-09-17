@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -10,7 +10,7 @@ define 'Coffixi/textures/BaseTexture', [
   HasSignals
 ) ->
 
-  ###
+  ###*
   A texture stores the information that represents an image. All textures have a base texture
 
   @class BaseTexture
@@ -33,34 +33,34 @@ define 'Coffixi/textures/BaseTexture', [
     constructor: (source) ->
       super
       
-      ###
-      [read-only] The width of the base texture set when the image has loaded
+      ###*
+      The width of the base texture set when the image has loaded
       
       @property width
       @type Number
-      @readOnly
+      @final
       ###
       @width = 100
       
-      ###
-      [read-only] The height of the base texture set when the image has loaded
+      ###*
+      The height of the base texture set when the image has loaded
       
       @property height
       @type Number
-      @readOnly
+      @final
       ###
       @height = 100
       
-      ###
-      [read-only] Describes if the base texture has loaded or not
+      ###*
+      Describes if the base texture has loaded or not
       
       @property hasLoaded
       @type Boolean
-      @readOnly
+      @final
       ###
       @hasLoaded = false
       
-      ###
+      ###*
       The source that is loaded to create the texture
       
       @property source
@@ -134,7 +134,7 @@ define 'Coffixi/textures/BaseTexture', [
       @beginRead()
       @endRead()
 
-    ###
+    ###*
     Destroys this base texture
 
     @method destroy
@@ -144,7 +144,7 @@ define 'Coffixi/textures/BaseTexture', [
       @source = null
       BaseTexture.texturesToDestroy.push this
 
-    ###
+    ###*
     Helper function that returns a base texture based on an image url
     If the image is not in the base texture cache it will be  created and loaded
 

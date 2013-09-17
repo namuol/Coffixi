@@ -13,7 +13,7 @@ define 'Coffixi/utils/Signal', [
   validateListener = (listener, fnName) ->
     throw new Error("listener is a required param of {fn}() and should be a Function.".replace("{fn}", fnName))  if typeof listener isnt "function"
 
-  ###
+  ###*
   Custom event broadcaster
   <br />- inspired by Robert Penner's AS3 Signals.
   @name Signal
@@ -22,7 +22,7 @@ define 'Coffixi/utils/Signal', [
   ###
   class Signal
     constructor: (@name) ->
-      ###
+      ###*
       @type Array.<SignalBinding>
       @private
       ###
@@ -33,7 +33,7 @@ define 'Coffixi/utils/Signal', [
       @dispatch = =>
         Signal::dispatch.apply @, arguments
 
-    ###
+    ###*
     If Signal should keep record of previously dispatched parameters and
     automatically execute listener during `add()`/`addOnce()` if Signal was
     already dispatched before.
@@ -41,20 +41,20 @@ define 'Coffixi/utils/Signal', [
     ###
     memorize: false
     
-    ###
+    ###*
     @type boolean
     @private
     ###
     _shouldPropagate: true
     
-    ###
+    ###*
     If Signal is active and should broadcast events.
     <p><strong>IMPORTANT:</strong> Setting this property during a dispatch will only affect the next dispatch, if you want to stop the propagation of a signal use `halt()` instead.</p>
     @type boolean
     ###
     active: true
     
-    ###
+    ###*
     @param {Function} listener
     @param {boolean} isOnce
     @param {Object} [listenerContext]
@@ -75,7 +75,7 @@ define 'Coffixi/utils/Signal', [
       binding
 
     
-    ###
+    ###*
     @param {SignalBinding} binding
     @private
     ###
@@ -89,7 +89,7 @@ define 'Coffixi/utils/Signal', [
       @_bindings.splice n + 1, 0, binding
 
     
-    ###
+    ###*
     @param {Function} listener
     @return {number}
     @private
@@ -103,7 +103,7 @@ define 'Coffixi/utils/Signal', [
       -1
 
     
-    ###
+    ###*
     Check if listener was attached to Signal.
     @param {Function} listener
     @param {Object} [context]
@@ -113,7 +113,7 @@ define 'Coffixi/utils/Signal', [
       @_indexOfListener(listener, context) isnt -1
 
     
-    ###
+    ###*
     Add a listener to the signal.
     @param {Function} listener Signal handler function.
     @param {Object} [listenerContext] Context on which listener will be executed (object that should represent the `this` variable inside listener function).
@@ -125,7 +125,7 @@ define 'Coffixi/utils/Signal', [
       @_registerListener listener, false, listenerContext, priority
 
     
-    ###
+    ###*
     Add listener to the signal that should be removed after first execution (will be executed only once).
     @param {Function} listener Signal handler function.
     @param {Object} [listenerContext] Context on which listener will be executed (object that should represent the `this` variable inside listener function).
@@ -137,7 +137,7 @@ define 'Coffixi/utils/Signal', [
       @_registerListener listener, true, listenerContext, priority
 
     
-    ###
+    ###*
     Remove a single listener from the dispatch queue.
     @param {Function} listener Handler function that should be removed.
     @param {Object} [context] Execution context (since you can add the same handler multiple times if executing in a different context).
@@ -152,7 +152,7 @@ define 'Coffixi/utils/Signal', [
       listener
 
     
-    ###
+    ###*
     Remove all listeners from the Signal.
     ###
     removeAll: ->
@@ -161,14 +161,14 @@ define 'Coffixi/utils/Signal', [
       @_bindings.length = 0
 
     
-    ###
+    ###*
     @return {number} Number of listeners attached to the Signal.
     ###
     getNumListeners: ->
       @_bindings.length
 
     
-    ###
+    ###*
     Stop propagation of the event, blocking the dispatch to next listeners on the queue.
     <p><strong>IMPORTANT:</strong> should be called only during signal dispatch, calling it before/after dispatch won't affect signal broadcast.</p>
     @see Signal.prototype.disable
@@ -177,7 +177,7 @@ define 'Coffixi/utils/Signal', [
       @_shouldPropagate = false
 
     
-    ###
+    ###*
     Dispatch/Broadcast Signal to all listeners added to the queue.
     @param {...*} [params] Parameters that should be passed to each handler.
     ###
@@ -199,7 +199,7 @@ define 'Coffixi/utils/Signal', [
         break unless bindings[n] and @_shouldPropagate and bindings[n].execute(params) isnt false
 
     
-    ###
+    ###*
     Forget memorized arguments.
     @see Signal.memorize
     ###
@@ -207,7 +207,7 @@ define 'Coffixi/utils/Signal', [
       @_prevParams = null
 
     
-    ###
+    ###*
     Remove all bindings from signal and destroy any reference to external objects (destroy Signal object).
     <p><strong>IMPORTANT:</strong> calling any method on the signal instance after calling dispose will throw errors.</p>
     ###
@@ -217,7 +217,7 @@ define 'Coffixi/utils/Signal', [
       delete @_prevParams
 
     
-    ###
+    ###*
     @return {string} String representation of the object.
     ###
     toString: ->

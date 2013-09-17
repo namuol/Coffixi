@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -14,7 +14,7 @@ define 'Coffixi/display/DisplayObject', [
   Module
 ) ->
 
-  ###
+  ###*
   The base class for all objects that are rendered on the screen.
 
   @class DisplayObject
@@ -25,43 +25,43 @@ define 'Coffixi/display/DisplayObject', [
       @last = this
       @first = this
       
-      ###
+      ###*
       The x coordinate of the object relative to the local coordinates of the parent.
       @property x
       ###
       @x = 0
 
-      ###
+      ###*
       The y coordinate of the object relative to the local coordinates of the parent.
       @property y
       ###
       @y = 0
       
-      ###
+      ###*
       The X scale factor of the object.
       @property scaleX
       ###
       @scaleX = 1
 
-      ###
+      ###*
       The Y scale factor of the object.
       @property scaleY
       ###
       @scaleY = 1
       
-      ###
+      ###*
       The x coordinate of the pivot point that this displayObject rotates around
       @property pivotX
       ###
       @pivotX = 0
 
-      ###
+      ###*
       The x coordinate of the pivot point that this displayObject rotates around
       @property pivotX
       ###
       @pivotY = 0
       
-      ###
+      ###*
       The rotation of the object in radians.
       
       @property rotation
@@ -69,7 +69,7 @@ define 'Coffixi/display/DisplayObject', [
       ###
       @rotation = 0
       
-      ###
+      ###*
       The opacity of the object.
       
       @property alpha
@@ -77,7 +77,7 @@ define 'Coffixi/display/DisplayObject', [
       ###
       @alpha = 1
       
-      ###
+      ###*
       The visibility of the object.
       
       @property visible
@@ -85,7 +85,7 @@ define 'Coffixi/display/DisplayObject', [
       ###
       @visible = true
       
-      ###
+      ###*
       This is used to indicate if the displayObject should display a mouse hand cursor on rollover
       
       @property buttonMode
@@ -93,7 +93,7 @@ define 'Coffixi/display/DisplayObject', [
       ###
       @buttonMode = false
       
-      ###
+      ###*
       Can this object be rendered
       
       @property renderable
@@ -101,96 +101,67 @@ define 'Coffixi/display/DisplayObject', [
       ###
       @renderable = false
       
-      ###
-      [read-only] The visibility of the object based on world (parent) factors.
+      ###*
+      The visibility of the object based on world (parent) factors.
       
       @property worldVisible
       @type Boolean
-      @readOnly
+      @final
       ###
       @worldVisible = false
       
-      ###
-      [read-only] The display object container that contains this display object.
+      ###*
+      The display object container that contains this display object.
       
       @property parent
       @type DisplayObjectContainer
-      @readOnly
+      @final
       ###
       @parent = null
       
-      ###
-      [read-only] The stage the display object is connected to, or undefined if it is not connected to the stage.
+      ###*
+      The stage the display object is connected to, or undefined if it is not connected to the stage.
       
       @property stage
       @type Stage
-      @readOnly
+      @final
       ###
       @stage ?= null
       
-      ###
-      [read-only] The multiplied alpha of the displayobject
+      ###*
+      The multiplied alpha of the displayobject
       
       @property worldAlpha
       @type Number
-      @readOnly
+      @final
       ###
       @worldAlpha = 1
             
-      ###
-      [read-only] Current transform of the object based on world (parent) factors
+      ###*
+      Current transform of the object based on world (parent) factors
       
       @property worldTransform
       @type Mat3
-      @readOnly
+      @final
       @private
       ###
       @worldTransform = Matrix.mat3.create() #mat3.identity();
       
-      ###
-      [read-only] Current transform of the object locally
+      ###*
+      Current transform of the object locally
       
       @property localTransform
       @type Mat3
-      @readOnly
+      @final
       @private
       ###
       @localTransform = Matrix.mat3.create() #mat3.identity();
-      
-      ###
-      [NYI] Unkown
-      
-      @property color
-      @type Array<>
-      @private
-      ###
-      # @color = [] # LOU TODO: What is this for?
-      
-      ###
-      [NYI] Holds whether or not this object is dynamic, for rendering optimization
-      
-      @property dynamic
-      @type Boolean
-      @private
-      ###
-      @dynamic = true
       
       # chach that puppy!
       @_sr = 0
       @_cr = 1
 
-    #TODO make visible a getter setter
-    #
-    #Object.defineProperty(DisplayObject.prototype, 'visible', {
-    #    get: function() {
-    #        return this._visible;
-    #    },
-    #    set: function(value) {
-    #        this._visible = value;
-    #    }
-    #});
-
-    ###
+    ###*
     Sets a mask for the displayObject. A mask is an object that limits the visibility of an object to the shape of the mask applied to it.
     A regular mask must be a Graphics object. This allows for much faster masking in canvas as it utilises shape clipping.
     To remove a mask, set this property to null.
@@ -209,13 +180,13 @@ define 'Coffixi/display/DisplayObject', [
         else
           @removeFilter()
 
-    #
-    # * Adds a filter to this displayObject
-    # *
-    # * @method addFilter
-    # * @param mask {Graphics} the graphics object to use as a filter
-    # * @private
-    # 
+    ###*
+    Adds a filter to this displayObject
+
+    @method addFilter
+    @param mask {Graphics} the graphics object to use as a filter
+    @private
+    ###
     addFilter: (mask) ->
       return  if @filter
       @filter = true
@@ -229,11 +200,7 @@ define 'Coffixi/display/DisplayObject', [
       end.first = end.last = this
       start.open = true
       
-      #
-      #	 * 
-      #	 * insert start
-      #	 * 
-      #	 
+      #	insert start
       childFirst = start
       childLast = start
       nextObject = undefined
@@ -251,11 +218,7 @@ define 'Coffixi/display/DisplayObject', [
       
       # now insert the end filter block..
       
-      #
-      #	 * 
-      #	 * insert end filter
-      #	 * 
-      #	 
+      #	insert end filter
       childFirst = end
       childLast = end
       nextObject = null
@@ -278,12 +241,12 @@ define 'Coffixi/display/DisplayObject', [
       @__renderGroup.addFilterBlocks start, end  if @__renderGroup
       mask.renderable = false
 
-    #
-    # * Removes the filter to this displayObject
-    # *
-    # * @method removeFilter
-    # * @private
-    # 
+    ###*
+    Removes the filter to this displayObject
+    
+    @method removeFilter
+    @private
+    ###
     removeFilter: ->
       return  unless @filter
       @filter = false
@@ -320,12 +283,12 @@ define 'Coffixi/display/DisplayObject', [
       # if webGL...
       @__renderGroup.removeFilterBlocks startBlock, lastBlock  if @__renderGroup
 
-    #
-    # * Updates the object transform for rendering
-    # *
-    # * @method updateTransform
-    # * @private
-    # 
+    ###*
+    Updates the object transform for rendering
+    
+    @method updateTransform
+    @private
+    ###
     updateTransform: ->
       
       # TODO OPTIMIZE THIS!! with dirty

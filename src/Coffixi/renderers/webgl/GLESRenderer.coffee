@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -38,7 +38,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
 
   Batch = undefined
   
-  ###
+  ###*
   A GLESRenderGroup Enables a group of sprites to be drawn using the same settings.
   if a group of sprites all have the same baseTexture and blendMode then they can be
   grouped into a batch. All the sprites in a batch can then be drawn in one go by the
@@ -59,7 +59,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @batchs = []
       @toRemove = []
 
-    ###
+    ###*
     Add a display object to the webgl renderer
 
     @method setRenderable
@@ -80,7 +80,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @addDisplayObjectAndChildren displayObject
 
 
-    ###
+    ###*
     Renders the stage to its webgl view
 
     @method render
@@ -127,7 +127,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
             gl.disable gl.STENCIL_TEST
         i++
 
-    ###
+    ###*
     Renders the stage to its webgl view
 
     @method handleFilter
@@ -136,7 +136,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     ###
     handleFilter: (filter, projection) ->
 
-    ###
+    ###*
     Renders a specific displayObject
 
     @method renderSpecific
@@ -242,7 +242,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         @renderSpecial endBatch, projection
 
 
-    ###
+    ###*
     Renders a specific renderable
 
     @method renderSpecial
@@ -280,7 +280,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           gl.disable gl.STENCIL_TEST
 
 
-    ###
+    ###*
     Checks the visibility of a displayObject
 
     @method checkVisibility
@@ -313,7 +313,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         i++
 
 
-    ###
+    ###*
     Updates a webgl texture
 
     @method updateTexture
@@ -348,7 +348,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @insertObject displayObject, previousRenderable, nextRenderable
 
 
-    ###
+    ###*
     Adds filter blocks
 
     @method addFilterBlocks
@@ -384,7 +384,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @insertAfter end, previousRenderable2
 
 
-    ###
+    ###*
     Remove filter blocks
 
     @method removeFilterBlocks
@@ -397,7 +397,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @removeObject end
 
 
-    ###
+    ###*
     Adds a display object and children to the webgl context
 
     @method addDisplayObjectAndChildren
@@ -440,7 +440,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         break unless tempObject isnt testObject
 
 
-    ###
+    ###*
     Removes a display object and children to the webgl context
 
     @method removeDisplayObjectAndChildren
@@ -459,7 +459,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         break unless displayObject
 
 
-    ###
+    ###*
     Inserts a displayObject into the linked list
 
     @method insertObject
@@ -560,7 +560,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
 
     # insert and SPLIT!
 
-    ###
+    ###*
     Inserts a displayObject into the linked list
 
     @method insertAfter
@@ -604,7 +604,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         @batchs.splice index + 1, 0, item
 
 
-    ###
+    ###*
     Removes a displayObject from the linked list
 
     @method removeObject
@@ -663,7 +663,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
 
 
-    ###
+    ###*
     Initializes a tiling sprite
 
     @method initTilingSprite
@@ -700,7 +700,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       else
         sprite.texture.baseTexture._powerOf2 = true
 
-    ###
+    ###*
     Renders a Strip
 
     @method renderStrip
@@ -775,7 +775,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       gl.useProgram GLESShaders.defaultShader
 
 
-    ###
+    ###*
     Renders a TilingSprite
 
     @method renderTilingSprite
@@ -805,7 +805,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       @renderStrip sprite, projectionMatrix
 
 
-    ###
+    ###*
     Initializes a strip to be rendered
 
     @method initStrip
@@ -830,7 +830,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, strip._indexBuffer
       gl.bufferData gl.ELEMENT_ARRAY_BUFFER, strip.indices, gl.STATIC_DRAW
 
-  ###
+  ###*
   the GLESRenderer is draws the stage and all its content onto a webGL enabled canvas. This renderer
   should be used for browsers support webGL. This Render works by automatically managing webGLBatchs.
   So no need for Sprite Batch's or Sprite Cloud's
@@ -875,7 +875,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       GLESShaders.initDefaultStripShader @gl
       GLESShaders.activateDefaultShader @gl
 
-    ###
+    ###*
     Gets a new Batch from the pool
 
     @static
@@ -889,7 +889,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       else
         Batch._batchs.pop()
 
-    ###
+    ###*
     Puts a batch back into the pool
 
     @static
@@ -901,7 +901,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       batch.clean()
       Batch._batchs.push batch
 
-    ###
+    ###*
     Renders the stage to its webGL view
 
     @method render
@@ -962,7 +962,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           i++
         Texture.frameUpdates = []
 
-    ###
+    ###*
     Updates the textures loaded into this webgl renderer
 
     @static
@@ -983,7 +983,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       BaseTexture.texturesToUpdate = []
       BaseTexture.texturesToDestroy = []
     
-    ###
+    ###*
     @private
     ###
     @getGLFilterMode: (filterMode) ->
@@ -997,7 +997,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           glFilterMode = @gl.LINEAR
       return glFilterMode
 
-    ###
+    ###*
     Updates a loaded webgl texture
 
     @static
@@ -1029,7 +1029,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT
         gl.bindTexture gl.TEXTURE_2D, null
 
-    ###
+    ###*
     Destroys a loaded webgl texture
 
     @method destroyTexture
@@ -1043,7 +1043,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         gl.deleteTexture gl.TEXTURE_2D, texture._glTexture
 
 
-    ###
+    ###*
     resizes the webGL view to the specified width and height
 
     @method resize

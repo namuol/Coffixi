@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -24,7 +24,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
   FilterBlock
 ) ->
 
-  ###
+  ###*
   the CanvasRenderer draws the stage and all its content onto a 2d canvas. This renderer should be used for browsers that do not support webGL.
   Dont forget to add the view to your DOM or you will not see anything :)
 
@@ -39,7 +39,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
     constructor: (width, height, view, transparent, @textureFilter=BaseTexture.filterModes.LINEAR) ->
       @transparent = transparent
       
-      ###
+      ###*
       The width of the canvas view
       
       @property width
@@ -48,7 +48,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       ###
       @width = width or 800
       
-      ###
+      ###*
       The height of the canvas view
       
       @property height
@@ -57,7 +57,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       ###
       @height = height or 600
       
-      ###
+      ###*
       The canvas element that the everything is drawn to
       
       @property view
@@ -65,7 +65,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       ###
       @view = view or document.createElement("canvas")
       
-      ###
+      ###*
       The canvas context that the everything is drawn to
       @property context
       @type Canvas 2d Context
@@ -79,19 +79,13 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       @view.height = @height
       @count = 0
 
-    ###
+    ###*
     Renders the stage to its canvas view
 
     @method render
     @param stage {Stage} the Stage element to be rendered
     ###
     render: (stage) ->
-      
-      # update children if need be
-      
-      #stage.__childrenAdded = [];
-      #stage.__childrenRemoved = [];
-      
       # update textures if need be
       BaseTexture.texturesToUpdate = []
       BaseTexture.texturesToDestroy = []
@@ -112,7 +106,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       Texture.frameUpdates = []  if Texture.frameUpdates.length > 0
 
 
-    ###
+    ###*
     resizes the canvas view to the specified width and height
 
     @method resize
@@ -134,7 +128,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       
     getView: -> @view
 
-    ###
+    ###*
     Renders a display object
 
     @method renderDisplayObject
@@ -197,7 +191,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
         break  if displayObject is testObject
       return
 
-    ###
+    ###*
     Renders a flat strip
 
     @method renderStripFlat
@@ -231,7 +225,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       context.fill()
       context.closePath()
 
-    ###
+    ###*
     Renders a tiling sprite
 
     @method renderTilingSprite
@@ -255,7 +249,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
       context.translate -tilePosition.x, -tilePosition.y
       context.closePath()
 
-    ###
+    ###*
     Renders a strip
 
     @method renderStrip

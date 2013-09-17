@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -8,21 +8,21 @@ define 'Coffixi/renderers/canvas/CanvasGraphics', [
   Graphics
 ) ->
 
-  ###
+  ###*
   A set of functions used by the canvas renderer to draw the primitive graphics data
 
   @class CanvasGraphics
   ###
   class CanvasGraphics
-    #
-    # * Renders the graphics object
-    # *
-    # * @static
-    # * @private
-    # * @method renderGraphics
-    # * @param graphics {Graphics}
-    # * @param context {Context2D}
-    # 
+    ###*
+    Renders the graphics object
+
+    @static
+    @private
+    @method renderGraphics
+    @param graphics {Graphics}
+    @param context {Context2D}
+    ###
     @renderGraphics: (graphics, context) ->
       worldAlpha = graphics.worldAlpha
       i = 0
@@ -105,15 +105,15 @@ define 'Coffixi/renderers/canvas/CanvasGraphics', [
             context.stroke()
         i++
 
-    #
-    # * Renders a graphics mask
-    # *
-    # * @static
-    # * @private
-    # * @method renderGraphicsMask
-    # * @param graphics {Graphics}
-    # * @param context {Context2D}
-    # 
+    ###*    
+    Renders a graphics mask
+
+    @static
+    @private
+    @method renderGraphicsMask
+    @param graphics {Graphics}
+    @param context {Context2D}
+    ###
     @renderGraphicsMask: (graphics, context) ->
       worldAlpha = graphics.worldAlpha
       len = graphics.graphicsData.length

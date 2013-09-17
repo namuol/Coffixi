@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -13,7 +13,7 @@ define 'Coffixi/utils/Detector', [
 ) ->
   Detector = {}
   
-  ###
+  ###*
   This helper function will automatically detect which renderer you should be using.
   WebGL is the preferred renderer as it is a lot fastest. If webGL is not supported by the browser then this function will return a canvas renderer
   @method autoDetectRenderer

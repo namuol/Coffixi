@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -8,7 +8,7 @@ define 'Coffixi/extras/CustomRenderable', [
   DisplayObject
 ) ->
 
-  ###
+  ###*
   This object is one that will allow you to specify custom rendering functions based on render type
 
   @class CustomRenderable
@@ -19,7 +19,7 @@ define 'Coffixi/extras/CustomRenderable', [
     constructor: ->
       super
 
-    ###
+    ###*
     If this object is being rendered by a CanvasRenderer it will call this callback
 
     @method renderCanvas
@@ -29,7 +29,7 @@ define 'Coffixi/extras/CustomRenderable', [
 
     # override!
 
-    ###
+    ###*
     If this object is being rendered by a WebGLRenderer it will call this callback to initialize
 
     @method initWebGL
@@ -39,7 +39,7 @@ define 'Coffixi/extras/CustomRenderable', [
 
     # override!
 
-    ###
+    ###*
     If this object is being rendered by a WebGLRenderer it will call this callback
 
     @method renderGLES

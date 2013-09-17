@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/
 ###
 define 'Coffixi/extras/TilingSprite', [
@@ -11,13 +11,13 @@ define 'Coffixi/extras/TilingSprite', [
   Sprite
 ) ->
 
-  ###
+  ###*
   A tiling sprite is a fast way of rendering a tiling image
 
   @class TilingSprite
   @extends DisplayObjectContainer
   @constructor
-  @param texture {Texture} the texture of the tiling sprite
+  @param texture {Texture} the texture of the tiling sprite *NOTE*: Dimensions of the *baseTexture* must be a power-of-2! (eg. 32x64, 128x128, etc.)
   @param width {Number}  the width of the tiling sprite
   @param height {Number} the height of the tiling sprite
   ###
@@ -25,7 +25,7 @@ define 'Coffixi/extras/TilingSprite', [
     constructor: (texture, width, height) ->
       super
       
-      ###
+      ###*
       The texture that the sprite is using
       
       @property texture
@@ -33,7 +33,7 @@ define 'Coffixi/extras/TilingSprite', [
       ###
       @texture = texture
       
-      ###
+      ###*
       The width of the tiling sprite
       
       @property width
@@ -41,7 +41,7 @@ define 'Coffixi/extras/TilingSprite', [
       ###
       @width = width
       
-      ###
+      ###*
       The height of the tiling sprite
       
       @property height
@@ -49,7 +49,7 @@ define 'Coffixi/extras/TilingSprite', [
       ###
       @height = height
       
-      ###
+      ###*
       The scaling of the image that is being tiled
       
       @property tileScale
@@ -57,7 +57,7 @@ define 'Coffixi/extras/TilingSprite', [
       ###
       @tileScale = new Point(1, 1)
       
-      ###
+      ###*
       The offset position of the image that is being tiled
       
       @property tilePosition
@@ -67,7 +67,7 @@ define 'Coffixi/extras/TilingSprite', [
       @renderable = true
       @blendMode = Sprite.blendModes.NORMAL
 
-    ###
+    ###*
     Sets the texture of the tiling sprite
 
     @method setTexture
@@ -81,7 +81,7 @@ define 'Coffixi/extras/TilingSprite', [
       @texture = texture
       @updateFrame = true
 
-    ###
+    ###*
     When the texture is updated, this event will fire to update the frame
 
     @method onTextureUpdate

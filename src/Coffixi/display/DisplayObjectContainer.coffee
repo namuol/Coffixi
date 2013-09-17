@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -8,7 +8,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
   DisplayObject
 ) ->
 
-  ###
+  ###*
   A DisplayObjectContainer represents a collection of display objects.
   It is the base class of all display objects that act as a container for other objects.
 
@@ -20,12 +20,12 @@ define 'Coffixi/display/DisplayObjectContainer', [
     constructor: ->
       super
       
-      ###
-      [read-only] The of children of this container.
+      ###*
+      The of children of this container.
       
       @property children
       @type Array<DisplayObject>
-      @readOnly
+      @final
       ###
       @children = []
 
@@ -41,7 +41,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
     #    }
     #});
 
-    ###
+    ###*
     Adds a child to the container.
 
     @method addChild
@@ -105,7 +105,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
       return child
 
 
-    ###
+    ###*
     Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
 
     @method addChildAt
@@ -161,7 +161,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
         throw new Error(child + " The index " + index + " supplied is out of bounds " + @children.length)
 
 
-    ###
+    ###*
     [NYI] Swaps the depth of 2 displayObjects
 
     @method swapChildren
@@ -210,7 +210,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
     #		throw new Error(child + " Both the supplied DisplayObjects must be a child of the caller " + this);
     #	}
 
-    ###
+    ###*
     Returns the Child at the specified index
 
     @method getChildAt
@@ -223,7 +223,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
         throw new Error(child + " Both the supplied DisplayObjects must be a child of the caller " + this)
     
 
-    ###
+    ###*
     Removes a child from the container.
 
     @method removeChild
@@ -268,7 +268,7 @@ define 'Coffixi/display/DisplayObjectContainer', [
       else
         throw new Error(child + " The supplied DisplayObject must be a child of the caller " + this)
     
-    ###
+    ###*
     Removes all children from the container.
     @method clearChildren
     ###
@@ -278,12 +278,12 @@ define 'Coffixi/display/DisplayObjectContainer', [
         @removeChild child
       @children = []
 
-    #
-    # * Updates the container's children's transform for rendering
-    # *
-    # * @method updateTransform
-    # * @private
-    # 
+    ###*    
+    Updates the container's children's transform for rendering
+    
+    @method updateTransform
+    @private
+    ###
     updateTransform: ->
       return  unless @visible
       

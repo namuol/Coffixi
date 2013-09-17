@@ -1,4 +1,4 @@
-###
+###*
 @author Adrien Brault <adrien.brault@gmail.com>
 ###
 
@@ -8,7 +8,7 @@ define 'Coffixi/core/Polygon', [
   Point
 ) ->
 
-  ###
+  ###*
   @class Polygon
   @constructor
   @param points* {Array<Point>|Array<Number>|Point...|Number...} This can be an array of Points that form the polygon,
@@ -33,9 +33,13 @@ define 'Coffixi/core/Polygon', [
           p.push new Point(points[i], points[i + 1])
           i += 2
         points = p
+
+      ###*
+      @property points {Array<Point>}
+      ###
       @points = points
 
-    ###
+    ###*
     Creates a clone of this polygon
 
     @method clone
@@ -50,7 +54,7 @@ define 'Coffixi/core/Polygon', [
         i++
       new Polygon(points)
 
-    ###
+    ###*
     Checks if the x, and y coords passed to this function are contained within this polygon
 
     @method contains

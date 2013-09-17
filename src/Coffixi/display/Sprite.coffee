@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -12,7 +12,7 @@ define 'Coffixi/display/Sprite', [
   Texture
 ) ->
 
-  ###
+  ###*
   The Sprite object is the base for all textured objects that are rendered to the screen
 
   @class Sprite
@@ -28,7 +28,7 @@ define 'Coffixi/display/Sprite', [
     constructor: (texture) ->
       super
       
-      ###
+      ###*
       The anchor sets the origin point of the texture.
       The default is 0,0 this means the textures origin is the top left
       Setting than anchor to 0.5,0.5 means the textures origin is centered
@@ -39,7 +39,7 @@ define 'Coffixi/display/Sprite', [
       ###
       @anchor ?= new Point()
       
-      ###
+      ###*
       The texture that the sprite is using
       
       @property texture
@@ -48,7 +48,7 @@ define 'Coffixi/display/Sprite', [
       if texture?
         @texture = texture
       
-      ###
+      ###*
       The blend mode of sprite.
       currently supports Sprite.blendModes.NORMAL and Sprite.blendModes.SCREEN
       
@@ -57,22 +57,7 @@ define 'Coffixi/display/Sprite', [
       ###
       @blendMode = Sprite.blendModes.NORMAL
       
-      ###
-      The width of the sprite (this is initially set by the texture)
-      
-      @property _width
-      @type Number
-      @private
-      ###
       @_width ?= 0
-      
-      ###
-      The height of the sprite (this is initially set by the texture)
-      
-      @property _height
-      @type Number
-      @private
-      ###
       @_height ?= 0
 
       if @texture?
@@ -84,7 +69,7 @@ define 'Coffixi/display/Sprite', [
 
       @renderable = true
 
-    ###
+    ###*
     The width of the sprite, setting this will actually modify the scale to acheive the value set
 
     @property width
@@ -102,7 +87,7 @@ define 'Coffixi/display/Sprite', [
         if @texture
           @scaleX = value / @texture.frame.width
 
-    ###
+    ###*
     The height of the sprite, setting this will actually modify the scale to acheive the value set
 
     @property height
@@ -120,7 +105,7 @@ define 'Coffixi/display/Sprite', [
         if @texture
           @scaleY = value / @texture.frame.height
 
-    ###
+    ###*
     Sets the texture of the sprite
 
     @method setTexture
@@ -133,7 +118,7 @@ define 'Coffixi/display/Sprite', [
       @texture = texture
       @updateFrame = true
 
-    ###
+    ###*
     When the texture is updated, this event will fire to update the scale and frame
 
     @method onTextureUpdate
@@ -150,7 +135,7 @@ define 'Coffixi/display/Sprite', [
 
     # some helper functions..
 
-    ###
+    ###*
     Helper function that creates a sprite that will contain a texture from the TextureCache based on the frameId
     The frame ids are created when a Texture packer file has been loaded
 
@@ -164,7 +149,7 @@ define 'Coffixi/display/Sprite', [
       throw new Error("The frameId '" + frameId + "' does not exist in the texture cache" + this)  unless texture
       new Sprite(texture)
 
-    ###
+    ###*
     Helper function that creates a sprite that will contain a texture based on an image url
     If the image is not in the texture cache it will be loaded
 

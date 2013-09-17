@@ -1,10 +1,10 @@
-###
+###*
 @author Chad Engler <chad@pantherdev.com>
 ###
 
 define 'Coffixi/core/Ellipse', ->
 
-  ###
+  ###*
   The Ellipse object can be used to specify a hit area for displayobjects
 
   @class Ellipse
@@ -16,35 +16,35 @@ define 'Coffixi/core/Ellipse', ->
   ###
   class Ellipse
     constructor: (x, y, width, height) ->
-      ###
+      ###*
       @property x
       @type Number
       @default 0
       ###
       @x = x or 0
       
-      ###
+      ###*
       @property y
       @type Number
       @default 0
       ###
       @y = y or 0
       
-      ###
+      ###*
       @property width
       @type Number
       @default 0
       ###
       @width = width or 0
       
-      ###
+      ###*
       @property height
       @type Number
       @default 0
       ###
       @height = height or 0
 
-    ###
+    ###*
     Creates a clone of this Ellipse instance
 
     @method clone
@@ -53,7 +53,7 @@ define 'Coffixi/core/Ellipse', ->
     clone: ->
       new PIXI.Ellipse(@x, @y, @width, @height)
 
-    ###
+    ###*
     Checks if the x, and y coords passed to this function are contained within this ellipse
 
     @method contains

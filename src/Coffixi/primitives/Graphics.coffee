@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -8,7 +8,7 @@ define 'Coffixi/primitives/Graphics', [
   DisplayObjectContainer
 ) ->
 
-  ###
+  ###*
   The Graphics class contains a set of methods that you can use to create primitive shapes and lines.
   It is important to know that with the webGL renderer only simple polys can be filled at this stage
   Complex polys will not be filled. Heres an example of a complex poly: http://www.goodboydigital.com/wp-content/uploads/2013/06/complexPolygon.png
@@ -29,7 +29,7 @@ define 'Coffixi/primitives/Graphics', [
 
       @renderable = true
       
-      ###
+      ###*
       The alpha of the fill of this graphics object
       
       @property fillAlpha
@@ -37,7 +37,7 @@ define 'Coffixi/primitives/Graphics', [
       ###
       @fillAlpha = 1
       
-      ###
+      ###*
       The width of any lines drawn
       
       @property lineWidth
@@ -45,7 +45,7 @@ define 'Coffixi/primitives/Graphics', [
       ###
       @lineWidth = 0
       
-      ###
+      ###*
       The color of any lines drawn
       
       @property lineColor
@@ -53,7 +53,7 @@ define 'Coffixi/primitives/Graphics', [
       ###
       @lineColor = 'black'
       
-      ###
+      ###*
       Graphics data
       
       @property graphicsData
@@ -62,7 +62,7 @@ define 'Coffixi/primitives/Graphics', [
       ###
       @graphicsData = []
       
-      ###
+      ###*
       Current path
       
       @property currentPath
@@ -71,7 +71,7 @@ define 'Coffixi/primitives/Graphics', [
       ###
       @currentPath = points: []
 
-    ###
+    ###*
     Specifies a line style used for subsequent calls to Graphics methods such as the lineTo() method or the drawCircle() method.
 
     @method lineStyle
@@ -96,7 +96,7 @@ define 'Coffixi/primitives/Graphics', [
 
       @graphicsData.push @currentPath
 
-    ###
+    ###*
     Moves the current drawing position to (x, y).
 
     @method moveTo
@@ -118,7 +118,7 @@ define 'Coffixi/primitives/Graphics', [
       @currentPath.points.push x, y
       @graphicsData.push @currentPath
 
-    ###
+    ###*
     Draws a line using the current line style from the current drawing position to (x, y);
     the current drawing position is then set to (x, y).
 
@@ -130,7 +130,7 @@ define 'Coffixi/primitives/Graphics', [
       @currentPath.points.push x, y
       @dirty = true
 
-    ###
+    ###*
     Specifies a simple one-color fill that subsequent calls to other Graphics methods
     (such as lineTo() or drawCircle()) use when drawing.
 
@@ -143,7 +143,7 @@ define 'Coffixi/primitives/Graphics', [
       @fillColor = color or 0
       @fillAlpha = alpha ? 1
 
-    ###
+    ###*
     Applies a fill to the lines and shapes that were added since the last call to the beginFill() method.
 
     @method endFill
@@ -153,7 +153,7 @@ define 'Coffixi/primitives/Graphics', [
       @fillColor = null
       @fillAlpha = 1
 
-    ###
+    ###*
     @method drawRect
 
     @param x {Number} The X coord of the top-left of the rectangle
@@ -176,7 +176,7 @@ define 'Coffixi/primitives/Graphics', [
       @graphicsData.push @currentPath
       @dirty = true
 
-    ###
+    ###*
     Draws a circle.
 
     @method drawCircle
@@ -199,7 +199,7 @@ define 'Coffixi/primitives/Graphics', [
       @graphicsData.push @currentPath
       @dirty = true
 
-    ###
+    ###*
     Draws an elipse.
 
     @method drawElipse
@@ -223,7 +223,7 @@ define 'Coffixi/primitives/Graphics', [
       @graphicsData.push @currentPath
       @dirty = true
 
-    ###
+    ###*
     Clears the graphics that were drawn to this Graphics object, and resets fill and line style settings.
 
     @method clear

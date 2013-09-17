@@ -5,7 +5,7 @@ define 'Coffixi/utils/HasSignals', [
   cg
   Signal
 )->
-
+  # LOU TODO: Docs
   __signal: (name, create=false) ->
     @__signals ?= {}
     @__signals[name] ?= new Signal  if create

@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -22,7 +22,7 @@ define 'Coffixi/textures/RenderTexture', [
   
   GLESRenderGroup = GLESRenderer.GLESRenderGroup
   
-  ###
+  ###*
   A RenderTexture is a special texture that allows any pixi displayObject to be rendered to it.
 
   __Hint__: All DisplayObjects (exmpl. Sprites) that renders on RenderTexture should be preloaded.
@@ -61,7 +61,7 @@ define 'Coffixi/textures/RenderTexture', [
       else
         @initCanvas()
 
-    ###
+    ###*
     Initializes the webgl data for this texture
 
     @method initGLES
@@ -115,7 +115,7 @@ define 'Coffixi/textures/RenderTexture', [
         @renderer.resize @width, @height
 
 
-    ###
+    ###*
     Initializes the canvas data for this texture
 
     @method initCanvas
@@ -128,7 +128,7 @@ define 'Coffixi/textures/RenderTexture', [
       @render = @renderCanvas
 
 
-    ###
+    ###*
     This function will draw the display object to the texture.
 
     @method renderGLES
@@ -176,7 +176,7 @@ define 'Coffixi/textures/RenderTexture', [
         @renderGroup.render @projection
 
 
-    ###
+    ###*
     This function will draw the display object to the texture.
 
     @method renderCanvas
@@ -205,5 +205,3 @@ define 'Coffixi/textures/RenderTexture', [
       @renderer.context.clearRect 0, 0, @width, @height  if clear
       @renderer.renderDisplayObject displayObject
       @renderer.context.setTransform 1, 0, 0, 1, 0, 0
-
-      # BaseTexture.texturesToUpdate.push(@baseTexture)

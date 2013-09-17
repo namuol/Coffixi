@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -16,7 +16,7 @@ define 'Coffixi/textures/Texture', [
   Point
 ) ->
 
-  ###
+  ###*
   A texture stores the information that represents an image or part of an image. It cannot be added
   to the display list directly. To do this use Sprite. If no frame is provided then the whole image is used
 
@@ -42,7 +42,7 @@ define 'Coffixi/textures/Texture', [
       if baseTexture instanceof Texture
         baseTexture = baseTexture.baseTexture
       
-      ###
+      ###*
       The base texture of this texture
       
       @property baseTexture
@@ -50,7 +50,7 @@ define 'Coffixi/textures/Texture', [
       ###
       @baseTexture = baseTexture
       
-      ###
+      ###*
       The frame specifies the region of the base texture that this texture uses
       
       @property frame
@@ -58,7 +58,7 @@ define 'Coffixi/textures/Texture', [
       ###
       @frame = frame
       
-      ###
+      ###*
       The trim point
       
       @property trim
@@ -73,7 +73,7 @@ define 'Coffixi/textures/Texture', [
       else
         baseTexture.on 'loaded', => @onBaseTextureLoaded()
 
-    ###
+    ###*
     Called when the base texture is loaded
 
     @method onBaseTextureLoaded
@@ -89,7 +89,7 @@ define 'Coffixi/textures/Texture', [
       @height = @frame.height
       @emit 'update', @
 
-    ###
+    ###*
     Destroys this texture
 
     @method destroy
@@ -98,7 +98,7 @@ define 'Coffixi/textures/Texture', [
     destroy: (destroyBase) ->
       @baseTexture.destroy()  if destroyBase
 
-    ###
+    ###*
     Specifies the rectangle region of the baseTexture
 
     @method setFrame
@@ -117,7 +117,7 @@ define 'Coffixi/textures/Texture', [
     beginRead: -> @baseTexture.beginRead()
     endRead: -> @baseTexture.endRead()
     
-    ###
+    ###*
     Helper function that returns a texture based on an image url
     If the image is not in the texture cache it will be  created and loaded
 
@@ -134,7 +134,7 @@ define 'Coffixi/textures/Texture', [
         Texture.cache[imageUrl] = texture
       texture
 
-    ###
+    ###*
     Helper function that returns a texture based on a frame id
     If the frame id is not in the texture cache an error will be thrown
 
@@ -148,7 +148,7 @@ define 'Coffixi/textures/Texture', [
       throw new Error("The frameId '" + frameId + "' does not exist in the texture cache " + this)  unless texture
       texture
 
-    ###
+    ###*
     Helper function that returns a texture based on a canvas element
     If the canvas is not in the texture cache it will be  created and loaded
 
@@ -161,7 +161,7 @@ define 'Coffixi/textures/Texture', [
       baseTexture = new BaseTexture(canvas)
       new Texture(baseTexture)
 
-    ###
+    ###*
     Adds a texture to the textureCache.
 
     @static
@@ -172,7 +172,7 @@ define 'Coffixi/textures/Texture', [
     @addTextureToCache: (texture, id) ->
       Texture.cache[id] = texture
 
-    ###
+    ###*
     Remove a texture from the textureCache.
 
     @static

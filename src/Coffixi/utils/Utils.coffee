@@ -1,7 +1,9 @@
 define 'Coffixi/utils/Utils', ->
   Utils = {}
 
-  ###
+  # LOU TODO: Clean this up.
+
+  ###*
   Converts a hex color number to an [R, G, B] array
 
   @method HEXtoRGB
@@ -11,7 +13,7 @@ define 'Coffixi/utils/Utils', ->
     [(hex >> 16 & 0xFF) / 255, (hex >> 8 & 0xFF) / 255, (hex & 0xFF) / 255]
 
   if window?
-    ###
+    ###*
     A polyfill for requestAnimationFrame
     MIT license
     http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -39,7 +41,7 @@ define 'Coffixi/utils/Utils', ->
         lastTime = currTime + timeToCall
         id
 
-    ###
+    ###*
     A polyfill for cancelAnimationFrame
 
     @method cancelAnimationFrame
@@ -49,7 +51,7 @@ define 'Coffixi/utils/Utils', ->
         clearTimeout id
     window.requestAnimFrame = window.requestAnimationFrame
 
-  ###
+  ###*
   A polyfill for Function.prototype.bind
 
   @method bind
@@ -71,7 +73,7 @@ define 'Coffixi/utils/Utils', ->
         bound
     )()
 
-  ###
+  ###*
   A wrapper for ajax requests to be handled cross browser
 
   @class AjaxRequest
@@ -94,9 +96,7 @@ define 'Coffixi/utils/Utils', ->
     else
       false
 
-  #
-  # * DEBUGGING ONLY
-  # 
+  # DEBUGGING ONLY
   Utils.runList = (item) ->
     console.log ">>>>>>>>>"
     console.log "_"

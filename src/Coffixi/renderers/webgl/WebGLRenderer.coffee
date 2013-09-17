@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 define 'Coffixi/renderers/webgl/WebGLRenderer', [
@@ -9,7 +9,9 @@ define 'Coffixi/renderers/webgl/WebGLRenderer', [
   WebGLBatch
 ) ->
   
-  ###
+  # LOU TODO: Update docs for this
+
+  ###*
   the WebGLRenderer is draws the stage and all its content onto a webGL enabled canvas. This renderer should be used for browsers support webGL. This Render works by automatically managing webGLBatchs. So no need for Sprite Batch's or Sprite Cloud's
   Dont forget to add the view to your DOM or you will not see anything :)
   @class WebGLRenderer
@@ -51,14 +53,14 @@ define 'Coffixi/renderers/webgl/WebGLRenderer', [
       GLESRenderer.setBatchClass WebGLBatch
 
       super webGL, width, height, transparent, textureFilter
-    ###
+    ###*
     @private
     ###
     handleContextLost: (event) ->
       event.preventDefault()
       @contextLost = true
 
-    ###
+    ###*
     @private
     ###
     handleContextRestored: (event) ->

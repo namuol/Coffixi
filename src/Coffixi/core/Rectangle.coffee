@@ -1,12 +1,11 @@
-###
+###*
 @author Mat Groves http://matgroves.com/
 ###
 
 define 'Coffixi/core/Rectangle', ->
 
-  ###
+  ###*
   the Rectangle object is an area defined by its position, as indicated by its top-left corner point (x, y) and by its width and its height.
-
   @class Rectangle
   @constructor
   @param x {Number} The X coord of the upper-left corner of the rectangle
@@ -16,35 +15,35 @@ define 'Coffixi/core/Rectangle', ->
   ###
   class Rectangle
     constructor: (x, y, width, height) ->
-      ###
+      ###*
       @property x
       @type Number
       @default 0
       ###
       @x = x or 0
       
-      ###
+      ###*
       @property y
       @type Number
       @default 0
       ###
       @y = y or 0
       
-      ###
+      ###*
       @property width
       @type Number
       @default 0
       ###
       @width = width or 0
       
-      ###
+      ###*
       @property height
       @type Number
       @default 0
       ###
       @height = height or 0
 
-    ###
+    ###*
     Creates a clone of this Rectangle
 
     @method clone
@@ -53,7 +52,7 @@ define 'Coffixi/core/Rectangle', ->
     clone: ->
       new Rectangle(@x, @y, @width, @height)
 
-    ###
+    ###*
     Checks if the x, and y coords passed to this function are contained within this Rectangle
 
     @method contains

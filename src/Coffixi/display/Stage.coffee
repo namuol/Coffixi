@@ -1,4 +1,4 @@
-###
+###*
 @author Mat Groves http://matgroves.com/ @Doormat23
 ###
 
@@ -16,52 +16,42 @@ define 'Coffixi/display/Stage', [
   Utils
 ) ->
 
-  ###
+  ###*
   A Stage represents the root of the display tree. Everything connected to the stage is rendered
   
   @class Stage
   @extends DisplayObjectContainer
   @constructor
-  @param backgroundColor {Number} the background color of the stage, easiest way to pass this in is in hex format
-  like: 0xFFFFFF for white
+  @param backgroundColor {Number} The background color of the stage. Hex format is most convenient; eg. `0xFFFFFF` for white.
   ###
   class Stage extends DisplayObjectContainer
     constructor: (backgroundColor) ->
       super
       
-      ###
-      [read-only] Current transform of the object based on world (parent) factors
+      ###*
+      Current transform of the object based on world (parent) factors
       
       @property worldTransform
       @type Mat3
-      @readOnly
+      @final
       @private
       ###
       @worldTransform = Matrix.mat3.create()
       
-      ###
-      Whether the stage is dirty and needs to be updated
-      
-      @property dirty
-      @type Boolean
-      @private
-      ###
       @dirty = true
-      @__childrenAdded = []
-      @__childrenRemoved = []
       
-      #the stage is it's own stage
+      # The stage is its own stage.
       @stage = this
 
       @setBackgroundColor backgroundColor
       @worldVisible = true
 
-    #
-    # * Updates the object transform for rendering
-    # *
-    # * @method updateTransform
-    # * @private
-    # 
+    ###*    
+    Updates the object transform for rendering
+    
+    @method updateTransform
+    @private
+    ###
     updateTransform: ->
       @worldAlpha = 1
       i = 0
@@ -74,7 +64,7 @@ define 'Coffixi/display/Stage', [
       if @dirty
         @dirty = false
 
-    ###
+    ###*
     Sets the background color for the stage
 
     @method setBackgroundColor
