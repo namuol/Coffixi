@@ -35,7 +35,7 @@ define 'Coffixi/utils/PolyK', ->
 
   PolyK = {}
 
-  ###*
+  ###
   Triangulates shapes for webGL graphic fills
 
   @method Triangulate
@@ -104,7 +104,7 @@ define 'Coffixi/utils/PolyK', ->
     tgs
 
 
-  ###*
+  ###
   Checks if a point is within a triangle
 
   @class _PointInTriangle
@@ -131,7 +131,7 @@ define 'Coffixi/utils/PolyK', ->
     (u >= 0) and (v >= 0) and (u + v < 1)
 
 
-  ###*
+  ###
   Checks if a shape is convex
 
   @class _convex
