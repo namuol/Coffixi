@@ -6,13 +6,16 @@ define 'Coffixi/extras/Strip', [
   'Coffixi/display/DisplayObjectContainer'
   'Coffixi/display/Sprite'
   'Coffixi/utils/Utils'
+  'Coffixi/core/RenderTypes'
 ], (
   DisplayObjectContainer
   Sprite
   Utils
+  RenderTypes
 ) ->
 
   class Strip extends DisplayObjectContainer
+    __renderType: RenderTypes.STRIP
     constructor: (texture, width, height) ->
       super
 

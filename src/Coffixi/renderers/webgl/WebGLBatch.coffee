@@ -6,10 +6,12 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
   'Coffixi/display/Sprite'
   'Coffixi/renderers/webgl/GLESShaders'
   'Coffixi/utils/Utils'
+  'Coffixi/core/RenderTypes'
 ], (
   Sprite
   GLESShaders
   Utils
+  RenderTypes
 ) ->
 
   ###*
@@ -25,6 +27,7 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
   @param gl {WebGLContext} an instance of the webGL context
   ###
   class WebGLBatch
+    __renderType: RenderTypes.BATCH
     @_batchs: []
 
     ###*

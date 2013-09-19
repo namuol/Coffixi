@@ -5,24 +5,22 @@
 define 'Coffixi/renderers/canvas/CanvasRenderer', [
   'Coffixi/textures/Texture'
   'Coffixi/textures/BaseTexture'
-  'Coffixi/display/Sprite'
-  'Coffixi/extras/Strip'
-  'Coffixi/extras/TilingSprite'
-  'Coffixi/extras/CustomRenderable'
-  'Coffixi/primitives/Graphics'
   './CanvasGraphics'
-  'Coffixi/filters/FilterBlock'
+  'Coffixi/core/RenderTypes'
 ], (
   Texture
   BaseTexture
-  Sprite
-  Strip
-  TilingSprite
-  CustomRenderable
-  Graphics
   CanvasGraphics
-  FilterBlock
+  RenderTypes
 ) ->
+
+  RENDERTYPE_SPRITE = RenderTypes.SPRITE
+  RENDERTYPE_BATCH = RenderTypes.BATCH
+  RENDERTYPE_TILINGSPRITE = RenderTypes.TILINGSPRITE
+  RENDERTYPE_STRIP = RenderTypes.STRIP
+  RENDERTYPE_GRAPHICS = RenderTypes.GRAPHICS
+  RENDERTYPE_FILTERBLOCK = RenderTypes.FILTERBLOCK
+  RENDERTYPE_CUSTOMRENDERABLE = RenderTypes.CUSTOMRENDERABLE
 
   ###*
   the CanvasRenderer draws the stage and all its content onto a 2d canvas. This renderer should be used for browsers that do not support webGL.
@@ -155,37 +153,39 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
           displayObject = displayObject._iNext
           break  if displayObject is testObject
           continue
-        if displayObject instanceof Sprite
-          frame = displayObject.texture.frame
-          if frame
-            context.globalAlpha = displayObject.worldAlpha
-            context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-            context.drawImage displayObject.texture.baseTexture.source, frame.x, frame.y, frame.width, frame.height, (displayObject.anchor.x) * -frame.width, (displayObject.anchor.y) * -frame.height, frame.width, frame.height
-        else if displayObject instanceof Strip
-          context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-          @renderStrip displayObject
-        else if displayObject instanceof TilingSprite
-          context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-          @renderTilingSprite displayObject
-        else if displayObject instanceof CustomRenderable
-          displayObject.renderCanvas this
-        else if displayObject instanceof Graphics
-          context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-          CanvasGraphics.renderGraphics displayObject, context
-        else if displayObject instanceof FilterBlock
-          if displayObject.open
-            context.save()
-            cacheAlpha = displayObject.mask.alpha
-            maskTransform = displayObject.mask.worldTransform
-            context.setTransform maskTransform[0], maskTransform[3], maskTransform[1], maskTransform[4], maskTransform[2], maskTransform[5]
-            displayObject.mask.worldAlpha = 0.5
-            context.worldAlpha = 0
-            CanvasGraphics.renderGraphicsMask displayObject.mask, context
 
-            context.clip()
-            displayObject.mask.worldAlpha = cacheAlpha
-          else
-            context.restore()
+        switch displayObject.__renderType
+          when RENDERTYPE_SPRITE
+            frame = displayObject.texture.frame
+            if frame
+              context.globalAlpha = displayObject.worldAlpha
+              context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+              context.drawImage displayObject.texture.baseTexture.source, frame.x, frame.y, frame.width, frame.height, (displayObject.anchor.x) * -frame.width, (displayObject.anchor.y) * -frame.height, frame.width, frame.height
+          when RENDERTYPE_STRIP
+            context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+            @renderStrip displayObject
+          when RENDERTYPE_TILINGSPRITE
+            context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+            @renderTilingSprite displayObject
+          when RENDERTYPE_CUSTOMRENDERABLE
+            displayObject.renderCanvas this
+          when RENDERTYPE_GRAPHICS
+            context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
+            CanvasGraphics.renderGraphics displayObject, context
+          when RENDERTYPE_FILTERBLOCK
+            if displayObject.open
+              context.save()
+              cacheAlpha = displayObject.mask.alpha
+              maskTransform = displayObject.mask.worldTransform
+              context.setTransform maskTransform[0], maskTransform[3], maskTransform[1], maskTransform[4], maskTransform[2], maskTransform[5]
+              displayObject.mask.worldAlpha = 0.5
+              context.worldAlpha = 0
+              CanvasGraphics.renderGraphicsMask displayObject.mask, context
+
+              context.clip()
+              displayObject.mask.worldAlpha = cacheAlpha
+            else
+              context.restore()
         
         displayObject = displayObject._iNext
         break  if displayObject is testObject

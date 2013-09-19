@@ -18,6 +18,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
   'Coffixi/core/Point'
   'Coffixi/renderers/webgl/GLESShaders'
   'Coffixi/renderers/webgl/GLESGraphics'
+  'Coffixi/core/RenderTypes'
 ], (
   Utils
   Module
@@ -34,7 +35,16 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
   Point
   GLESShaders
   GLESGraphics
+  RenderTypes
 ) ->
+
+  RENDERTYPE_SPRITE = RenderTypes.SPRITE
+  RENDERTYPE_BATCH = RenderTypes.BATCH
+  RENDERTYPE_TILINGSPRITE = RenderTypes.TILINGSPRITE
+  RENDERTYPE_STRIP = RenderTypes.STRIP
+  RENDERTYPE_GRAPHICS = RenderTypes.GRAPHICS
+  RENDERTYPE_FILTERBLOCK = RenderTypes.FILTERBLOCK
+  RENDERTYPE_CUSTOMRENDERABLE = RenderTypes.CUSTOMRENDERABLE
 
   Batch = undefined
   
@@ -101,30 +111,28 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
 
       while i < @batchs.length
         renderable = @batchs[i]
-        if renderable instanceof Batch
-          @batchs[i].render()
-        else if renderable instanceof TilingSprite
-          @renderTilingSprite renderable, projection  if renderable.worldVisible
-        else if renderable instanceof Strip
-          @renderStrip renderable, projection  if renderable.worldVisible
-        else if renderable instanceof Graphics
-          GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable #, projectionMatrix);
-        else if renderable instanceof FilterBlock
-          
-          #
-          #      * for now only masks are supported..
-          #      
-          if renderable.open
-            gl.enable gl.STENCIL_TEST
-            gl.colorMask false, false, false, false
-            gl.stencilFunc gl.ALWAYS, 1, 0xff
-            gl.stencilOp gl.KEEP, gl.KEEP, gl.REPLACE
-            GLESGraphics.renderGraphics renderable.mask, projection
-            gl.colorMask true, true, true, true
-            gl.stencilFunc gl.NOTEQUAL, 0, 0xff
-            gl.stencilOp gl.KEEP, gl.KEEP, gl.KEEP
-          else
-            gl.disable gl.STENCIL_TEST
+        switch renderable.__renderType
+          when RENDERTYPE_BATCH
+            @batchs[i].render()
+          when RENDERTYPE_TILINGSPRITE
+            @renderTilingSprite renderable, projection  if renderable.worldVisible
+          when RENDERTYPE_STRIP
+            @renderStrip renderable, projection  if renderable.worldVisible
+          when RENDERTYPE_GRAPHICS
+            GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable #, projectionMatrix);
+          when RENDERTYPE_FILTERBLOCK
+            # for now only masks are supported..
+            if renderable.open
+              gl.enable gl.STENCIL_TEST
+              gl.colorMask false, false, false, false
+              gl.stencilFunc gl.ALWAYS, 1, 0xff
+              gl.stencilOp gl.KEEP, gl.KEEP, gl.REPLACE
+              GLESGraphics.renderGraphics renderable.mask, projection
+              gl.colorMask true, true, true, true
+              gl.stencilFunc gl.NOTEQUAL, 0, 0xff
+              gl.stencilOp gl.KEEP, gl.KEEP, gl.KEEP
+            else
+              gl.disable gl.STENCIL_TEST
         i++
 
     ###*
@@ -170,7 +178,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         nextRenderable = nextRenderable._iNext
         break  if nextRenderable.renderable and nextRenderable.__renderGroup
       startBatch = nextRenderable.batch
-      if nextRenderable instanceof Sprite
+      if nextRenderable.__renderType is RENDERTYPE_SPRITE
         startBatch = nextRenderable.batch
         head = startBatch.head
         next = head
@@ -193,7 +201,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       while lastItem.children.length > 0
         lastItem = lastItem.children[lastItem.children.length - 1]
         lastRenderable = lastItem  if lastItem.renderable
-      if lastRenderable instanceof Sprite
+      if lastRenderable.__renderType is RENDERTYPE_SPRITE
         endBatch = lastRenderable.batch
         head = endBatch.head
         if head is lastRenderable
@@ -208,7 +216,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       
       # TODO - need to fold this up a bit!
       if startBatch is endBatch
-        if startBatch instanceof Batch
+        if startBatch.__renderType is RENDERTYPE_BATCH
           startBatch.render startIndex, endIndex + 1
         else
           @renderSpecial startBatch, projection
@@ -219,7 +227,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       endBatchIndex = @batchs.indexOf(endBatch)
       
       # DO the first batch
-      if startBatch instanceof Batch
+      if startBatch.__renderType is RENDERTYPE_BATCH
         startBatch.render startIndex
       else
         @renderSpecial startBatch, projection
@@ -229,18 +237,17 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
 
       while i < endBatchIndex
         renderable = @batchs[i]
-        if renderable instanceof Batch
+        if renderable.__renderType is RENDERTYPE_BATCH
           @batchs[i].render()
         else
           @renderSpecial renderable, projection
         i++
       
       # DO the last batch..
-      if endBatch instanceof Batch
+      if endBatch.__renderType is RENDERTYPE_BATCH
         endBatch.render 0, endIndex + 1
       else
         @renderSpecial endBatch, projection
-
 
     ###*
     Renders a specific renderable
@@ -251,19 +258,16 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     @private
     ###
     renderSpecial: (renderable, projection) ->
-      if renderable instanceof TilingSprite
+      if renderable.__renderType is RENDERTYPE_TILINGSPRITE
         @renderTilingSprite renderable, projection  if renderable.worldVisible
-      else if renderable instanceof Strip
+      else if renderable.__renderType is RENDERTYPE_STRIP
         @renderStrip renderable, projection  if renderable.worldVisible
-      else if renderable instanceof CustomRenderable
+      else if renderable.__renderType is RENDERTYPE_CUSTOMRENDERABLE
         renderable.renderGLES this, projection  if renderable.worldVisible
-      else if renderable instanceof Graphics
+      else if renderable.__renderType is RENDERTYPE_GRAPHICS
         GLESGraphics.renderGraphics renderable, projection  if renderable.worldVisible and renderable.renderable
-      else if renderable instanceof FilterBlock
-        
-        #
-        #    * for now only masks are supported..
-        #    
+      else if renderable.__renderType is RENDERTYPE_FILTERBLOCK
+        # for now only masks are supported..
         gl = GLESRenderer.gl
         if renderable.open
           gl.enable gl.STENCIL_TEST
@@ -278,7 +282,6 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           gl.stencilOp gl.KEEP, gl.KEEP, gl.KEEP
         else
           gl.disable gl.STENCIL_TEST
-
 
     ###*
     Checks the visibility of a displayObject
@@ -478,10 +481,10 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       #  * so now we have the next renderable and the previous renderable
       #  * 
       #  
-      if displayObject instanceof Sprite
+      if displayObject.__renderType is RENDERTYPE_SPRITE
         previousBatch = undefined
         nextBatch = undefined
-        if previousSprite instanceof Sprite
+        if previousSprite.__renderType is RENDERTYPE_SPRITE
           previousBatch = previousSprite.batch
           if previousBatch
             if previousBatch.texture is displayObject.texture.baseTexture and previousBatch.blendMode is displayObject.blendMode
@@ -492,7 +495,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           # TODO reword!
           previousBatch = previousSprite
         if nextSprite
-          if nextSprite instanceof Sprite
+          if nextSprite.__renderType is RENDERTYPE_SPRITE
             nextBatch = nextSprite.batch
             
             #batch may not exist if item was added to the display list but not to the webGL
@@ -536,19 +539,19 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
         else
           @batchs.push batch
         return
-      else if displayObject instanceof TilingSprite
+      else if displayObject.__renderType is RENDERTYPE_TILINGSPRITE
         
         # add to a batch!!
         @initTilingSprite displayObject
       
       # this.batchs.push(displayObject);
-      else if displayObject instanceof Strip
+      else if displayObject.__renderType is RENDERTYPE_STRIP
         
         # add to a batch!!
         @initStrip displayObject
       
       # this.batchs.push(displayObject);
-      else displayObject # instanceof Graphics)
+      else displayObject
       
       #displayObject.initWebGL(this);
       
@@ -569,7 +572,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
     @private
     ###
     insertAfter: (item, displayObject) ->
-      if displayObject instanceof Sprite
+      if displayObject.__renderType is RENDERTYPE_SPRITE
         previousBatch = displayObject.batch
         if previousBatch
           
@@ -625,7 +628,7 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
       #  * 
       #  
       batchToRemove = undefined
-      if displayObject instanceof Sprite
+      if displayObject.__renderType is RENDERTYPE_SPRITE
         
         # should always have a batch!
         batch = displayObject.batch
@@ -648,19 +651,19 @@ define 'Coffixi/renderers/webgl/GLESRenderer', [
           
           # wha - eva! just get of the empty batch!
           @batchs.splice index, 1
-          GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
+          GLESRenderer.returnBatch batchToRemove  if batchToRemove.__renderType is RENDERTYPE_BATCH
           return
-        if @batchs[index - 1] instanceof Batch and @batchs[index + 1] instanceof Batch
+        if @batchs[index - 1].__renderType is RENDERTYPE_BATCH and @batchs[index + 1].__renderType is RENDERTYPE_BATCH
           if @batchs[index - 1].texture is @batchs[index + 1].texture and @batchs[index - 1].blendMode is @batchs[index + 1].blendMode
             
             #console.log("MERGE")
             @batchs[index - 1].merge @batchs[index + 1]
-            GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
+            GLESRenderer.returnBatch batchToRemove  if batchToRemove.__renderType is RENDERTYPE_BATCH
             GLESRenderer.returnBatch @batchs[index + 1]
             @batchs.splice index, 2
             return
         @batchs.splice index, 1
-        GLESRenderer.returnBatch batchToRemove  if batchToRemove instanceof Batch
+        GLESRenderer.returnBatch batchToRemove  if batchToRemove.__renderType is RENDERTYPE_BATCH
 
 
     ###*

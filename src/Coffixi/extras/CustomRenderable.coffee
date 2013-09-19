@@ -4,8 +4,10 @@
 
 define 'Coffixi/extras/CustomRenderable', [
   'Coffixi/display/DisplayObject'
+  'Coffixi/core/RenderTypes'
 ], (
   DisplayObject
+  RenderTypes
 ) ->
 
   ###*
@@ -16,6 +18,7 @@ define 'Coffixi/extras/CustomRenderable', [
   @constructor
   ###
   class CustomRenderable extends DisplayObject
+    __renderType: RenderTypes.CUSTOMRENDERABLE
     constructor: ->
       super
 

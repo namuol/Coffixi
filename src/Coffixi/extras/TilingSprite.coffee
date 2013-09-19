@@ -5,10 +5,12 @@ define 'Coffixi/extras/TilingSprite', [
   'Coffixi/core/Point'
   'Coffixi/display/DisplayObjectContainer'
   'Coffixi/display/Sprite'
+  'Coffixi/core/RenderTypes'
 ], (
   Point
   DisplayObjectContainer
   Sprite
+  RenderTypes
 ) ->
 
   ###*
@@ -22,6 +24,7 @@ define 'Coffixi/extras/TilingSprite', [
   @param height {Number} the height of the tiling sprite
   ###
   class TilingSprite extends DisplayObjectContainer
+    __renderType: RenderTypes.TILINGSPRITE
     constructor: (texture, width, height) ->
       super
       

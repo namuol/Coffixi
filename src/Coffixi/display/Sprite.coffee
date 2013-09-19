@@ -6,10 +6,12 @@ define 'Coffixi/display/Sprite', [
   './DisplayObjectContainer'
   'Coffixi/core/Point'
   'Coffixi/textures/Texture'
+  'Coffixi/core/RenderTypes'
 ], (
   DisplayObjectContainer
   Point
   Texture
+  RenderTypes
 ) ->
 
   ###*
@@ -22,6 +24,8 @@ define 'Coffixi/display/Sprite', [
   @type String
   ###
   class Sprite extends DisplayObjectContainer
+    __renderType: RenderTypes.SPRITE
+
     @blendModes:
       NORMAL: 0
       SCREEN: 1

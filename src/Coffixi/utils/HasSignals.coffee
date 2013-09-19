@@ -7,9 +7,14 @@ define 'Coffixi/utils/HasSignals', [
 )->
   # LOU TODO: Docs
   __signal: (name, create=false) ->
-    @__signals ?= {}
-    @__signals[name] ?= new Signal  if create
-    @__signals[name]
+    if not create
+      signal = @__signals?[name]
+    else
+      @__signals ?= {}
+      @__signals[name] ?= new Signal
+      signal = @__signals[name]
+    
+    signal
 
   __on: (name, signaler, listener, funcName) ->
     if typeof signaler is 'function'
@@ -35,6 +40,6 @@ define 'Coffixi/utils/HasSignals', [
       signal.removeAll()
   halt: (name) -> @__signal(name)?.halt()
   emit: (name, args...) -> @__signal(name)?.dispatch args...
-  __disposeListeners: ->
+  _disposeListeners: ->
     for [signaler, name, listener] in @__listeners
       signaler.off name, listener

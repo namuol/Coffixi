@@ -4,8 +4,10 @@
 
 define 'Coffixi/primitives/Graphics', [
   'Coffixi/display/DisplayObjectContainer'
+  'Coffixi/core/RenderTypes'
 ], (
   DisplayObjectContainer
+  RenderTypes
 ) ->
 
   ###*
@@ -18,6 +20,7 @@ define 'Coffixi/primitives/Graphics', [
   @constructor
   ###
   class Graphics extends DisplayObjectContainer
+    __renderType: RenderTypes.GRAPHICS
     # SOME TYPES:
     @POLY: 0
     @RECT: 1
