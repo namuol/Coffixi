@@ -3,7 +3,7 @@ define 'Coffixi/utils/Module', ->
     
   # From http://arcturo.github.io/library/coffeescript/03_classes.html
 
-  moduleKeywords = ['onMixinStatic', 'onMixin']
+  moduleKeywords = ['onMixinStatic', 'onMixin', 'constructor']
 
   class Module
     @mixinStatic: (obj) ->
