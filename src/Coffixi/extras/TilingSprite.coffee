@@ -71,18 +71,20 @@ define 'Coffixi/extras/TilingSprite', [
       @blendMode = Sprite.blendModes.NORMAL
 
     ###*
-    Sets the texture of the tiling sprite
+    The texture used by this `TilingSprite`.
 
-    @method setTexture
-    @param texture {Texture} The texture that is displayed by the sprite
+    **NOTE**: Must be a power-of-two image.
+    @property texture
     ###
-    setTexture: (texture) ->
-      #TODO SET THE TEXTURES
-      #TODO VISIBILITY
-      
-      # stop current texture 
-      @texture = texture
-      @updateFrame = true
+    Object.defineProperty Sprite::, 'texture',
+      get: -> @_texture
+      set: (texture) ->
+        #TODO SET THE TEXTURES
+        #TODO VISIBILITY
+        
+        # stop current texture 
+        @_texture = texture
+        @updateFrame = true
 
     ###*
     When the texture is updated, this event will fire to update the frame

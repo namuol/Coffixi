@@ -51,15 +51,22 @@ define 'Coffixi/extras/Strip', [
         @texture.on 'update', @onTextureUpdateBind
       @renderable = true
 
-    setTexture: (texture) ->
-      #TODO SET THE TEXTURES
-      #TODO VISIBILITY
-      
-      # stop current texture 
-      @texture = texture
-      @width = texture.frame.width
-      @height = texture.frame.height
-      @updateFrame = true
+    ###*
+    The texture used by this `Strip`.
+
+    @property texture
+    ###
+    Object.defineProperty Sprite::, 'texture',
+      get: -> @_texture
+      set: (texture) ->
+        #TODO SET THE TEXTURES
+        #TODO VISIBILITY
+        
+        # stop current texture 
+        @_texture = texture
+        @width = texture.frame.width
+        @height = texture.frame.height
+        @updateFrame = true
 
     onTextureUpdate: (event) ->
       @updateFrame = true

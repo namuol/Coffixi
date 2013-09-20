@@ -79,7 +79,7 @@ define 'Coffixi/display/Sprite', [
     @property width
     @type Number
     ###
-    Object.defineProperty Sprite::, "width",
+    Object.defineProperty Sprite::, 'width',
       get: ->
         if @texture
           @scaleX * @texture.frame.width
@@ -97,7 +97,7 @@ define 'Coffixi/display/Sprite', [
     @property height
     @type Number
     ###
-    Object.defineProperty Sprite::, "height",
+    Object.defineProperty Sprite::, 'height',
       get: ->
         if @texture
           @scaleY * @texture.frame.height
@@ -110,17 +110,18 @@ define 'Coffixi/display/Sprite', [
           @scaleY = value / @texture.frame.height
 
     ###*
-    Sets the texture of the sprite
+    The texture used by this `Sprite`.
 
-    @method setTexture
-    @param texture {Texture} The texture that is displayed by the sprite
+    @property texture
     ###
-    setTexture: (texture) ->
-      # stop current texture;
-      if @texture? and @texture.baseTexture isnt texture.baseTexture
-        @textureChange = true
-      @texture = texture
-      @updateFrame = true
+    Object.defineProperty Sprite::, 'texture',
+      get: -> @_texture
+      set: (texture) ->
+        # stop current texture;
+        if @_texture? and @_texture.baseTexture isnt texture.baseTexture
+          @textureChange = true
+        @_texture = texture
+        @updateFrame = true
 
     ###*
     When the texture is updated, this event will fire to update the scale and frame
@@ -150,7 +151,7 @@ define 'Coffixi/display/Sprite', [
     ###
     @fromFrame: (frameId) ->
       texture = Texture.cache[frameId]
-      throw new Error("The frameId '" + frameId + "' does not exist in the texture cache" + this)  unless texture
+      throw new Error('The frameId \'' + frameId + '\' does not exist in the texture cache ' + this)  unless texture
       new Sprite(texture)
 
     ###*
