@@ -56,7 +56,7 @@ define 'Coffixi/extras/Strip', [
 
     @property texture
     ###
-    Object.defineProperty Sprite::, 'texture',
+    Object.defineProperty Strip::, 'texture',
       get: -> @_texture
       set: (texture) ->
         #TODO SET THE TEXTURES
