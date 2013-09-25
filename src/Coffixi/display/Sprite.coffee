@@ -33,16 +33,37 @@ define 'Coffixi/display/Sprite', [
       super
       
       ###*
-      The anchor sets the origin point of the texture.
-      The default is 0,0 this means the textures origin is the top left
-      Setting than anchor to 0.5,0.5 means the textures origin is centered
-      Setting the anchor to 1,1 would mean the textures origin points will be the bottom right
-      
-      @property anchor
-      @type Point
+      The x-component of this `Sprite`'s anchor.
+
+      The anchor sets the origin point of this `Sprite`'s texture.
+  
+      A value of 0 indicates that the texture's left side is aligned with `this.x`, 
+      and a value of 1 indicates that the texture's right side is aligned with `this.x`.
+
+      A value of 0.5 indicates that the texture is horizontally centered on `this.x`, etc.
+
+      @property anchorX
+      @type Number
+      @default 0
       ###
-      @anchor ?= new Point()
-      
+      @anchorX ?= 0
+
+      ###*
+      The y-component of this `Sprite`'s anchor.
+
+      The anchor sets the origin point of this `Sprite`'s texture.
+  
+      A value of 0 indicates that the texture's top is aligned with `this.y`, 
+      and a value of 1 indicates that the texture's bottom is aligned with `this.y`.
+
+      A value of 0.5 indicates that the texture is vertically centered on `this.y`, etc.
+
+      @property anchorY
+      @type Number
+      @default 0
+      ###
+      @anchorY ?= 0
+
       ###*
       The texture that the sprite is using
       

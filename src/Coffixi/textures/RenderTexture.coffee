@@ -34,8 +34,8 @@ define 'Coffixi/textures/RenderTexture', [
   var sprite = Sprite.fromImage("spinObj_01.png");
   sprite.x = 800/2;
   sprite.y = 600/2;
-  sprite.anchor.x = 0.5;
-  sprite.anchor.y = 0.5;
+  sprite.anchorX = 0.5;
+  sprite.anchorY = 0.5;
   renderTexture.render(sprite);
 
   Sprite in this case will be rendered to 0,0 position. To render this sprite at center DisplayObjectContainer should be used:

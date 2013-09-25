@@ -367,8 +367,8 @@ define 'Coffixi/renderers/webgl/WebGLBatch', [
           height = displayObject.texture.frame.height
           
           # TODO trim??
-          aX = displayObject.anchor.x # - displayObject.texture.trim.x
-          aY = displayObject.anchor.y #- displayObject.texture.trim.y
+          aX = displayObject.anchorX # - displayObject.texture.trim.x
+          aY = displayObject.anchorY #- displayObject.texture.trim.y
           w0 = width * (1 - aX)
           w1 = width * -aX
           h0 = height * (1 - aY)

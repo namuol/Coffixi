@@ -50,14 +50,14 @@ define 'Coffixi/display/DisplayObject', [
       @scaleY = 1
       
       ###*
-      The x coordinate of the pivot point that this displayObject rotates around
+      The x-coordinate of the pivot point that this rotates around.
       @property pivotX
       ###
       @pivotX = 0
 
       ###*
-      The x coordinate of the pivot point that this displayObject rotates around
-      @property pivotX
+      The y-coordinate of the pivot point that this rotates around.
+      @property pivotY
       ###
       @pivotY = 0
       
@@ -78,28 +78,20 @@ define 'Coffixi/display/DisplayObject', [
       @alpha = 1
       
       ###*
-      The visibility of the object.
-      
-      @property visible
-      @type Boolean
-      ###
-      @visible = true
-      
-      ###*
-      This is used to indicate if the displayObject should display a mouse hand cursor on rollover
-      
-      @property buttonMode
-      @type Boolean
-      ###
-      @buttonMode = false
-      
-      ###*
-      Can this object be rendered
+      Whether this object is renderable or not.
       
       @property renderable
       @type Boolean
       ###
       @renderable = false
+
+      ###*
+      Whether this object should be rendered or not (ignored if [`renderable`](#property_renderable) is `false`).
+      
+      @property visible
+      @type Boolean
+      ###
+      @visible = true
       
       ###*
       The visibility of the object based on world (parent) factors.

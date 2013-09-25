@@ -160,7 +160,7 @@ define 'Coffixi/renderers/canvas/CanvasRenderer', [
             if frame
               context.globalAlpha = displayObject.worldAlpha
               context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
-              context.drawImage displayObject.texture.baseTexture.source, frame.x, frame.y, frame.width, frame.height, (displayObject.anchor.x) * -frame.width, (displayObject.anchor.y) * -frame.height, frame.width, frame.height
+              context.drawImage displayObject.texture.baseTexture.source, frame.x, frame.y, frame.width, frame.height, (displayObject.anchorX) * -frame.width, (displayObject.anchorY) * -frame.height, frame.width, frame.height
           when RENDERTYPE_STRIP
             context.setTransform transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]
             @renderStrip displayObject
