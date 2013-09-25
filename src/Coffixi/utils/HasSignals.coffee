@@ -21,7 +21,7 @@ define 'Coffixi/utils/HasSignals', [
     return signal
 
   __on: (signaler, name, listener, funcName) ->
-    if typeof name is 'function'
+    if typeof signaler is 'string'
       listener = name
       name = signaler
       signaler = @
@@ -46,13 +46,15 @@ define 'Coffixi/utils/HasSignals', [
     @__on(signaler, name, listener, 'addOnce')
 
   off: (signaler, name, listener) ->
-    if typeof name is 'function'
-      listener = name
-      name = signaler
-      signaler = @
-
-    if not signaler?
-      signaler = @
+    switch arguments.length
+      when 1
+        name = signaler
+        signaler = @
+      when 2
+        listener = name
+        name = signaler
+        signaler = @
+      # else we assume 3 args
 
     signal = signaler.__signal(name)
     
@@ -66,7 +68,7 @@ define 'Coffixi/utils/HasSignals', [
         if _signaler is signaler and _name is _name
           signal.remove _listener, @
     return
-  
+
   halt: (name) ->
     @__signal(name)?.halt()
 
