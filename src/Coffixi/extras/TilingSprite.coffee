@@ -76,7 +76,7 @@ define 'Coffixi/extras/TilingSprite', [
     **NOTE**: Must be a power-of-two image.
     @property texture
     ###
-    Object.defineProperty TilingSprite::, 'texture',
+    @property 'texture',
       get: -> @_texture
       set: (texture) ->
         #TODO SET THE TEXTURES
