@@ -161,7 +161,7 @@ define 'Coffixi/display/DisplayObject', [
     @property mask
     @type Graphics
     ###
-    @property 'mask',
+    Object.defineProperty @::, 'mask',
       get: ->
         @_mask
 

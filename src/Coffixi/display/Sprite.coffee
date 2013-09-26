@@ -100,7 +100,7 @@ define 'Coffixi/display/Sprite', [
     @property width
     @type Number
     ###
-    @property 'width',
+    Object.defineProperty @::, 'width',
       get: ->
         if @texture
           @scaleX * @texture.frame.width
@@ -118,7 +118,7 @@ define 'Coffixi/display/Sprite', [
     @property height
     @type Number
     ###
-    @property 'height',
+    Object.defineProperty @::, 'height',
       get: ->
         if @texture
           @scaleY * @texture.frame.height
@@ -135,7 +135,7 @@ define 'Coffixi/display/Sprite', [
 
     @property texture
     ###
-    @property 'texture',
+    Object.defineProperty @::, 'texture',
       get: -> @_texture
       set: (texture) ->
         # stop current texture;

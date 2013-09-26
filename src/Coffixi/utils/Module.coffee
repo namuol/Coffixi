@@ -24,11 +24,35 @@ define 'Coffixi/utils/Module', ->
       obj.onMixin?.call(@)
       return @
 
-    @property: (name, metaProperties) ->
-      @::__properties__ ?= {}
-      @::__properties__[name] = metaProperties
-      Object.defineProperty @::, name, metaProperties
-
     # TODO @extend for JS extending/super calling
+    @extend: (props) ->
+      __super__ = @
+      __wrapped__ = (superFunc, func) ->
+        return ->
+          @super = superFunc
+          ret = func.apply @, arguments
+          delete @super
+          return ret
+
+      if props.hasOwnProperty 'constructor'
+        __ctor__ = ->
+          @super = __super__::constructor
+          props.constructor.apply @, arguments
+          delete @super
+          return @
+      else
+        __ctor__ = -> __super__::constructor.apply @, arguments
+
+      class __CLASS__ extends __super__
+        constructor: __ctor__
+        for own key,val of props
+          if (typeof val is 'function') and (typeof __super__::[key] is 'function')
+            __CLASS__::[key] = __wrapped__(__super__::[key], val)
+          else
+            __CLASS__::[key] = val
+
+      return __CLASS__
+
+  window.Module = Module
 
   return Module
