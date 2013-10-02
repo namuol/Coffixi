@@ -82,8 +82,8 @@ define 'Coffixi/display/Sprite', [
       ###
       @blendMode = Sprite.blendModes.NORMAL
       
-      @_width ?= 0
-      @_height ?= 0
+      @_width ?= 10
+      @_height ?= 10
 
       if @texture?
         if @texture.baseTexture.hasLoaded
@@ -102,7 +102,7 @@ define 'Coffixi/display/Sprite', [
     ###
     Object.defineProperty @::, 'width',
       get: ->
-        if @texture
+        if @texture?.frame?
           @scaleX * @texture.frame.width
         else
           @_width
@@ -120,7 +120,7 @@ define 'Coffixi/display/Sprite', [
     ###
     Object.defineProperty @::, 'height',
       get: ->
-        if @texture
+        if @texture?.frame?
           @scaleY * @texture.frame.height
         else
           @_height

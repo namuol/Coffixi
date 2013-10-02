@@ -66,17 +66,17 @@ define 'Coffixi/utils/PolyK', ->
       cx = p[2 * i2]
       cy = p[2 * i2 + 1]
       earFound = false
-      if PIXI.PolyK._convex(ax, ay, bx, _by, cx, cy, sign)
+      if PolyK._convex(ax, ay, bx, _by, cx, cy, sign)
         earFound = true
         j = 0
 
         while j < al
           vi = avl[j]
+          j++
           continue  if vi is i0 or vi is i1 or vi is i2
-          if PIXI.PolyK._PointInTriangle(p[2 * vi], p[2 * vi + 1], ax, ay, bx, _by, cx, cy)
+          if PolyK._PointInTriangle(p[2 * vi], p[2 * vi + 1], ax, ay, bx, _by, cx, cy)
             earFound = false
             break
-          j++
       if earFound
         tgs.push i0, i1, i2
         avl.splice (i + 1) % al, 1
