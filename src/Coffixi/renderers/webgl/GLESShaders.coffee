@@ -111,7 +111,7 @@ define 'Coffixi/renderers/webgl/GLESShaders', ->
     shader.projectionVector = gl.getUniformLocation(shader.program, "projectionVector")
     shader.textureCoordAttribute = gl.getAttribLocation(shader.program, "aTextureCoord")
     shader.colorAttribute = gl.getAttribLocation(shader.program, "aColor")
-    
+
     # shader.mvMatrixUniform = gl.getUniformLocation(shader.program, "uMVMatrix");
     shader.samplerUniform = gl.getUniformLocation(shader.program, "uSampler")
     GLESShaders.defaultShader = shader

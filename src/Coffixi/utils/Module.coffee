@@ -3,7 +3,7 @@ define 'Coffixi/utils/Module', ->
     
   # From http://arcturo.github.io/library/coffeescript/03_classes.html
 
-  moduleKeywords = ['onMixinStatic', 'onMixin', 'constructor', '__properties__']
+  moduleKeywords = ['onMixinStatic', 'onMixin', 'constructor']
 
   class Module
     @mixinStatic: (obj) ->
@@ -17,9 +17,6 @@ define 'Coffixi/utils/Module', ->
       for key, value of obj when key not in moduleKeywords
         # Assign properties to the prototype
         @::[key] = value
-
-      for own name, metaProperties of obj.__properties__
-        Object.defineProperty @::, name, metaProperties
 
       obj.onMixin?.call(@)
       return @
