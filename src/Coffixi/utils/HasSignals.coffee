@@ -7,7 +7,8 @@ define 'Coffixi/utils/HasSignals', [
 )->
 
   wrapListener = (listener) ->
-    return -> listener.call @, arguments...  unless @paused
+    return ->
+      listener.call @, arguments...  unless @paused
 
   # LOU TODO: Docs
   __signal: (name, create=false) ->
@@ -21,12 +22,12 @@ define 'Coffixi/utils/HasSignals', [
     return signal
 
   __on: (signaler, name, listener, funcName) ->
-    if typeof signaler is 'string'
+    if typeof signaler is 'string' # on('eventName', listener)
       listener = name
       name = signaler
       signaler = @
       _listener = wrapListener(listener)
-    else
+    else # on(signaler, 'eventName', listener)
       _listener = wrapListener(listener)
       # There's a definite risk for a memory leak here; if the signaler gets 
       #  disposed there's still a reference to it here.
@@ -34,7 +35,7 @@ define 'Coffixi/utils/HasSignals', [
       signaler.once '__destroy__', -> @__listeners.splice(@__listeners.indexOf(listenerData),1)
 
     @__listeners ?= []
-    listenerData = [signaler, name, _listener]
+    listenerData = [signaler, name, _listener, listener]
     @__listeners.push listenerData
 
     signaler.__signal(name, true)[funcName] _listener, @
@@ -47,31 +48,39 @@ define 'Coffixi/utils/HasSignals', [
     @__on(signaler, name, listener, 'addOnce')
     return @
 
-  off: (signaler, name, listener) ->
-    switch arguments.length
-      when 1
-        name = signaler
+  off: (args...) ->
+    if args.length is 1
+      # Remove all signal listeners with this object as context of a specific name:
+      # eg. @off 'click'
+      signaler = @
+      name = args[0]
+    else if args.length is 2
+      if typeof args[0] is 'string'
+        # Remove all signal listeners with this object as context of a specific name:
+        # eg. @off 'click', specificClickListener
         signaler = @
+        name = args[0]
+        listener = args[1]
+      else
+        # Remove all signal listeners with this object as context of a specific name:
+        # eg. @off signaler, 'click'
+        signaler = args[0]
+        name = args[1]
+    else
+      signaler = args[0]
+      name = args[1]
+      listener = args[2]
 
-      when 2
-        listener = name
-        name = signaler
-        signaler = @
-      # else we assume 3 args
-
-    signal = signaler.__signal(name)
-    
-    return  unless signal?
+    signal = signaler.__signal name
+    return  if not signal?
 
     if listener?
-      signal.remove listener, @
-    else if signaler.__listeners?
-      # TODO: There must be a better way to structure this data 
-      #       so that we don't have to walk through this list so
-      #       carefully each time...
-      for [_signaler,_name,_listener] in signaler.__listeners
-        if _signaler is signaler and _name is _name
-          signal.remove _listener, @
+      for [_s, _n, wrapped, _l] in @__listeners when (_s is signaler) and (_n is name) and (_l is listener)
+        signal.remove wrapped, @
+    else
+      for [_s, _n, _l] in @__listeners when (_s is signaler) and (_n is name)
+        signal.remove _l, @
+
     return @
 
   halt: (name) ->
